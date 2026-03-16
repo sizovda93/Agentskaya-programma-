@@ -1,0 +1,70 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { SearchInput } from "@/components/dashboard/search-input";
+import { LeadTable } from "@/components/leads/lead-table";
+import { mockLeads } from "@/lib/mock/data";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { Lead } from "@/types";
+
+export default function ManagerLeadsPage() {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+
+  const filtered = mockLeads.filter(
+    (l) =>
+      l.fullName.toLowerCase().includes(search.toLowerCase()) ||
+      l.city.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const newLeads = filtered.filter((l) => l.status === "new");
+  const activeLeads = filtered.filter((l) => !["new", "won", "lost"].includes(l.status));
+  const closedLeads = filtered.filter((l) => ["won", "lost"].includes(l.status));
+
+  return (
+    <div>
+      <PageHeader
+        title="Лиды"
+        description="Все лиды системы — распределение и контроль"
+        breadcrumbs={[
+          { title: "Дашборд", href: "/manager/dashboard" },
+          { title: "Лиды" },
+        ]}
+        actions={
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-1" /> Добавить лид
+          </Button>
+        }
+      />
+
+      <div className="mb-6">
+        <SearchInput value={search} onChange={setSearch} placeholder="Поиск по имени или городу..." />
+      </div>
+
+      <Tabs defaultValue="new">
+        <TabsList>
+          <TabsTrigger value="new">Новые ({newLeads.length})</TabsTrigger>
+          <TabsTrigger value="active">В работе ({activeLeads.length})</TabsTrigger>
+          <TabsTrigger value="closed">Завершённые ({closedLeads.length})</TabsTrigger>
+          <TabsTrigger value="all">Все ({filtered.length})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="new">
+          <LeadTable leads={newLeads} onRowClick={(lead: Lead) => router.push(`/manager/leads/${lead.id}`)} />
+        </TabsContent>
+        <TabsContent value="active">
+          <LeadTable leads={activeLeads} onRowClick={(lead: Lead) => router.push(`/manager/leads/${lead.id}`)} />
+        </TabsContent>
+        <TabsContent value="closed">
+          <LeadTable leads={closedLeads} onRowClick={(lead: Lead) => router.push(`/manager/leads/${lead.id}`)} />
+        </TabsContent>
+        <TabsContent value="all">
+          <LeadTable leads={filtered} onRowClick={(lead: Lead) => router.push(`/manager/leads/${lead.id}`)} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

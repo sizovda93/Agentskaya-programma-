@@ -1,0 +1,102 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  LeadStatus,
+  UserStatus,
+  PayoutStatus,
+  DocumentStatus,
+  ConversationStatus,
+  ConversationMode,
+  UserRole,
+} from "@/types";
+
+// ====== Lead Status ======
+const leadStatusConfig: Record<LeadStatus, { label: string; variant: "default" | "success" | "warning" | "destructive" | "info" | "secondary" }> = {
+  new: { label: "Новый", variant: "info" },
+  contacted: { label: "Контакт", variant: "default" },
+  qualified: { label: "Квалифицирован", variant: "default" },
+  proposal: { label: "Предложение", variant: "warning" },
+  negotiation: { label: "Переговоры", variant: "warning" },
+  won: { label: "Закрыт", variant: "success" },
+  lost: { label: "Потерян", variant: "destructive" },
+};
+
+export function LeadStatusBadge({ status }: { status: LeadStatus }) {
+  const config = leadStatusConfig[status];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== User Status ======
+const userStatusConfig: Record<UserStatus, { label: string; variant: "success" | "secondary" | "destructive" }> = {
+  active: { label: "Активен", variant: "success" },
+  inactive: { label: "Неактивен", variant: "secondary" },
+  blocked: { label: "Заблокирован", variant: "destructive" },
+};
+
+export function UserStatusBadge({ status }: { status: UserStatus }) {
+  const config = userStatusConfig[status];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Payout Status ======
+const payoutStatusConfig: Record<PayoutStatus, { label: string; variant: "warning" | "info" | "success" | "destructive" }> = {
+  pending: { label: "Ожидает", variant: "warning" },
+  processing: { label: "В обработке", variant: "info" },
+  paid: { label: "Оплачено", variant: "success" },
+  rejected: { label: "Отклонено", variant: "destructive" },
+};
+
+export function PayoutStatusBadge({ status }: { status: PayoutStatus }) {
+  const config = payoutStatusConfig[status];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Document Status ======
+const docStatusConfig: Record<DocumentStatus, { label: string; variant: "secondary" | "warning" | "success" | "destructive" }> = {
+  draft: { label: "Черновик", variant: "secondary" },
+  pending_signature: { label: "На подписи", variant: "warning" },
+  signed: { label: "Подписан", variant: "success" },
+  expired: { label: "Истёк", variant: "destructive" },
+  rejected: { label: "Отклонён", variant: "destructive" },
+};
+
+export function DocumentStatusBadge({ status }: { status: DocumentStatus }) {
+  const config = docStatusConfig[status];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Conversation Status ======
+const convStatusConfig: Record<ConversationStatus, { label: string; variant: "success" | "warning" | "secondary" | "destructive" }> = {
+  active: { label: "Активен", variant: "success" },
+  waiting: { label: "Ожидание", variant: "warning" },
+  closed: { label: "Закрыт", variant: "secondary" },
+  escalated: { label: "Эскалация", variant: "destructive" },
+};
+
+export function ConversationStatusBadge({ status }: { status: ConversationStatus }) {
+  const config = convStatusConfig[status];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Mode Badge ======
+const modeConfig: Record<ConversationMode, { label: string; variant: "info" | "default" | "warning" }> = {
+  ai: { label: "AI", variant: "info" },
+  manual: { label: "Ручной", variant: "default" },
+  "semi-auto": { label: "Полуавто", variant: "warning" },
+};
+
+export function ModeBadge({ mode }: { mode: ConversationMode }) {
+  const config = modeConfig[mode];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Role Badge ======
+const roleConfig: Record<UserRole, { label: string; variant: "info" | "warning" | "destructive" }> = {
+  agent: { label: "Агент", variant: "info" },
+  manager: { label: "Менеджер", variant: "warning" },
+  admin: { label: "Админ", variant: "destructive" },
+};
+
+export function RoleBadge({ role }: { role: UserRole }) {
+  const config = roleConfig[role];
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
