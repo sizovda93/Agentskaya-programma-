@@ -6,24 +6,43 @@ import Link from "next/link";
 import { Scale, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loginAsRole } from "@/lib/auth";
-import { getRoleRedirectPath } from "@/lib/auth";
-import type { UserRole } from "@/types";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleQuickLogin = (role: UserRole) => {
-    const user = loginAsRole(role);
-    router.push(getRoleRedirectPath(user.role));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock: default to agent
-    handleQuickLogin("agent");
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Ошибка входа");
+        return;
+      }
+
+      const role = data.user.role;
+      router.push(
+        role === "agent" ? "/agent/dashboard" :
+        role === "manager" ? "/manager/dashboard" :
+        "/admin/dashboard"
+      );
+    } catch {
+      setError("Ошибка соединения с сервером");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +57,13 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground mt-1">ПравоТех</p>
         </div>
 
+        {/* Error */}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -47,6 +73,7 @@ export default function LoginPage() {
               placeholder="email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
           <div>
@@ -56,31 +83,14 @@ export default function LoginPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
-          <Button type="submit" className="w-full">
-            Войти
-            <ArrowRight className="h-4 w-4" />
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Вход..." : "Войти"}
+            {!loading && <ArrowRight className="h-4 w-4" />}
           </Button>
         </form>
-
-        {/* Quick login for demo */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center mb-3">
-            Быстрый вход (демо)
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleQuickLogin("agent")}>
-              Агент
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleQuickLogin("manager")}>
-              Менеджер
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleQuickLogin("admin")}>
-              Админ
-            </Button>
-          </div>
-        </div>
 
         {/* Links */}
         <div className="mt-6 text-center text-sm text-muted-foreground">

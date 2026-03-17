@@ -7,7 +7,6 @@ import { User } from "@/types";
 import { getInitials } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/navigation";
 import { useRouter } from "next/navigation";
-import { logout } from "@/lib/auth";
 import { useState } from "react";
 
 interface AppHeaderProps {
@@ -19,8 +18,8 @@ export function AppHeader({ user, onMenuToggle }: AppHeaderProps) {
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   };
 

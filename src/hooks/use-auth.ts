@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { User } from "@/types";
-import { getCurrentUser, logout as authLogout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 export function useAuth() {
@@ -11,13 +10,29 @@ export function useAuth() {
   const router = useRouter();
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
-    setLoading(false);
+    fetch("/api/auth/session")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          const u = data.user;
+          setUser({
+            id: u.id,
+            role: u.role,
+            fullName: u.fullName,
+            email: u.email,
+            phone: u.phone || "",
+            avatar: u.avatarUrl || undefined,
+            status: u.status,
+            createdAt: "",
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const logout = () => {
-    authLogout();
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
     router.push("/login");
   };
