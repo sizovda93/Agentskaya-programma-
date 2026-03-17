@@ -10,14 +10,15 @@ export default function OfferPage() {
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <Scale className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold tracking-tight">ПравоТех</span>
+            <span className="font-semibold tracking-tight">Агентум Про</span>
+            <span className="text-xs text-muted-foreground ml-2">система управления агентской сетью</span>
           </Link>
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-semibold mb-8">Публичная оферта</h1>
         <div className="prose prose-invert prose-sm max-w-none space-y-4 text-muted-foreground">
-          <p>Настоящая публичная оферта (далее — «Оферта») определяет условия использования платформы ПравоТех (далее — «Платформа»).</p>
+          <p>Настоящая публичная оферта (далее — «Оферта») определяет условия использования платформы Агентум Про (далее — «Платформа»).</p>
           <h2 className="text-lg font-medium text-foreground mt-8">1. Общие положения</h2>
           <p>1.1. Платформа предоставляет сервис для координации работы юридических агентов, управления лидами и автоматизации коммуникаций.</p>
           <p>1.2. Регистрируясь на Платформе, Пользователь принимает условия настоящей Оферты в полном объёме.</p>

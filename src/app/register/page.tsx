@@ -58,7 +58,8 @@ export default function RegisterPage() {
             <Scale className="h-6 w-6 text-primary-foreground" />
           </div>
           <h1 className="text-xl font-semibold tracking-tight">Регистрация</h1>
-          <p className="text-sm text-muted-foreground mt-1">Станьте агентом ПравоТех</p>
+          <p className="text-sm text-muted-foreground mt-1">Станьте агентом Агентум Про</p>
+          <p className="text-xs text-muted-foreground">система управления агентской сетью</p>
         </div>
 
         {error && (

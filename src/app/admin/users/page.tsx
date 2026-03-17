@@ -1,19 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { SearchInput } from "@/components/dashboard/search-input";
 import { DataTable } from "@/components/dashboard/data-table";
 import { RoleBadge, UserStatusBadge } from "@/components/dashboard/status-badges";
-import { Button } from "@/components/ui/button";
-import { mockUsers } from "@/lib/mock/data";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 import { formatDate } from "@/lib/utils";
-import { User } from "@/types";
-import { Plus } from "lucide-react";
+import { UserRole } from "@/types";
+
+interface UserRow {
+  id: string;
+  role: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  status: string;
+  createdAt: string;
+}
 
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
-  const filtered = mockUsers.filter(
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/users')
+      .then((r) => r.ok ? r.json() : [])
+      .then(setUsers)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSkeleton />;
+
+  const filtered = users.filter(
     (u) =>
       u.fullName.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase())
@@ -23,7 +43,7 @@ export default function AdminUsersPage() {
     {
       key: "name",
       title: "Пользователь",
-      render: (u: User) => (
+      render: (u: UserRow) => (
         <div>
           <p className="font-medium">{u.fullName}</p>
           <p className="text-xs text-muted-foreground">{u.email}</p>
@@ -33,22 +53,22 @@ export default function AdminUsersPage() {
     {
       key: "phone",
       title: "Телефон",
-      render: (u: User) => <span className="text-muted-foreground">{u.phone}</span>,
+      render: (u: UserRow) => <span className="text-muted-foreground">{u.phone}</span>,
     },
     {
       key: "role",
       title: "Роль",
-      render: (u: User) => <RoleBadge role={u.role} />,
+      render: (u: UserRow) => <RoleBadge role={u.role as UserRole} />,
     },
     {
       key: "status",
       title: "Статус",
-      render: (u: User) => <UserStatusBadge status={u.status} />,
+      render: (u: UserRow) => <UserStatusBadge status={u.status as "active" | "inactive" | "blocked"} />,
     },
     {
       key: "created",
       title: "Дата регистрации",
-      render: (u: User) => <span className="text-muted-foreground">{formatDate(u.createdAt)}</span>,
+      render: (u: UserRow) => <span className="text-muted-foreground">{formatDate(u.createdAt)}</span>,
     },
   ];
 
@@ -61,11 +81,6 @@ export default function AdminUsersPage() {
           { title: "Дашборд", href: "/admin/dashboard" },
           { title: "Пользователи" },
         ]}
-        actions={
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-1" /> Добавить
-          </Button>
-        }
       />
       <div className="mb-6">
         <SearchInput value={search} onChange={setSearch} placeholder="Поиск по имени или email..." />

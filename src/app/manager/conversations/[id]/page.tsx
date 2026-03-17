@@ -1,13 +1,31 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ChatWindow } from "@/components/chat/chat-window";
-import { mockConversations, mockMessages } from "@/lib/mock/data";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import { Conversation, Message } from "@/types";
 
 export default function ManagerConversationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const conversation = mockConversations.find((c) => c.id === id);
+  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/conversations/${id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) {
+          const { messages: msgs, ...conv } = data;
+          setConversation(conv);
+          setMessages(msgs || []);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <LoadingSkeleton />;
 
   if (!conversation) {
     return (
@@ -17,7 +35,17 @@ export default function ManagerConversationDetailPage({ params }: { params: Prom
     );
   }
 
-  const messages = mockMessages.filter((m) => m.conversationId === conversation.id);
+  const handleSend = async (text: string) => {
+    const res = await fetch(`/api/conversations/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (res.ok) {
+      const msg = await res.json();
+      setMessages((prev) => [...prev, msg]);
+    }
+  };
 
   return (
     <div>
@@ -34,6 +62,7 @@ export default function ManagerConversationDetailPage({ params }: { params: Prom
           conversation={conversation}
           messages={messages}
           currentUserType="manager"
+          onSend={handleSend}
         />
       </div>
     </div>

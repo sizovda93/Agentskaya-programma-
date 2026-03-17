@@ -10,7 +10,8 @@ export default function PrivacyPage() {
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <Scale className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold tracking-tight">ПравоТех</span>
+            <span className="font-semibold tracking-tight">Агентум Про</span>
+            <span className="text-xs text-muted-foreground ml-2">система управления агентской сетью</span>
           </Link>
         </div>
       </header>

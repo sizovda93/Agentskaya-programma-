@@ -5,6 +5,17 @@ import { toCamelCase } from '@/lib/api-utils';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
+// State machine: допустимые переходы
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  pending: ['processing', 'rejected'],
+  processing: ['paid', 'rejected'],
+  paid: [],      // конечный
+  rejected: [],  // конечный
+};
+
+// paid можно ставить только admin
+const ADMIN_ONLY_STATUSES = ['paid'];
+
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
   try {
     const auth = await requireRole('manager', 'admin');
@@ -13,11 +24,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { status, rejectionReason } = body;
 
-    const validStatuses = ['pending', 'processing', 'paid', 'rejected'];
-    if (!status || !validStatuses.includes(status)) {
-      return Response.json({ error: 'Некорректный статус' }, { status: 400 });
+    if (!status) {
+      return Response.json({ error: 'Статус обязателен' }, { status: 400 });
     }
 
     const existing = await pool.query(`SELECT * FROM payouts WHERE id = $1`, [id]);
@@ -26,19 +36,43 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     const payout = existing.rows[0];
+    const allowed = ALLOWED_TRANSITIONS[payout.status] || [];
 
-    if (payout.status === 'paid') {
-      return Response.json({ error: 'Нельзя изменить уже выплаченную' }, { status: 400 });
+    if (!allowed.includes(status)) {
+      return Response.json({
+        error: `Недопустимый переход: ${payout.status} → ${status}. Допустимые: ${allowed.join(', ') || 'нет (конечный статус)'}`,
+      }, { status: 400 });
     }
 
+    // paid может ставить только admin
+    if (ADMIN_ONLY_STATUSES.includes(status) && user.role !== 'admin') {
+      return Response.json({ error: 'Только администратор может подтвердить выплату' }, { status: 403 });
+    }
+
+    // При rejected обязательна причина
+    if (status === 'rejected' && (!rejectionReason || !rejectionReason.trim())) {
+      return Response.json({ error: 'Причина отклонения обязательна' }, { status: 400 });
+    }
+
+    const updates = ['status = $1'];
+    const values: (string | null)[] = [status];
+    let idx = 2;
+
+    if (status === 'rejected' && rejectionReason) {
+      updates.push(`rejection_reason = $${idx}`);
+      values.push(rejectionReason.trim());
+      idx++;
+    }
+
+    values.push(id);
     const { rows } = await pool.query(
-      `UPDATE payouts SET status = $1 WHERE id = $2 RETURNING *`,
-      [status, id]
+      `UPDATE payouts SET ${updates.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values
     );
 
     await pool.query(
       `INSERT INTO audit_logs (action, user_email, details) VALUES ('payout.status_changed', $1, $2)`,
-      [user.email, `Выплата ${id}: ${payout.status} → ${status}`]
+      [user.email, `Выплата ${id}: ${payout.status} → ${status}${status === 'rejected' ? `, причина: ${rejectionReason}` : ''}`]
     );
 
     return Response.json(toCamelCase(rows[0]));

@@ -54,7 +54,8 @@ export default function LoginPage() {
             <Scale className="h-6 w-6 text-primary-foreground" />
           </div>
           <h1 className="text-xl font-semibold tracking-tight">Вход в систему</h1>
-          <p className="text-sm text-muted-foreground mt-1">ПравоТех</p>
+          <p className="text-sm text-muted-foreground mt-1">Агентум Про</p>
+          <p className="text-xs text-muted-foreground">система управления агентской сетью</p>
         </div>
 
         {/* Error */}

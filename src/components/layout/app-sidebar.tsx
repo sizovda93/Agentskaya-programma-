@@ -55,10 +55,8 @@ export function AppSidebar({ items, role }: AppSidebarProps) {
             <Scale className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
           <div>
-            <span className="font-semibold text-sm tracking-tight">ПравоТех</span>
-            <span className="text-[10px] text-muted-foreground block -mt-0.5">
-              {getRoleLabel(role)}
-            </span>
+            <span className="font-semibold text-sm tracking-tight">Агентум Про</span>
+            <span className="text-[10px] text-muted-foreground block -mt-0.5">система управления агентской сетью</span>
           </div>
         </Link>
       </div>
@@ -97,7 +95,7 @@ export function AppSidebar({ items, role }: AppSidebarProps) {
       {/* Footer */}
       <div className="border-t border-border p-4">
         <div className="text-xs text-muted-foreground text-center">
-          © 2026 ПравоТех
+          © 2026 Агентум Про
         </div>
       </div>
     </aside>

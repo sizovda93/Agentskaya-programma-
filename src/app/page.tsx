@@ -11,7 +11,8 @@ export default function HomePage() {
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <Scale className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold tracking-tight">ПравоТех</span>
+            <span className="font-semibold tracking-tight">Агентум Про</span>
+            <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">система управления агентской сетью</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -102,7 +103,7 @@ export default function HomePage() {
       {/* Подвал */}
       <footer className="border-t border-border py-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <span>© 2026 ПравоТех. Все права защищены.</span>
+          <span>© 2026 Агентум Про. Все права защищены.</span>
           <div className="flex items-center gap-6">
             <Link href="/offer" className="hover:text-foreground transition-colors">Оферта</Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors">Конфиденциальность</Link>

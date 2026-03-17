@@ -1,27 +1,66 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { LeadDetailsPanel } from "@/components/leads/lead-details-panel";
 import { LeadTimeline } from "@/components/leads/lead-timeline";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { mockLeads } from "@/lib/mock/data";
-import { TimelineEvent } from "@/types";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import { TimelineEvent, Lead } from "@/types";
 import { MessageSquare, Phone } from "lucide-react";
-
-const mockTimeline: TimelineEvent[] = [
-  { id: "t1", title: "Лид создан", description: "Заявка с сайта", date: "2026-03-15T14:30:00Z", type: "status_change" },
-  { id: "t2", title: "Назначен агент", description: "Алексей Петров", date: "2026-03-15T14:35:00Z", type: "assignment" },
-  { id: "t3", title: "Первый контакт", description: "Звонок, клиент заинтересован", date: "2026-03-15T15:00:00Z", type: "message" },
-  { id: "t4", title: "Статус: Контакт", date: "2026-03-15T15:05:00Z", type: "status_change" },
-];
 
 export default function AgentLeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const lead = mockLeads.find((l) => l.id === id);
+  const [lead, setLead] = useState<Lead | null>(null);
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!lead) {
+  useEffect(() => {
+    async function load() {
+      try {
+        const [leadRes, eventsRes] = await Promise.all([
+          fetch(`/api/leads/${id}`),
+          fetch(`/api/leads/${id}/events`),
+        ]);
+        if (!leadRes.ok) {
+          setError(leadRes.status === 404 ? 'not_found' : 'error');
+          return;
+        }
+        const leadData = await leadRes.json();
+        setLead(leadData);
+
+        if (eventsRes.ok) {
+          const eventsData = await eventsRes.json();
+          setEvents(eventsData.map((e: { id: string; eventType: string; details?: string; createdAt: string }) => ({
+            id: e.id,
+            title: e.eventType === 'status_changed' ? 'Смена статуса'
+              : e.eventType === 'created' ? 'Лид создан'
+              : e.eventType === 'agent_assigned' ? 'Назначен агент'
+              : e.eventType === 'agent_reassigned' ? 'Переназначен агент'
+              : e.eventType === 'payout_created' ? 'Создана выплата'
+              : e.eventType,
+            description: e.details || undefined,
+            date: e.createdAt,
+            type: e.eventType === 'status_changed' ? 'status_change' as const
+              : e.eventType === 'agent_assigned' || e.eventType === 'agent_reassigned' ? 'assignment' as const
+              : e.eventType === 'payout_created' ? 'payment' as const
+              : 'note' as const,
+          })));
+        }
+      } catch {
+        setError('error');
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [id]);
+
+  if (loading) return <LoadingSkeleton />;
+
+  if (error === 'not_found' || !lead) {
     return (
       <div>
         <PageHeader title="Лид не найден" breadcrumbs={[{ title: "Лиды", href: "/agent/leads" }, { title: "Не найден" }]} />
@@ -61,7 +100,11 @@ export default function AgentLeadDetailPage({ params }: { params: Promise<{ id: 
               <CardTitle className="text-base">История</CardTitle>
             </CardHeader>
             <CardContent>
-              <LeadTimeline events={mockTimeline} />
+              {events.length > 0 ? (
+                <LeadTimeline events={events} />
+              ) : (
+                <p className="text-sm text-muted-foreground">Нет событий</p>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ПравоТех — Агентская программа",
-  description: "Коммуникационная платформа для управления агентской сетью",
+  title: "Агентум Про — система управления агентской сетью",
+  description: "Платформа для управления агентской сетью, лидами и выплатами",
 };
 
 export default function RootLayout({

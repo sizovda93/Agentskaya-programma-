@@ -1,13 +1,13 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { UserStatusBadge } from "@/components/dashboard/status-badges";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { mockAgents, mockLeads } from "@/lib/mock/data";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 import { getInitials, formatCurrency } from "@/lib/utils";
 
 const onboardingLabels: Record<string, string> = {
@@ -17,9 +17,34 @@ const onboardingLabels: Record<string, string> = {
   rejected: "Отклонён",
 };
 
+interface AgentData {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string;
+  specialization: string;
+  activeLeads: number;
+  totalLeads: number;
+  totalRevenue: number;
+  onboardingStatus: string;
+  rating: number;
+  userStatus: string;
+}
+
 export default function ManagerAgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const agent = mockAgents.find((a) => a.id === id);
+  const [agent, setAgent] = useState<AgentData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/agents/${id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then(setAgent)
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <LoadingSkeleton />;
 
   if (!agent) {
     return (
@@ -29,16 +54,14 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
     );
   }
 
-  const agentLeads = mockLeads.filter((l) => l.assignedAgentId === agent.id);
-
   return (
     <div>
       <PageHeader
-        title={agent.user.fullName}
+        title={agent.fullName}
         breadcrumbs={[
           { title: "Дашборд", href: "/manager/dashboard" },
           { title: "Агенты", href: "/manager/agents" },
-          { title: agent.user.fullName },
+          { title: agent.fullName },
         ]}
       />
 
@@ -46,13 +69,13 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
         <Card>
           <CardContent className="p-6 flex flex-col items-center text-center">
             <Avatar className="h-16 w-16 mb-4">
-              <AvatarFallback className="text-lg">{getInitials(agent.user.fullName)}</AvatarFallback>
+              <AvatarFallback className="text-lg">{getInitials(agent.fullName)}</AvatarFallback>
             </Avatar>
-            <h2 className="font-semibold">{agent.user.fullName}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{agent.user.email}</p>
+            <h2 className="font-semibold">{agent.fullName}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{agent.email}</p>
             <div className="flex gap-2 mt-3">
-              <UserStatusBadge status={agent.user.status} />
-              <Badge variant="outline">{onboardingLabels[agent.onboardingStatus]}</Badge>
+              <UserStatusBadge status={agent.userStatus as "active" | "inactive" | "blocked"} />
+              <Badge variant="outline">{onboardingLabels[agent.onboardingStatus] || agent.onboardingStatus}</Badge>
             </div>
             <div className="w-full mt-6 pt-6 border-t border-border space-y-2 text-sm">
               <div className="flex justify-between">
@@ -65,7 +88,7 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Телефон</span>
-                <span>{agent.user.phone}</span>
+                <span>{agent.phone}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Рейтинг</span>
@@ -78,8 +101,8 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <StatCard title="Активные лиды" value={agent.activeLeads} icon="Users" />
           <StatCard title="Всего лидов" value={agent.totalLeads} icon="UserPlus" />
-          <StatCard title="Общий доход" value={formatCurrency(agent.totalRevenue)} icon="Wallet" />
-          <StatCard title="Конверсия" value="24%" change="+5%" changeType="positive" icon="Target" />
+          <StatCard title="Общий доход" value={formatCurrency(Number(agent.totalRevenue))} icon="Wallet" />
+          <StatCard title="Рейтинг" value={`⭐ ${agent.rating}`} icon="Target" />
         </div>
       </div>
     </div>

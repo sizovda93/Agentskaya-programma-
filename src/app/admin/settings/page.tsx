@@ -1,12 +1,66 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 
 export default function AdminSettingsPage() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [platformName, setPlatformName] = useState("");
+  const [supportEmail, setSupportEmail] = useState("");
+  const [supportPhone, setSupportPhone] = useState("");
+  const [commissionRate, setCommissionRate] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((r) => r.ok ? r.json() : {})
+      .then((data: Record<string, string>) => {
+        setPlatformName(data.platform_name || "");
+        setSupportEmail(data.support_email || "");
+        setSupportPhone(data.support_phone || "");
+        const rate = data.commission_rate ? String(Math.round(parseFloat(data.commission_rate) * 100)) : "30";
+        setCommissionRate(rate);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const saveGeneral = async () => {
+    setSaving(true);
+    setMessage(null);
+    const res = await fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        platform_name: platformName,
+        support_email: supportEmail,
+        support_phone: supportPhone,
+      }),
+    });
+    setSaving(false);
+    setMessage(res.ok ? "Сохранено" : "Ошибка сохранения");
+  };
+
+  const saveCommission = async () => {
+    setSaving(true);
+    setMessage(null);
+    const rate = (parseFloat(commissionRate) / 100).toFixed(2);
+    const res = await fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commission_rate: rate }),
+    });
+    setSaving(false);
+    setMessage(res.ok ? "Сохранено" : "Ошибка сохранения");
+  };
+
+  if (loading) return <LoadingSkeleton />;
+
   return (
     <div>
       <PageHeader
@@ -18,6 +72,12 @@ export default function AdminSettingsPage() {
         ]}
       />
 
+      {message && (
+        <div className={`mb-4 p-3 rounded-lg text-sm ${message === "Сохранено" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+          {message}
+        </div>
+      )}
+
       <div className="space-y-6 max-w-3xl">
         <Card>
           <CardHeader>
@@ -26,18 +86,18 @@ export default function AdminSettingsPage() {
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">Название платформы</label>
-              <Input defaultValue="ПравоТех" />
+              <Input value={platformName} onChange={(e) => setPlatformName(e.target.value)} />
             </div>
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">Email поддержки</label>
-              <Input defaultValue="support@legaltech.ru" />
+              <Input value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} />
             </div>
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">Телефон поддержки</label>
-              <Input defaultValue="+7 (800) 100-00-00" />
+              <Input value={supportPhone} onChange={(e) => setSupportPhone(e.target.value)} />
             </div>
             <div className="flex justify-end">
-              <Button>Сохранить</Button>
+              <Button onClick={saveGeneral} disabled={saving}>Сохранить</Button>
             </div>
           </CardContent>
         </Card>
@@ -47,18 +107,12 @@ export default function AdminSettingsPage() {
             <CardTitle className="text-base">Комиссии</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1.5 block">Базовая ставка агента (%)</label>
-                <Input type="number" defaultValue="30" />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground mb-1.5 block">Бонус за квалификацию (%)</label>
-                <Input type="number" defaultValue="5" />
-              </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-1.5 block">Базовая ставка агента (%)</label>
+              <Input type="number" value={commissionRate} onChange={(e) => setCommissionRate(e.target.value)} />
             </div>
             <div className="flex justify-end">
-              <Button>Сохранить</Button>
+              <Button onClick={saveCommission} disabled={saving}>Сохранить</Button>
             </div>
           </CardContent>
         </Card>
