@@ -7,7 +7,9 @@ import {
   ConversationStatus,
   ConversationMode,
   UserRole,
+  MessageChannel,
 } from "@/types";
+import { Send, Globe } from "lucide-react";
 
 // ====== Lead Status ======
 const leadStatusConfig: Record<LeadStatus, { label: string; variant: "default" | "success" | "warning" | "destructive" | "info" | "secondary" }> = {
@@ -99,4 +101,20 @@ const roleConfig: Record<UserRole, { label: string; variant: "info" | "warning" 
 export function RoleBadge({ role }: { role: UserRole }) {
   const config = roleConfig[role];
   return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Channel Badge ======
+export function ChannelBadge({ channel }: { channel: MessageChannel }) {
+  if (channel === "telegram") {
+    return (
+      <Badge variant="info" className="gap-1">
+        <Send className="h-3 w-3" /> Telegram
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="secondary" className="gap-1">
+      <Globe className="h-3 w-3" /> Web
+    </Badge>
+  );
 }

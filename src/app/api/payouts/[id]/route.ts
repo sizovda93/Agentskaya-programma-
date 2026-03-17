@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { requireRole } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
+import { notifyPayoutStatusChanged } from '@/lib/telegram-notifications';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -74,6 +75,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       `INSERT INTO audit_logs (action, user_email, details) VALUES ('payout.status_changed', $1, $2)`,
       [user.email, `Выплата ${id}: ${payout.status} → ${status}${status === 'rejected' ? `, причина: ${rejectionReason}` : ''}`]
     );
+
+    // T1: Telegram notification — выплата одобрена/отклонена
+    if (['paid', 'rejected', 'processing'].includes(status)) {
+      notifyPayoutStatusChanged(id, status, rejectionReason).catch(() => {});
+    }
 
     return Response.json(toCamelCase(rows[0]));
   } catch (err) {

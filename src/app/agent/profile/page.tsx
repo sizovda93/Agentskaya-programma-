@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import { getInitials } from "@/lib/utils";
+import { Send, Unlink } from "lucide-react";
 
 interface ProfileData {
   id: string;
@@ -25,12 +26,31 @@ interface ProfileData {
   agentId?: string;
 }
 
+interface TelegramStatus {
+  connected: boolean;
+  telegramUsername?: string;
+  telegramFirstName?: string;
+  linkedAt?: string;
+}
+
 export default function AgentProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ fullName: "", phone: "" });
   const [message, setMessage] = useState<string | null>(null);
+
+  // Telegram state
+  const [tgStatus, setTgStatus] = useState<TelegramStatus | null>(null);
+  const [tgLoading, setTgLoading] = useState(false);
+  const [tgDeepLink, setTgDeepLink] = useState<string | null>(null);
+
+  const loadTgStatus = useCallback(() => {
+    fetch("/api/telegram/status")
+      .then((r) => r.json())
+      .then((data) => setTgStatus(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/profile")
@@ -41,7 +61,32 @@ export default function AgentProfilePage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+    loadTgStatus();
+  }, [loadTgStatus]);
+
+  const handleTgConnect = async () => {
+    setTgLoading(true);
+    try {
+      const res = await fetch("/api/telegram/link", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setTgDeepLink(data.deepLink);
+      }
+    } catch { /* ignore */ }
+    finally { setTgLoading(false); }
+  };
+
+  const handleTgDisconnect = async () => {
+    setTgLoading(true);
+    try {
+      const res = await fetch("/api/telegram/link", { method: "DELETE" });
+      if (res.ok) {
+        setTgStatus({ connected: false });
+        setTgDeepLink(null);
+      }
+    } catch { /* ignore */ }
+    finally { setTgLoading(false); }
+  };
 
   const handleSave = async () => {
     if (!profile) return;
@@ -147,6 +192,68 @@ export default function AgentProfilePage() {
               <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>{saving ? "Сохранение..." : "Сохранить"}</Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Send className="h-4 w-4" /> Telegram
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {tgStatus?.connected ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="success">Подключён</Badge>
+                    {tgStatus.telegramUsername && (
+                      <span className="text-sm text-muted-foreground">@{tgStatus.telegramUsername}</span>
+                    )}
+                    {!tgStatus.telegramUsername && tgStatus.telegramFirstName && (
+                      <span className="text-sm text-muted-foreground">{tgStatus.telegramFirstName}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Вы получаете уведомления и сообщения менеджера в Telegram.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={handleTgDisconnect} disabled={tgLoading}>
+                    <Unlink className="h-3.5 w-3.5 mr-1" />
+                    {tgLoading ? "Отключение..." : "Отключить"}
+                  </Button>
+                </div>
+              ) : tgDeepLink ? (
+                <div className="space-y-3">
+                  <p className="text-sm">Откройте ссылку и нажмите Start в боте:</p>
+                  <a
+                    href={tgDeepLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2AABEE] text-white text-sm font-medium hover:bg-[#229ED9] transition-colors"
+                  >
+                    <Send className="h-4 w-4" /> Открыть Telegram
+                  </a>
+                  <p className="text-xs text-muted-foreground">
+                    Ссылка действительна 15 минут. После привязки обновите страницу.
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setTgDeepLink(null); loadTgStatus(); }}
+                  >
+                    Я уже привязал — обновить статус
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Подключите Telegram, чтобы получать уведомления и отвечать менеджеру прямо из мессенджера.
+                  </p>
+                  <Button onClick={handleTgConnect} disabled={tgLoading}>
+                    <Send className="h-4 w-4 mr-1" />
+                    {tgLoading ? "Генерация ссылки..." : "Подключить Telegram"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

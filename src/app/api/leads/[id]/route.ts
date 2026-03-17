@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
+import { notifyLeadStatusChanged, notifyPayoutCreated } from '@/lib/telegram-notifications';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -105,6 +106,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'status_changed', $2, $3)`,
         [id, user.email, `${oldStatus} → ${newStatus}`]
       );
+
+      // T1: Telegram notification — статус лида изменён
+      if (updated.assigned_agent_id) {
+        notifyLeadStatusChanged(updated.assigned_agent_id, updated.full_name, oldStatus, newStatus).catch(() => {});
+      }
     }
 
     // lead_events: переназначение агента
@@ -157,6 +163,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
           `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'payout_created', $2, $3)`,
           [id, user.email, `Автовыплата: ${payoutAmount.toFixed(2)} ₽ (${(rate * 100).toFixed(0)}%)`]
         );
+
+        // T1: Telegram notification — выплата создана
+        notifyPayoutCreated(updated.assigned_agent_id, payoutAmount, updated.full_name).catch(() => {});
       }
     }
 

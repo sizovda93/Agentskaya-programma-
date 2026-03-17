@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { SearchInput } from "@/components/dashboard/search-input";
 import { Conversation } from "@/types";
 import { DataTable } from "@/components/dashboard/data-table";
-import { ConversationStatusBadge, ModeBadge } from "@/components/dashboard/status-badges";
+import { ConversationStatusBadge, ModeBadge, ChannelBadge } from "@/components/dashboard/status-badges";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 
@@ -38,6 +38,11 @@ export default function ManagerConversationsPage() {
       key: "client",
       title: "Клиент",
       render: (c: Conversation) => <span className="font-medium">{c.clientName}</span>,
+    },
+    {
+      key: "channel",
+      title: "Канал",
+      render: (c: Conversation) => <ChannelBadge channel={c.channel || "web"} />,
     },
     {
       key: "mode",

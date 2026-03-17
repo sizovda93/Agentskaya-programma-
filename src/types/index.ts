@@ -1,5 +1,7 @@
 // ==================== ENUMS ====================
 
+export type MessageChannel = "web" | "telegram";
+
 export type UserRole = "agent" | "manager" | "admin";
 
 export type UserStatus = "active" | "inactive" | "blocked";
@@ -83,6 +85,7 @@ export interface Conversation {
   lastMessage?: string;
   lastMessageAt: string;
   status: ConversationStatus;
+  channel: MessageChannel;
 }
 
 export interface Message {
@@ -93,6 +96,8 @@ export interface Message {
   text: string;
   createdAt: string;
   status: MessageStatus;
+  channel: MessageChannel;
+  externalId?: string;
 }
 
 export interface Payout {
@@ -126,6 +131,20 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   type: "info" | "success" | "warning" | "error";
+}
+
+// ==================== TELEGRAM ====================
+
+export interface TelegramBinding {
+  id: string;
+  profileId: string;
+  telegramUserId: number;
+  telegramChatId: number;
+  telegramUsername?: string;
+  telegramFirstName?: string;
+  isActive: boolean;
+  lastConversationId?: string;
+  linkedAt: string;
 }
 
 // ==================== UI TYPES ====================

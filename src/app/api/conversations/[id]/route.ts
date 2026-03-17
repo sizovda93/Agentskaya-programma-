@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
+import { sendMessage as sendTgMessage, getProfileIdByAgentId } from '@/lib/telegram';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -49,12 +50,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const { id } = await params;
 
-    const conversation = await pool.query(`SELECT * FROM conversations WHERE id = $1`, [id]);
-    if (conversation.rows.length === 0) {
+    const convResult = await pool.query(`SELECT * FROM conversations WHERE id = $1`, [id]);
+    if (convResult.rows.length === 0) {
       return Response.json({ error: 'Диалог не найден' }, { status: 404 });
     }
+    const conv = convResult.rows[0];
 
-    if (user.role === 'agent' && conversation.rows[0].agent_id !== user.agentId) {
+    if (user.role === 'agent' && conv.agent_id !== user.agentId) {
       return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
     }
 
@@ -78,6 +80,44 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       `UPDATE conversations SET last_message = $1, last_message_at = NOW() WHERE id = $2`,
       [text.trim().substring(0, 255), id]
     );
+
+    // T1: Outbound to Telegram — if manager sends and agent has Telegram linked
+    if (senderType === 'manager' && conv.agent_id) {
+      try {
+        const profileId = await getProfileIdByAgentId(conv.agent_id);
+        if (profileId) {
+          const { rows: bindRows } = await pool.query(
+            `SELECT telegram_chat_id FROM telegram_bindings
+             WHERE profile_id = $1 AND is_active = true LIMIT 1`,
+            [profileId]
+          );
+          if (bindRows.length > 0) {
+            const tgText = `[${conv.client_name}]\n${text.trim()}`;
+            const tgResult = await sendTgMessage(bindRows[0].telegram_chat_id, tgText);
+
+            if (tgResult.ok) {
+              // Store external_id and mark conversation channel
+              const tgMsgId = (tgResult.result as { message_id?: number })?.message_id;
+              if (tgMsgId) {
+                await pool.query(
+                  `UPDATE messages SET external_id = $1 WHERE id = $2`,
+                  [String(tgMsgId), rows[0].id]
+                );
+              }
+              // Update last_conversation_id on binding
+              await pool.query(
+                `UPDATE telegram_bindings SET last_conversation_id = $1
+                 WHERE profile_id = $2 AND is_active = true`,
+                [id, profileId]
+              );
+            }
+          }
+        }
+      } catch (tgErr) {
+        // Don't block web response on Telegram errors
+        console.error('Telegram outbound error:', tgErr);
+      }
+    }
 
     return Response.json(toCamelCase(rows[0]), { status: 201 });
   } catch (err) {

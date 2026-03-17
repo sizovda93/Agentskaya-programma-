@@ -3,7 +3,7 @@
 import { Message, Conversation } from "@/types";
 import { MessageBubble } from "./message-bubble";
 import { MessageInput } from "./message-input";
-import { ModeBadge, ConversationStatusBadge } from "@/components/dashboard/status-badges";
+import { ModeBadge, ConversationStatusBadge, ChannelBadge } from "@/components/dashboard/status-badges";
 
 interface ChatWindowProps {
   conversation: Conversation;
@@ -22,6 +22,9 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent", 
           <div className="flex items-center gap-2 mt-1">
             <ModeBadge mode={conversation.mode} />
             <ConversationStatusBadge status={conversation.status} />
+            {conversation.channel && conversation.channel !== "web" && (
+              <ChannelBadge channel={conversation.channel} />
+            )}
           </div>
         </div>
       </div>

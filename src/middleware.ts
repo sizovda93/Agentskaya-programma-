@@ -16,11 +16,12 @@ function getSecret() {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Статика, _next, favicon
+  // Статика, _next, favicon — пропускаем только безопасные паттерны
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
-    pathname.includes(".")
+    pathname === "/api/telegram/webhook" ||
+    pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
   }

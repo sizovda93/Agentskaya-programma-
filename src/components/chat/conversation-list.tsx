@@ -1,7 +1,7 @@
 "use client";
 
 import { Conversation } from "@/types";
-import { ConversationStatusBadge, ModeBadge } from "@/components/dashboard/status-badges";
+import { ConversationStatusBadge, ModeBadge, ChannelBadge } from "@/components/dashboard/status-badges";
 import { cn } from "@/lib/utils";
 
 interface ConversationListProps {
@@ -34,6 +34,9 @@ export function ConversationList({ conversations, activeId, onSelect }: Conversa
           <div className="flex items-center gap-2 mt-0.5">
             <ModeBadge mode={conv.mode} />
             <ConversationStatusBadge status={conv.status} />
+            {conv.channel && conv.channel !== "web" && (
+              <ChannelBadge channel={conv.channel} />
+            )}
           </div>
         </button>
       ))}
