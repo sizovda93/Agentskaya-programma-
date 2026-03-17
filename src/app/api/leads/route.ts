@@ -89,6 +89,20 @@ export async function POST(request: NextRequest) {
       [user.email, `Лид: ${fullName}, телефон: ${phone}`]
     );
 
+    // lead_events: создание лида
+    await pool.query(
+      `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'created', $2, $3)`,
+      [rows[0].id, user.email, `Создан лид: ${fullName}`]
+    );
+
+    // lead_events: назначение агента
+    if (assignedAgentId) {
+      await pool.query(
+        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'agent_assigned', $2, $3)`,
+        [rows[0].id, user.email, `Назначен агент: ${assignedAgentId}`]
+      );
+    }
+
     return Response.json(toCamelCase(rows[0]), { status: 201 });
   } catch (err) {
     console.error('POST /api/leads error:', err);

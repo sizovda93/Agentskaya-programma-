@@ -1,12 +1,33 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { BalanceCard } from "@/components/finance/balance-card";
 import { PayoutTable } from "@/components/finance/payout-table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { mockPayouts } from "@/lib/mock/data";
+import { Payout } from "@/types";
+import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 
 export default function ManagerFinancePage() {
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/payouts")
+      .then((r) => r.json())
+      .then((data) => setPayouts(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <CardSkeleton />;
+
+  const paid = payouts.filter((p) => p.status === "paid");
+  const pending = payouts.filter((p) => p.status === "pending" || p.status === "processing");
+  const totalEarned = paid.reduce((sum, p) => sum + Number(p.amount), 0);
+  const pendingAmount = pending.reduce((sum, p) => sum + Number(p.amount), 0);
+  const balance = payouts.filter((p) => p.status === "pending").reduce((sum, p) => sum + Number(p.amount), 0);
+
   return (
     <div>
       <PageHeader
@@ -19,7 +40,7 @@ export default function ManagerFinancePage() {
       />
 
       <div className="mb-8">
-        <BalanceCard balance={137000} pending={88000} totalEarned={2450000} />
+        <BalanceCard balance={balance} pending={pendingAmount} totalEarned={totalEarned} />
       </div>
 
       <Card>
@@ -27,7 +48,7 @@ export default function ManagerFinancePage() {
           <CardTitle className="text-base">Все выплаты</CardTitle>
         </CardHeader>
         <CardContent>
-          <PayoutTable payouts={mockPayouts} />
+          <PayoutTable payouts={payouts} />
         </CardContent>
       </Card>
     </div>

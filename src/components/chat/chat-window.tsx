@@ -9,9 +9,10 @@ interface ChatWindowProps {
   conversation: Conversation;
   messages: Message[];
   currentUserType?: string;
+  onSend?: (text: string) => void;
 }
 
-export function ChatWindow({ conversation, messages, currentUserType = "agent" }: ChatWindowProps) {
+export function ChatWindow({ conversation, messages, currentUserType = "agent", onSend }: ChatWindowProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -37,7 +38,7 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent" }
       </div>
 
       {/* Input */}
-      <MessageInput onSend={() => {}} />
+      <MessageInput onSend={onSend ?? (() => {})} />
     </div>
   );
 }

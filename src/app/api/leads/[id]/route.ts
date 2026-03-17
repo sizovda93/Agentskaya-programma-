@@ -64,6 +64,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     const allowedFields = ['status', 'comment', 'estimated_value', 'assigned_agent_id', 'city', 'full_name', 'phone', 'email', 'source'];
     // Агент может менять только status и comment
     const agentAllowed = ['status', 'comment'];
+    // Агент не может ставить финансово значимые статусы
+    const agentForbiddenStatuses = ['won', 'lost'];
+    if (user.role === 'agent' && body.status && agentForbiddenStatuses.includes(body.status)) {
+      return Response.json({ error: 'Агент не может устанавливать статус won/lost' }, { status: 403 });
+    }
 
     const sets: string[] = [];
     const values: (string | number | null)[] = [];
@@ -93,6 +98,22 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     const updated = rows[0];
     const oldStatus = lead.status;
     const newStatus = updated.status;
+
+    // lead_events: смена статуса
+    if (oldStatus !== newStatus) {
+      await pool.query(
+        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'status_changed', $2, $3)`,
+        [id, user.email, `${oldStatus} → ${newStatus}`]
+      );
+    }
+
+    // lead_events: переназначение агента
+    if (lead.assigned_agent_id !== updated.assigned_agent_id && updated.assigned_agent_id) {
+      await pool.query(
+        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'agent_reassigned', $2, $3)`,
+        [id, user.email, `Агент: ${lead.assigned_agent_id || 'нет'} → ${updated.assigned_agent_id}`]
+      );
+    }
 
     // Auto payout при переходе в won
     if (oldStatus !== 'won' && newStatus === 'won' && updated.assigned_agent_id && updated.estimated_value) {
@@ -129,6 +150,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
           `UPDATE agents SET total_revenue = (SELECT COALESCE(SUM(amount),0) FROM payouts WHERE agent_id = $1 AND status IN ('pending','processing','paid'))
            WHERE id = $1`,
           [updated.assigned_agent_id]
+        );
+
+        // lead_events: автосоздание payout
+        await pool.query(
+          `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'payout_created', $2, $3)`,
+          [id, user.email, `Автовыплата: ${payoutAmount.toFixed(2)} ₽ (${(rate * 100).toFixed(0)}%)`]
         );
       }
     }

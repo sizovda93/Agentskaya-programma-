@@ -33,15 +33,33 @@ export async function POST(request: NextRequest) {
     if (auth.error) return auth.error;
     const { user } = auth;
 
-    const body = await request.json();
-    const { title, type, fileUrl, fileSize } = body;
+    const contentType = request.headers.get('content-type') || '';
+    let title: string | undefined;
+    let type: string | undefined;
+    let fileUrl: string | null = null;
+    let fileSize: number | null = null;
+
+    if (contentType.includes('multipart/form-data')) {
+      const form = await request.formData();
+      title = form.get('title') as string | undefined;
+      type = form.get('type') as string | undefined;
+      fileUrl = form.get('fileUrl') as string | null;
+      const rawSize = form.get('fileSize') as string | null;
+      fileSize = rawSize ? parseInt(rawSize, 10) : null;
+    } else {
+      const body = await request.json();
+      title = body.title;
+      type = body.type;
+      fileUrl = body.fileUrl || null;
+      fileSize = body.fileSize || null;
+    }
 
     if (!title) {
       return Response.json({ error: 'Название документа обязательно' }, { status: 400 });
     }
 
     const validTypes = ['contract', 'invoice', 'act', 'agreement', 'power_of_attorney', 'other'];
-    const docType = validTypes.includes(type) ? type : 'other';
+    const docType = type && validTypes.includes(type) ? type : 'other';
 
     const { rows } = await pool.query(
       `INSERT INTO documents (owner_id, owner_name, title, type, file_url, file_size)
