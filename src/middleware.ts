@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 const publicPaths = ["/", "/login", "/register", "/offer", "/privacy", "/consent"];
 
@@ -9,7 +9,11 @@ const rolePrefixes: Record<string, string[]> = {
   "/admin": ["admin"],
 };
 
-export function middleware(request: NextRequest) {
+function getSecret() {
+  return new TextEncoder().encode(process.env.JWT_SECRET!);
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Статика, _next, favicon
@@ -33,7 +37,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     try {
-      jwt.verify(token, process.env.JWT_SECRET!);
+      await jwtVerify(token, getSecret());
       return NextResponse.next();
     } catch {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -47,15 +51,11 @@ export function middleware(request: NextRequest) {
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
-      sub: string;
-      role: string;
-    };
+    const { payload } = await jwtVerify(token, getSecret());
 
     // Проверка роли по префиксу пути
     for (const [prefix, allowedRoles] of Object.entries(rolePrefixes)) {
-      if (pathname.startsWith(prefix) && !allowedRoles.includes(payload.role)) {
-        // Редирект на свой дашборд
+      if (pathname.startsWith(prefix) && !allowedRoles.includes(payload.role as string)) {
         const redirectPath =
           payload.role === "agent"
             ? "/agent/dashboard"
