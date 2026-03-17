@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { SearchInput } from "@/components/dashboard/search-input";
 import { LeadTable } from "@/components/leads/lead-table";
-import { mockLeads } from "@/lib/mock/data";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Lead } from "@/types";
+import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 
 export default function AgentLeadsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const myLeads = mockLeads.filter((l) => l.assignedAgentId === "a1");
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = myLeads.filter(
+  useEffect(() => {
+    fetch("/api/leads")
+      .then((r) => r.json())
+      .then((data) => setLeads(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <CardSkeleton />;
+
+  const filtered = leads.filter(
     (l) =>
       l.fullName.toLowerCase().includes(search.toLowerCase()) ||
       l.city.toLowerCase().includes(search.toLowerCase())

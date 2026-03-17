@@ -1,20 +1,43 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LeadStatusBadge } from "@/components/dashboard/status-badges";
-import { mockLeads, mockConversations, mockPayouts } from "@/lib/mock/data";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { Lead, Conversation } from "@/types";
 
 export default function AgentDashboard() {
-  const myLeads = mockLeads.filter((l) => l.assignedAgentId === "a1");
-  const activeLeads = myLeads.filter((l) => !["won", "lost"].includes(l.status));
-  const myConversations = mockConversations.filter((c) => c.agentId === "a1");
-  const unreadCount = myConversations.reduce((acc, c) => acc + c.unreadCount, 0);
-  const myPayouts = mockPayouts.filter((p) => p.agentId === "a1");
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [stats, setStats] = useState<{ totalRevenue?: number }>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/leads").then((r) => r.json()),
+      fetch("/api/conversations").then((r) => r.json()),
+      fetch("/api/stats").then((r) => r.json()),
+    ])
+      .then(([ld, cv, st]) => {
+        setLeads(Array.isArray(ld) ? ld : []);
+        setConversations(Array.isArray(cv) ? cv : []);
+        setStats(st || {});
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <CardSkeleton />;
+
+  const activeLeads = leads.filter((l) => !["won", "lost"].includes(l.status));
+  const unreadCount = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+  const wonLeads = leads.filter((l) => l.status === "won").length;
+  const conversionRate = leads.length > 0 ? Math.round((wonLeads / leads.length) * 100) : 0;
 
   return (
     <div>
@@ -28,29 +51,21 @@ export default function AgentDashboard() {
         <StatCard
           title="Активные лиды"
           value={activeLeads.length}
-          change="+2 за неделю"
-          changeType="positive"
           icon="Users"
         />
         <StatCard
           title="Непрочитанные"
           value={unreadCount}
-          change="3 диалога"
-          changeType="neutral"
           icon="MessageSquare"
         />
         <StatCard
-          title="Заработано (март)"
-          value={formatCurrency(60000)}
-          change="+33% к февралю"
-          changeType="positive"
+          title="Заработано"
+          value={formatCurrency(Number(stats.totalRevenue || 0))}
           icon="Wallet"
         />
         <StatCard
           title="Конверсия"
-          value="24%"
-          change="+5% к февралю"
-          changeType="positive"
+          value={`${conversionRate}%`}
           icon="Target"
         />
       </div>
@@ -69,7 +84,7 @@ export default function AgentDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {myLeads.slice(0, 4).map((lead) => (
+              {leads.slice(0, 4).map((lead) => (
                 <Link
                   key={lead.id}
                   href={`/agent/leads/${lead.id}`}
@@ -99,7 +114,7 @@ export default function AgentDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {myConversations.slice(0, 4).map((conv) => (
+              {conversations.slice(0, 4).map((conv) => (
                 <div
                   key={conv.id}
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"

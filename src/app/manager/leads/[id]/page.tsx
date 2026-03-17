@@ -1,24 +1,29 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { LeadDetailsPanel } from "@/components/leads/lead-details-panel";
 import { LeadTimeline } from "@/components/leads/lead-timeline";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { mockLeads } from "@/lib/mock/data";
-import { TimelineEvent } from "@/types";
+import { Lead, TimelineEvent } from "@/types";
 import { UserPlus, MessageSquare } from "lucide-react";
-
-const mockTimeline: TimelineEvent[] = [
-  { id: "t1", title: "Лид создан", description: "Заявка с сайта", date: "2026-03-15T14:30:00Z", type: "status_change" },
-  { id: "t2", title: "Назначен агент", description: "Алексей Петров", date: "2026-03-15T14:35:00Z", type: "assignment" },
-  { id: "t3", title: "Первый контакт", date: "2026-03-15T15:00:00Z", type: "message" },
-];
+import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 
 export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const lead = mockLeads.find((l) => l.id === id);
+  const [lead, setLead] = useState<Lead | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/leads/${id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setLead(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <CardSkeleton />;
 
   if (!lead) {
     return (
@@ -27,6 +32,10 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
       </div>
     );
   }
+
+  const timeline: TimelineEvent[] = [
+    { id: "t1", title: "Лид создан", description: "Дата создания", date: lead.createdAt, type: "status_change" },
+  ];
 
   return (
     <div>
@@ -58,7 +67,7 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
             <CardTitle className="text-base">История</CardTitle>
           </CardHeader>
           <CardContent>
-            <LeadTimeline events={mockTimeline} />
+            <LeadTimeline events={timeline} />
           </CardContent>
         </Card>
       </div>
