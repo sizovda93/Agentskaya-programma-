@@ -1,5 +1,6 @@
+import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
-import { requireAuth } from '@/lib/auth-server';
+import { requireAuth, requireRole } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
 
 export async function GET() {

@@ -40,3 +40,48 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return Response.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
   }
 }
+
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { user } = auth;
+
+    const { id } = await params;
+
+    const conversation = await pool.query(`SELECT * FROM conversations WHERE id = $1`, [id]);
+    if (conversation.rows.length === 0) {
+      return Response.json({ error: 'Диалог не найден' }, { status: 404 });
+    }
+
+    if (user.role === 'agent' && conversation.rows[0].agent_id !== user.agentId) {
+      return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { text } = body;
+
+    if (!text || !text.trim()) {
+      return Response.json({ error: 'Текст сообщения обязателен' }, { status: 400 });
+    }
+
+    const senderType = user.role === 'agent' ? 'agent' : 'manager';
+
+    const { rows } = await pool.query(
+      `INSERT INTO messages (conversation_id, sender_type, sender_name, text)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [id, senderType, user.fullName, text.trim()]
+    );
+
+    await pool.query(
+      `UPDATE conversations SET last_message = $1, last_message_at = NOW() WHERE id = $2`,
+      [text.trim().substring(0, 255), id]
+    );
+
+    return Response.json(toCamelCase(rows[0]), { status: 201 });
+  } catch (err) {
+    console.error('POST /api/conversations/[id] error:', err);
+    return Response.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
+  }
+}
