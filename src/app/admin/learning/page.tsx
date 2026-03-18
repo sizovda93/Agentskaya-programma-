@@ -4,33 +4,37 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
-import { getModules } from "@/lib/learning-content";
+import { Button } from "@/components/ui/button";
+import { getModules, getAllLessons, ProgressMap } from "@/lib/learning-content";
 import {
   Rocket, Wallet, FileText, MessageSquare, HelpCircle,
-  Target, Plug, ScrollText, BookOpen, CheckCircle2, ChevronRight,
+  Target, Plug, ScrollText, BookOpen, CheckCircle2, ChevronRight, Play,
 } from "lucide-react";
+
+const ROLE = "admin";
+const STORAGE_KEY = `learning_progress_${ROLE}`;
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Rocket, Wallet, FileText, MessageSquare, HelpCircle,
   Target, Plug, ScrollText, BookOpen,
 };
 
-function getReadSlugs(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try { return new Set(JSON.parse(localStorage.getItem("learning_read_admin") || "[]")); }
-  catch { return new Set(); }
+function getProgress(): ProgressMap {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+  catch { return {}; }
 }
 
 export default function AdminLearningPage() {
-  const modules = getModules("admin");
-  const [readSlugs, setReadSlugs] = useState<Set<string>>(new Set());
+  const modules = getModules(ROLE);
+  const allLessons = getAllLessons(ROLE);
+  const [progress, setProgress] = useState<ProgressMap>({});
 
-  useEffect(() => { setReadSlugs(getReadSlugs()); }, []);
+  useEffect(() => { setProgress(getProgress()); }, []);
 
-  const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
-  const completedLessons = modules.reduce(
-    (s, m) => s + m.lessons.filter((l) => readSlugs.has(l.slug)).length, 0
-  );
+  const totalLessons = allLessons.length;
+  const completedLessons = allLessons.filter((l) => progress[l.lesson.slug]).length;
+  const firstUnread = allLessons.find((l) => !progress[l.lesson.slug]);
 
   return (
     <>
@@ -38,7 +42,7 @@ export default function AdminLearningPage() {
         title="Обучение"
         description="Руководства и инструкции по управлению платформой"
         breadcrumbs={[
-          { title: "Дашборд", href: "/admin/dashboard" },
+          { title: "Дашборд", href: `/${ROLE}/dashboard` },
           { title: "Обучение" },
         ]}
       />
@@ -54,10 +58,43 @@ export default function AdminLearningPage() {
         </div>
       </Card>
 
+      {firstUnread && completedLessons < totalLessons && (
+        <Card className="p-5 mb-6 border-primary/20 bg-primary/5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">
+                {completedLessons === 0 ? "С чего начать" : "Продолжить обучение"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {firstUnread.module.title} &rarr; {firstUnread.lesson.title}
+              </p>
+            </div>
+            <Link href={`/${ROLE}/learning/${firstUnread.lesson.slug}`}>
+              <Button size="sm">
+                <Play className="h-3.5 w-3.5 mr-1.5" />
+                {completedLessons === 0 ? "Начать" : "Продолжить"}
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {completedLessons === totalLessons && totalLessons > 0 && (
+        <Card className="p-5 mb-6 border-green-500/20 bg-green-500/5">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <div>
+              <p className="text-sm font-medium text-green-500">Обучение завершено</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Вы прошли все уроки. Можете вернуться к любому для повторения.</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2">
         {modules.map((mod) => {
           const Icon = iconMap[mod.icon] ?? BookOpen;
-          const done = mod.lessons.filter((l) => readSlugs.has(l.slug)).length;
+          const done = mod.lessons.filter((l) => progress[l.slug]).length;
           const allDone = done === mod.lessons.length;
 
           return (
@@ -71,9 +108,9 @@ export default function AdminLearningPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
                   <div className="mt-3 space-y-1">
                     {mod.lessons.map((lesson) => {
-                      const isRead = readSlugs.has(lesson.slug);
+                      const isRead = !!progress[lesson.slug];
                       return (
-                        <Link key={lesson.slug} href={`/admin/learning/${lesson.slug}`}
+                        <Link key={lesson.slug} href={`/${ROLE}/learning/${lesson.slug}`}
                           className="flex items-center gap-2 text-sm py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors group">
                           {isRead ? (
                             <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />

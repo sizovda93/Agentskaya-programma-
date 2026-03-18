@@ -6,21 +6,28 @@ import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getLesson, getAllLessons } from "@/lib/learning-content";
-import { CheckCircle2, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { getLesson, getAllLessons, ProgressMap } from "@/lib/learning-content";
+import { CheckCircle2, ChevronLeft, ChevronRight, Clock, ExternalLink, List } from "lucide-react";
 
-const STORAGE_KEY = "learning_read_manager";
+const ROLE = "manager";
+const STORAGE_KEY = `learning_progress_${ROLE}`;
 
-function getReadSlugs(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")); }
-  catch { return new Set(); }
+function getProgress(): ProgressMap {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+  catch { return {}; }
 }
 
 function markRead(slug: string) {
-  const set = getReadSlugs();
-  set.add(slug);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+  const progress = getProgress();
+  if (!progress[slug]) {
+    progress[slug] = { completedAt: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  }
+}
+
+function isRead(slug: string): boolean {
+  return !!getProgress()[slug];
 }
 
 function renderBody(text: string) {
@@ -43,17 +50,17 @@ function renderBody(text: string) {
 export default function ManagerLessonPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
-  const result = getLesson("manager", slug);
-  const allLessons = getAllLessons("manager");
-  const [isRead, setIsRead] = useState(false);
+  const result = getLesson(ROLE, slug);
+  const allLessons = getAllLessons(ROLE);
+  const [read, setRead] = useState(false);
 
-  useEffect(() => { setIsRead(getReadSlugs().has(slug)); }, [slug]);
+  useEffect(() => { setRead(isRead(slug)); }, [slug]);
 
   if (!result) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-muted-foreground mb-4">Урок не найден</p>
-        <Button variant="outline" onClick={() => router.push("/manager/learning")}>
+        <Button variant="outline" onClick={() => router.push(`/${ROLE}/learning`)}>
           <ChevronLeft className="h-4 w-4 mr-1" /> К списку
         </Button>
       </div>
@@ -67,30 +74,48 @@ export default function ManagerLessonPage({ params }: { params: Promise<{ slug: 
 
   const handleMarkRead = () => {
     markRead(slug);
-    setIsRead(true);
-    if (next) router.push(`/manager/learning/${next.lesson.slug}`);
+    setRead(true);
+    if (next) router.push(`/${ROLE}/learning/${next.lesson.slug}`);
   };
+
+  const showToc = lesson.sections.length > 3;
 
   return (
     <>
       <PageHeader
         title={lesson.title}
         breadcrumbs={[
-          { title: "Дашборд", href: "/manager/dashboard" },
-          { title: "Обучение", href: "/manager/learning" },
+          { title: "Дашборд", href: `/${ROLE}/dashboard` },
+          { title: "Обучение", href: `/${ROLE}/learning` },
           { title: mod.title },
         ]}
       />
 
       <div className="flex items-center gap-3 mb-6 text-sm text-muted-foreground">
         <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {lesson.duration}</span>
-        {isRead && <span className="flex items-center gap-1 text-green-500"><CheckCircle2 className="h-3.5 w-3.5" /> Прочитано</span>}
+        {read && <span className="flex items-center gap-1 text-green-500"><CheckCircle2 className="h-3.5 w-3.5" /> Прочитано</span>}
       </div>
+
+      {showToc && (
+        <Card className="p-4 mb-4">
+          <div className="flex items-center gap-2 text-sm font-medium mb-2">
+            <List className="h-4 w-4" /> Содержание
+          </div>
+          <div className="space-y-1">
+            {lesson.sections.map((section, i) => (
+              <a key={i} href={`#section-${i}`}
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-0.5 pl-6">
+                {section.heading}
+              </a>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <Card className="p-6 md:p-8 mb-6">
         <div className="space-y-8">
           {lesson.sections.map((section, i) => (
-            <div key={i}>
+            <div key={i} id={`section-${i}`}>
               <h2 className="text-lg font-semibold mb-3">{section.heading}</h2>
               <div className="text-sm text-muted-foreground leading-relaxed space-y-1.5">
                 {renderBody(section.body)}
@@ -100,22 +125,38 @@ export default function ManagerLessonPage({ params }: { params: Promise<{ slug: 
         </div>
       </Card>
 
+      {lesson.nextAction && (
+        <Card className="p-5 mb-6 border-primary/20 bg-primary/5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Что делать дальше</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Применить знания на практике</p>
+            </div>
+            <Link href={lesson.nextAction.href}>
+              <Button size="sm" variant="outline">
+                {lesson.nextAction.label} <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           {prev && (
-            <Link href={`/manager/learning/${prev.lesson.slug}`}>
+            <Link href={`/${ROLE}/learning/${prev.lesson.slug}`}>
               <Button variant="outline" size="sm"><ChevronLeft className="h-4 w-4 mr-1" /> {prev.lesson.title}</Button>
             </Link>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {!isRead && (
+          {!read && (
             <Button size="sm" onClick={handleMarkRead}>
               <CheckCircle2 className="h-4 w-4 mr-1" /> {next ? "Прочитано — далее" : "Прочитано"}
             </Button>
           )}
-          {isRead && next && (
-            <Link href={`/manager/learning/${next.lesson.slug}`}>
+          {read && next && (
+            <Link href={`/${ROLE}/learning/${next.lesson.slug}`}>
               <Button size="sm">Далее <ChevronRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           )}

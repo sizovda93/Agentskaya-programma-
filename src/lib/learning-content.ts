@@ -5,7 +5,14 @@ export interface LearningLesson {
   title: string;
   duration: string;
   sections: { heading: string; body: string }[];
+  nextAction?: { label: string; href: string };
 }
+
+export interface ProgressEntry {
+  completedAt: string; // ISO date
+}
+
+export type ProgressMap = Record<string, ProgressEntry>;
 
 export interface LearningModule {
   id: string;
@@ -42,6 +49,7 @@ const agentModules: LearningModule[] = [
             body: "1. Проверьте свой профиль — убедитесь, что данные актуальны\n2. Подключите Telegram для получения уведомлений\n3. Создайте первый лид",
           },
         ],
+        nextAction: { label: "Перейти в Профиль", href: "/agent/profile" },
       },
       {
         slug: "agent-create-lead",
@@ -61,6 +69,7 @@ const agentModules: LearningModule[] = [
             body: "Лид появляется в вашем списке со статусом «Новый». Менеджер видит его в своём кабинете и начинает работу с клиентом. Вы можете отслеживать статус лида в реальном времени.",
           },
         ],
+        nextAction: { label: "Создать лид", href: "/agent/leads" },
       },
       {
         slug: "agent-lead-statuses",
@@ -76,6 +85,7 @@ const agentModules: LearningModule[] = [
             body: "Вы видите текущий статус каждого лида в списке и на странице лида. При изменении статуса вам придёт уведомление в Telegram (если подключён).",
           },
         ],
+        nextAction: { label: "Посмотреть мои лиды", href: "/agent/leads" },
       },
     ],
   },
@@ -103,6 +113,7 @@ const agentModules: LearningModule[] = [
             body: "Раздел **Финансы** показывает:\n• Общий баланс (ожидает + в обработке + выплачено)\n• Список всех ваших выплат с датами и статусами\n\nПри изменении статуса выплаты вам придёт уведомление в Telegram.",
           },
         ],
+        nextAction: { label: "Открыть Финансы", href: "/agent/finance" },
       },
     ],
   },
@@ -130,6 +141,7 @@ const agentModules: LearningModule[] = [
             body: "Все документы хранятся на защищённом сервере. Доступ к ним есть только у вас, вашего менеджера и администратора. Прямой доступ по URL без авторизации невозможен.",
           },
         ],
+        nextAction: { label: "Открыть Документы", href: "/agent/documents" },
       },
     ],
   },
@@ -153,6 +165,7 @@ const agentModules: LearningModule[] = [
             body: "• Есть вопрос по лиду\n• Нужна помощь с документами\n• Хотите уточнить статус выплаты\n• Любые рабочие вопросы",
           },
         ],
+        nextAction: { label: "Открыть Сообщения", href: "/agent/messages" },
       },
       {
         slug: "agent-telegram",
@@ -176,6 +189,7 @@ const agentModules: LearningModule[] = [
             body: "В **Профиле** нажмите **«Отключить»** или напишите боту команду `/unlink`.",
           },
         ],
+        nextAction: { label: "Подключить Telegram", href: "/agent/profile" },
       },
     ],
   },
@@ -243,6 +257,7 @@ const managerModules: LearningModule[] = [
             body: "В левом меню:\n\n• **Дашборд** — сводка\n• **Агенты** — список ваших агентов\n• **Лиды** — все лиды с фильтрами\n• **Диалоги** — переписка с агентами\n• **Финансы** — выплаты\n• **Рассылки** — массовые сообщения\n• **Документы** — загруженные агентами файлы",
           },
         ],
+        nextAction: { label: "Перейти к Агентам", href: "/manager/agents" },
       },
       {
         slug: "manager-agents",
@@ -262,6 +277,7 @@ const managerModules: LearningModule[] = [
             body: "На странице лида нажмите **«Назначить агента»** и выберите агента из списка. После назначения агент увидит лид в своём кабинете.",
           },
         ],
+        nextAction: { label: "Открыть Агентов", href: "/manager/agents" },
       },
     ],
   },
@@ -289,6 +305,7 @@ const managerModules: LearningModule[] = [
             body: "В правой части страницы лида отображается **История** — хронология всех изменений: создание, смена статуса, назначение агента. Это аудит-лог для прозрачности.",
           },
         ],
+        nextAction: { label: "Открыть Лиды", href: "/manager/leads" },
       },
       {
         slug: "manager-create-lead",
@@ -300,6 +317,7 @@ const managerModules: LearningModule[] = [
             body: "Менеджер тоже может создавать лиды:\n\n1. **Лиды** → **«Новый лид»**\n2. Заполните данные клиента\n3. Сразу назначьте агента (опционально)\n4. Нажмите **«Создать»**\n\nЕсли агент не назначен, лид будет без привязки — его можно назначить позже.",
           },
         ],
+        nextAction: { label: "Создать лид", href: "/manager/leads" },
       },
     ],
   },
@@ -327,6 +345,7 @@ const managerModules: LearningModule[] = [
             body: "Используйте вкладки для фильтрации:\n• **Все** — все диалоги\n• **Активные** — текущие разговоры\n• **Эскалации** — требуют внимания",
           },
         ],
+        nextAction: { label: "Открыть Диалоги", href: "/manager/conversations" },
       },
       {
         slug: "manager-broadcasts",
@@ -338,6 +357,7 @@ const managerModules: LearningModule[] = [
             body: "В разделе **Рассылки** вы можете отправить сообщение сразу всем агентам или группе. Это удобно для объявлений, обновлений и напоминаний.",
           },
         ],
+        nextAction: { label: "Открыть Рассылки", href: "/manager/broadcasts" },
       },
     ],
   },
@@ -365,6 +385,7 @@ const managerModules: LearningModule[] = [
             body: "В разделе **Финансы** вы видите все выплаты ваших агентов: суммы, статусы, даты. Это помогает контролировать мотивацию агентов.",
           },
         ],
+        nextAction: { label: "Открыть Финансы", href: "/manager/finance" },
       },
       {
         slug: "manager-documents",
@@ -380,6 +401,7 @@ const managerModules: LearningModule[] = [
             body: "Документы доступны только авторизованным пользователям с соответствующей ролью. Скачивание происходит через защищённый API с проверкой токена.",
           },
         ],
+        nextAction: { label: "Открыть Документы", href: "/manager/documents" },
       },
     ],
   },
@@ -443,6 +465,7 @@ const adminModules: LearningModule[] = [
             body: "В левом меню:\n\n• **Дашборд** — системная статистика\n• **Пользователи** — все пользователи, роли, статусы\n• **Финансы** — одобрение/отклонение выплат\n• **Роли** — управление ролями\n• **Настройки** — параметры платформы\n• **Интеграции** — Telegram Bot\n• **Логи** — аудит действий",
           },
         ],
+        nextAction: { label: "Открыть Дашборд", href: "/admin/dashboard" },
       },
       {
         slug: "admin-users",
@@ -458,6 +481,7 @@ const adminModules: LearningModule[] = [
             body: "Вы можете:\n• **Изменить роль** — переназначить агента менеджером и наоборот\n• **Заблокировать** — запретить вход в систему\n• **Активировать** — вернуть доступ заблокированному пользователю",
           },
         ],
+        nextAction: { label: "Открыть Пользователей", href: "/admin/users" },
       },
       {
         slug: "admin-settings",
@@ -473,6 +497,7 @@ const adminModules: LearningModule[] = [
             body: "Нажмите на настройку → измените значение → сохраните. Изменения вступают в силу немедленно.",
           },
         ],
+        nextAction: { label: "Открыть Настройки", href: "/admin/settings" },
       },
     ],
   },
@@ -504,6 +529,7 @@ const adminModules: LearningModule[] = [
             body: "1. Найдите выплату\n2. Нажмите **«Отклонить»**\n3. Укажите причину отклонения\n\nАгент увидит причину в своём кабинете и получит уведомление.",
           },
         ],
+        nextAction: { label: "Открыть Финансы", href: "/admin/finance" },
       },
     ],
   },
@@ -535,6 +561,7 @@ const adminModules: LearningModule[] = [
             body: "Если агент не получает уведомления:\n1. Проверьте, привязан ли его Telegram (раздел Пользователи → агент)\n2. Проверьте логи (раздел Логи)\n3. Проверьте статус webhook в Интеграциях",
           },
         ],
+        nextAction: { label: "Открыть Интеграции", href: "/admin/integrations" },
       },
     ],
   },
@@ -562,6 +589,7 @@ const adminModules: LearningModule[] = [
             body: "Аудит-логи помогают:\n• Разбирать спорные ситуации\n• Отслеживать подозрительную активность\n• Контролировать работу менеджеров и агентов\n• Выявлять ошибки интеграций",
           },
         ],
+        nextAction: { label: "Открыть Логи", href: "/admin/logs" },
       },
     ],
   },
