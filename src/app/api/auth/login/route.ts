@@ -5,7 +5,17 @@ import { setAuthCookie } from "@/lib/auth-server";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const rawText = await request.text();
+    let body;
+    try {
+      body = JSON.parse(rawText);
+    } catch (parseErr) {
+      console.error("Login JSON parse failed. Raw body:", JSON.stringify(rawText), "Length:", rawText.length);
+      return Response.json(
+        { error: "Неверный формат запроса" },
+        { status: 400 }
+      );
+    }
     const { email, password } = body;
 
     if (!email || !password) {
