@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const { user } = auth;
 
     const body = await request.json();
-    const { fullName, phone, email, city, source, assignedAgentId, comment, estimatedValue } = body;
+    const { fullName, phone, email, city, source, assignedAgentId, comment, estimatedValue, refCode } = body;
 
     if (!fullName || !phone) {
       return Response.json({ error: 'ФИО и телефон обязательны' }, { status: 400 });
@@ -58,20 +58,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate ref_code if provided
+    let validRefCode: string | null = null;
+    if (refCode && typeof refCode === "string") {
+      const refCheck = await pool.query("SELECT id FROM agents WHERE ref_code = $1", [refCode.toUpperCase()]);
+      if (refCheck.rows.length > 0) validRefCode = refCode.toUpperCase();
+    }
+
     const { rows } = await pool.query(
-      `INSERT INTO leads (full_name, phone, email, city, source, assigned_agent_id, assigned_manager_id, comment, estimated_value)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO leads (full_name, phone, email, city, source, assigned_agent_id, assigned_manager_id, comment, estimated_value, ref_code)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         fullName,
         phone,
         email || null,
         city || '',
-        leadSource,
+        validRefCode ? 'referral' : leadSource,
         assignedAgentId || null,
         user.id,
         comment || null,
         estimatedValue || null,
+        validRefCode,
       ]
     );
 

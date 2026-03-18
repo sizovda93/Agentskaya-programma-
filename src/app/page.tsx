@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Scale, ArrowRight, Shield, Users, Zap, MessageSquare } from "lucide-react";
+import { Suspense } from "react";
+import { RefCapture } from "@/components/referral/ref-capture";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
+      <Suspense><RefCapture /></Suspense>
       {/* Шапка */}
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">

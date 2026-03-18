@@ -21,6 +21,7 @@ import {
   Target,
   Scale,
   GraduationCap,
+  Share2,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -38,6 +39,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ScrollText,
   Target,
   GraduationCap,
+  Share2,
 };
 
 interface AppSidebarProps {

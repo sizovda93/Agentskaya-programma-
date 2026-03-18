@@ -21,6 +21,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
     pathname === "/api/telegram/webhook" ||
+    (pathname === "/api/referral" && request.method === "POST") ||
     pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
