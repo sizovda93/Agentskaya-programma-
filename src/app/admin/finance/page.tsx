@@ -126,7 +126,7 @@ export default function AdminFinancePage() {
                 В обработку
               </Button>
             )}
-            {(p.status === "pending" || p.status === "processing") && (
+            {p.status === "processing" && (
               <Button
                 size="sm"
                 variant="default"
