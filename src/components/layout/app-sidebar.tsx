@@ -20,6 +20,7 @@ import {
   ScrollText,
   Target,
   Scale,
+  GraduationCap,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -36,6 +37,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Plug,
   ScrollText,
   Target,
+  GraduationCap,
 };
 
 interface AppSidebarProps {

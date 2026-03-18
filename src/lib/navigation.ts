@@ -6,6 +6,7 @@ export const agentNav: NavItem[] = [
   { title: "Финансы", href: "/agent/finance", icon: "Wallet" },
   { title: "Документы", href: "/agent/documents", icon: "FileText" },
   { title: "Сообщения", href: "/agent/messages", icon: "MessageSquare", badge: 3 },
+  { title: "Обучение", href: "/agent/learning", icon: "GraduationCap" },
   { title: "Профиль", href: "/agent/profile", icon: "User" },
 ];
 
@@ -17,6 +18,7 @@ export const managerNav: NavItem[] = [
   { title: "Финансы", href: "/manager/finance", icon: "Wallet" },
   { title: "Рассылки", href: "/manager/broadcasts", icon: "Send" },
   { title: "Документы", href: "/manager/documents", icon: "FileText" },
+  { title: "Обучение", href: "/manager/learning", icon: "GraduationCap" },
 ];
 
 export const adminNav: NavItem[] = [
@@ -27,6 +29,7 @@ export const adminNav: NavItem[] = [
   { title: "Настройки", href: "/admin/settings", icon: "Settings" },
   { title: "Интеграции", href: "/admin/integrations", icon: "Plug" },
   { title: "Логи", href: "/admin/logs", icon: "ScrollText" },
+  { title: "Обучение", href: "/admin/learning", icon: "GraduationCap" },
 ];
 
 export function getNavByRole(role: UserRole): NavItem[] {
