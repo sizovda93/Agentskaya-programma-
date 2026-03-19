@@ -5,10 +5,10 @@ import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getModules, getAllLessons, ProgressMap } from "@/lib/learning-content";
+import { fetchModules, fetchAllLessons, LearningModule, LearningLesson, ProgressMap } from "@/lib/learning-content";
 import {
   Rocket, Wallet, FileText, MessageSquare, HelpCircle,
-  Target, Plug, ScrollText, BookOpen, CheckCircle2, ChevronRight, Play,
+  Target, Plug, ScrollText, BookOpen, CheckCircle2, ChevronRight, Play, Loader2,
 } from "lucide-react";
 
 const ROLE = "manager";
@@ -26,15 +26,35 @@ function getProgress(): ProgressMap {
 }
 
 export default function ManagerLearningPage() {
-  const modules = getModules(ROLE);
-  const allLessons = getAllLessons(ROLE);
+  const [modules, setModules] = useState<LearningModule[]>([]);
+  const [allLessons, setAllLessons] = useState<{ module: LearningModule; lesson: LearningLesson }[]>([]);
   const [progress, setProgress] = useState<ProgressMap>({});
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { setProgress(getProgress()); }, []);
+  useEffect(() => {
+    setProgress(getProgress());
+    Promise.all([fetchModules(ROLE), fetchAllLessons(ROLE)]).then(([m, l]) => {
+      setModules(m);
+      setAllLessons(l);
+      setLoading(false);
+    });
+  }, []);
 
   const totalLessons = allLessons.length;
   const completedLessons = allLessons.filter((l) => progress[l.lesson.slug]).length;
   const firstUnread = allLessons.find((l) => !progress[l.lesson.slug]);
+
+  if (loading) {
+    return (
+      <>
+        <PageHeader title="Обучение" description="Руководства и инструкции по работе с платформой"
+          breadcrumbs={[{ title: "Дашборд", href: `/${ROLE}/dashboard` }, { title: "Обучение" }]} />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

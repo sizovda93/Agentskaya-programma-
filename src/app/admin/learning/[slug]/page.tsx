@@ -6,8 +6,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getLesson, getAllLessons, ProgressMap } from "@/lib/learning-content";
-import { CheckCircle2, ChevronLeft, ChevronRight, Clock, ExternalLink, List } from "lucide-react";
+import { fetchLesson, fetchAllLessons, LearningModule, LearningLesson, ProgressMap } from "@/lib/learning-content";
+import { CheckCircle2, ChevronLeft, ChevronRight, Clock, ExternalLink, List, Loader2 } from "lucide-react";
 
 const ROLE = "admin";
 const STORAGE_KEY = `learning_progress_${ROLE}`;
@@ -50,13 +50,33 @@ function renderBody(text: string) {
 export default function AdminLessonPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
-  const result = getLesson(ROLE, slug);
-  const allLessons = getAllLessons(ROLE);
+  const [mod, setMod] = useState<LearningModule | null>(null);
+  const [lesson, setLesson] = useState<LearningLesson | null>(null);
+  const [allLessons, setAllLessons] = useState<{ module: LearningModule; lesson: LearningLesson }[]>([]);
   const [read, setRead] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { setRead(isRead(slug)); }, [slug]);
+  useEffect(() => {
+    setRead(isRead(slug));
+    Promise.all([fetchLesson(ROLE, slug), fetchAllLessons(ROLE)]).then(([result, all]) => {
+      if (result) {
+        setMod(result.module);
+        setLesson(result.lesson);
+      }
+      setAllLessons(all);
+      setLoading(false);
+    });
+  }, [slug]);
 
-  if (!result) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!lesson || !mod) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-muted-foreground mb-4">Урок не найден</p>
@@ -67,7 +87,6 @@ export default function AdminLessonPage({ params }: { params: Promise<{ slug: st
     );
   }
 
-  const { module: mod, lesson } = result;
   const currentIndex = allLessons.findIndex((l) => l.lesson.slug === slug);
   const prev = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const next = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
