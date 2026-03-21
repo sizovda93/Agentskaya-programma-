@@ -4,121 +4,207 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { RoleBadge, UserStatusBadge } from "@/components/dashboard/status-badges";
+import { TierBadge } from "@/components/dashboard/status-badges";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
-import { formatDate } from "@/lib/utils";
-import { UserRole } from "@/types";
+import { FunnelBar } from "@/components/analytics/funnel-bar";
+import { formatCurrency } from "@/lib/utils";
+import type { AgentTier } from "@/types";
 
-interface UserRow {
-  id: string;
-  role: string;
-  fullName: string;
-  email: string;
-  status: string;
-  createdAt: string;
-}
-
-interface Stats {
-  leads: { total: string; newCount: string; wonCount: string; totalRevenue: string };
-  agents: { total: string; active: string };
-  conversations: { total: string; active: string; escalated: string };
-  payouts: { totalPaid: string; processing: string; pending: string };
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [users, setUsers] = useState<UserRow[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [statsRes, usersRes] = await Promise.all([
-          fetch('/api/stats'),
-          fetch('/api/users'),
-        ]);
-        if (statsRes.ok) setStats(await statsRes.json());
-        if (usersRes.ok) setUsers(await usersRes.json());
-      } catch { /* ignore */ } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    fetch("/api/analytics")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setAnalytics)
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSkeleton />;
+
+  const s = analytics?.summary;
+  const funnel = analytics?.funnel;
+  const tiers = analytics?.tiers;
+  const onboarding = analytics?.onboarding;
+  const referral = analytics?.referral;
+  const topAgents = analytics?.topAgents;
 
   return (
     <div>
       <PageHeader
         title="Панель администратора"
-        description="Мониторинг системы и управление платформой"
+        description="Аналитика и мониторинг платформы"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Пользователей" value={users.length} icon="Users" />
-        <StatCard title="Агентов" value={stats?.agents.total || 0} change={`${stats?.agents.active || 0} активных`} changeType="neutral" icon="UserPlus" />
-        <StatCard title="Лидов в системе" value={stats?.leads.total || 0} icon="Target" />
-        <StatCard title="Диалогов" value={stats?.conversations.total || 0} change={Number(stats?.conversations.escalated) > 0 ? `${stats?.conversations.escalated} эскалаций` : undefined} changeType="negative" icon="MessageSquare" />
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard title="Агентов" value={s?.totalAgents ?? 0} icon="Users" />
+        <StatCard title="Лидов всего" value={s?.totalLeads ?? 0} icon="Target" />
+        <StatCard title="Won за месяц" value={s?.wonThisMonth ?? 0} icon="UserCheck" />
+        <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="Wallet" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Onboarding funnel */}
+        {onboarding && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Воронка онбординга</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { label: "Зарегистрированы", value: onboarding.total, pct: 100 },
+                  { label: "Начали обучение", value: onboarding.startedLearning, pct: onboarding.total > 0 ? Math.round((onboarding.startedLearning / onboarding.total) * 100) : 0 },
+                  { label: "Завершили обучение", value: onboarding.completedLearning, pct: onboarding.total > 0 ? Math.round((onboarding.completedLearning / onboarding.total) * 100) : 0 },
+                  { label: "Первый лид", value: onboarding.withFirstLead, pct: onboarding.total > 0 ? Math.round((onboarding.withFirstLead / onboarding.total) * 100) : 0 },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground w-36 shrink-0">{item.label}</span>
+                    <div className="flex-1 h-5 bg-muted rounded-sm overflow-hidden">
+                      <div
+                        className="h-full rounded-sm bg-primary transition-all"
+                        style={{ width: `${item.pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium w-12 text-right">{item.value} ({item.pct}%)</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">Активация: {onboarding.activationRate}%</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Lead funnel */}
+        {funnel && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Воронка лидов</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FunnelBar stages={funnel.stages} conversionRate={funnel.conversionRate} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Tier distribution */}
+        {tiers && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Партнёрские уровни</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {tiers.map((t: any) => (
+                  <div key={t.tier} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2">
+                      <TierBadge tier={t.tier as AgentTier} />
+                      <span className="text-sm">{t.agentCount} агентов</span>
+                    </div>
+                    <div className="text-right text-xs text-muted-foreground">
+                      {t.payoutsCount > 0 ? (
+                        <>
+                          {formatCurrency(t.totalRevenue)} · avg {formatCurrency(t.avgPayout)}
+                        </>
+                      ) : (
+                        "Нет выплат"
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Referral */}
+        {referral && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Реферальная программа</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Уникальные клики</p>
+                  <p className="text-lg font-semibold">{referral.uniqueClicks}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Лиды из реф.</p>
+                  <p className="text-lg font-semibold">{referral.referralLeads}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Won</p>
+                  <p className="text-lg font-semibold">{referral.referralWon}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Конверсия</p>
+                  <p className="text-lg font-semibold">{referral.clickToLeadConversion}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Conflicts + summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Последние пользователи</CardTitle>
+            <CardTitle className="text-base">Состояние системы</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {users.slice(0, 6).map((user) => (
-                <div key={user.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium">{user.fullName}</p>
-                    <p className="text-xs text-muted-foreground">{user.email} · {formatDate(user.createdAt)}</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">Открытые конфликты</span>
+                <span className={s?.openConflicts > 0 ? "font-semibold text-yellow-600" : ""}>{s?.openConflicts ?? 0}</span>
+              </div>
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">Лидов в работе</span>
+                <span>{s?.activeLeads ?? 0}</span>
+              </div>
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">Won за месяц</span>
+                <span className="font-medium">{s?.wonThisMonth ?? 0}</span>
+              </div>
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">Revenue за месяц</span>
+                <span className="font-medium">{formatCurrency(s?.revenueThisMonth ?? 0)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top agents */}
+      {topAgents && topAgents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Топ агентов</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {topAgents.map((a: any) => (
+                <div key={a.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-muted-foreground w-5">#{a.rank}</span>
+                    <div>
+                      <p className="text-sm font-medium">{a.fullName}</p>
+                      <p className="text-xs text-muted-foreground">{a.wonLeads} won · {a.totalLeads} лидов · {formatCurrency(a.revenue)}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <RoleBadge role={user.role as UserRole} />
-                    <UserStatusBadge status={user.status as "active" | "inactive" | "blocked"} />
-                  </div>
+                  <TierBadge tier={a.tier as AgentTier} />
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Системная информация</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 px-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">Версия платформы</span>
-                <span className="font-mono">1.0.0-beta</span>
-              </div>
-              <div className="flex justify-between py-2 px-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">База данных</span>
-                <span className="text-success">Подключена</span>
-              </div>
-              <div className="flex justify-between py-2 px-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">Файловое хранилище</span>
-                <span className="text-success">Активно</span>
-              </div>
-              <div className="flex justify-between py-2 px-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">Авторизация</span>
-                <span className="text-success">JWT + httpOnly</span>
-              </div>
-              <div className="flex justify-between py-2 px-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">Telegram Bot</span>
-                <span className="text-warning">Не подключён</span>
-              </div>
-              <div className="flex justify-between py-2 px-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">AI Engine</span>
-                <span className="text-warning">Не подключён</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 }

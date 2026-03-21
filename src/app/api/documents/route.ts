@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
+import { touchAgentActivityByProfile } from '@/lib/activity';
 
 export async function GET() {
   try {
@@ -72,6 +73,11 @@ export async function POST(request: NextRequest) {
       `INSERT INTO audit_logs (action, user_email, details) VALUES ('document.created', $1, $2)`,
       [user.email, `Документ: ${title}, тип: ${docType}`]
     );
+
+    // Track agent activity
+    if (user.role === 'agent') {
+      touchAgentActivityByProfile(user.id).catch(() => {});
+    }
 
     return Response.json(toCamelCase(rows[0]), { status: 201 });
   } catch (err) {

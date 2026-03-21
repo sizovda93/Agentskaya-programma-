@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
 import { sendMessage as sendTgMessage, getProfileIdByAgentId } from '@/lib/telegram';
+import { touchAgentActivityByProfile } from '@/lib/activity';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -80,6 +81,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       `UPDATE conversations SET last_message = $1, last_message_at = NOW() WHERE id = $2`,
       [text.trim().substring(0, 255), id]
     );
+
+    // Track agent activity
+    if (senderType === 'agent') {
+      touchAgentActivityByProfile(user.id).catch(() => {});
+    }
 
     // T1: Outbound to Telegram — if manager sends and agent has Telegram linked
     if (senderType === 'manager' && conv.agent_id) {

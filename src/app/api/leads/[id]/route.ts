@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
 import { notifyLeadStatusChanged, notifyPayoutCreated } from '@/lib/telegram-notifications';
+import { normalizePhone } from '@/lib/phone';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -62,6 +63,15 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     const body = await request.json();
+
+    // Block "won" transition while conflict is open
+    if (body.status === 'won' && lead.conflict_status === 'open') {
+      return Response.json(
+        { error: 'Нельзя перевести в «выигран» — есть нерешённый конфликт дублирования' },
+        { status: 409 }
+      );
+    }
+
     const allowedFields = ['status', 'comment', 'estimated_value', 'assigned_agent_id', 'city', 'full_name', 'phone', 'email', 'source'];
     // Агент может менять только status и comment
     const agentAllowed = ['status', 'comment'];
@@ -75,6 +85,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     const values: (string | number | null)[] = [];
     let paramIdx = 1;
 
+    let phoneUpdated = false;
     for (const [key, val] of Object.entries(body)) {
       // camelCase → snake_case
       const snakeKey = key.replace(/[A-Z]/g, (m) => '_' + m.toLowerCase());
@@ -83,6 +94,15 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
       sets.push(`${snakeKey} = $${paramIdx}`);
       values.push(val as string | number | null);
+      paramIdx++;
+
+      if (snakeKey === 'phone') phoneUpdated = true;
+    }
+
+    // Auto-update phone_normalized when phone changes
+    if (phoneUpdated && body.phone) {
+      sets.push(`phone_normalized = $${paramIdx}`);
+      values.push(normalizePhone(body.phone));
       paramIdx++;
     }
 
@@ -123,49 +143,93 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     // Auto payout при переходе в won
     if (oldStatus !== 'won' && newStatus === 'won' && updated.assigned_agent_id && updated.estimated_value) {
-      const settingsResult = await pool.query("SELECT value FROM settings WHERE key = 'commission_rate'");
-      const rate = settingsResult.rows.length > 0 ? parseFloat(settingsResult.rows[0].value) : 0.30;
-      const payoutAmount = parseFloat(updated.estimated_value) * rate;
-
-      // Получаем имя агента
+      // Step 1: Get agent info + current tier
       const agentInfo = await pool.query(
-        `SELECT a.id, p.full_name FROM agents a JOIN profiles p ON p.id = a.user_id WHERE a.id = $1`,
+        `SELECT a.id, a.tier, p.full_name FROM agents a JOIN profiles p ON p.id = a.user_id WHERE a.id = $1`,
         [updated.assigned_agent_id]
       );
 
       if (agentInfo.rows.length > 0) {
+        const agentTier: string = agentInfo.rows[0].tier || 'base';
+        const agentName: string = agentInfo.rows[0].full_name;
+
+        // Step 2: Get commission rate for agent's current tier
+        const rateKey = `commission_rate_${agentTier}`;
+        const settingsResult = await pool.query(
+          "SELECT value FROM settings WHERE key = $1",
+          [rateKey]
+        );
+        // Fallback: try legacy commission_rate, then default 0.25
+        let rate: number;
+        if (settingsResult.rows.length > 0) {
+          rate = parseFloat(settingsResult.rows[0].value);
+        } else {
+          const fallback = await pool.query("SELECT value FROM settings WHERE key = 'commission_rate'");
+          rate = fallback.rows.length > 0 ? parseFloat(fallback.rows[0].value) : 0.25;
+        }
+
+        const baseAmount = parseFloat(updated.estimated_value);
+        const bonusAmount = 0; // Reserved for future bonus logic
+        const payoutAmount = baseAmount * rate + bonusAmount;
+
         const now = new Date();
         const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const description = `Комиссия ${(rate * 100).toFixed(0)}% (${agentTier}) за лид: ${updated.full_name}`;
 
+        // Step 3: Create payout with full snapshot
         await pool.query(
-          `INSERT INTO payouts (agent_id, agent_name, amount, period, description, lead_id)
-           VALUES ($1, $2, $3, $4, $5, $6)
+          `INSERT INTO payouts (agent_id, agent_name, amount, period, description,
+                                lead_id, lead_name, base_amount, commission_rate, bonus_amount, tier_at_creation)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
            ON CONFLICT (agent_id, lead_id) DO NOTHING`,
           [
             updated.assigned_agent_id,
-            agentInfo.rows[0].full_name,
+            agentName,
             payoutAmount,
             period,
-            `Комиссия ${(rate * 100).toFixed(0)}% за лид: ${updated.full_name}`,
+            description,
             updated.id,
+            updated.full_name,
+            baseAmount,
+            rate,
+            bonusAmount,
+            agentTier,
           ]
         );
 
-        // Обновляем total_revenue агента
+        // Step 4: Update total_revenue
         await pool.query(
           `UPDATE agents SET total_revenue = (SELECT COALESCE(SUM(amount),0) FROM payouts WHERE agent_id = $1 AND status IN ('pending','processing','paid'))
            WHERE id = $1`,
           [updated.assigned_agent_id]
         );
 
-        // lead_events: автосоздание payout
+        // Step 5: lead_events
         await pool.query(
           `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'payout_created', $2, $3)`,
-          [id, user.email, `Автовыплата: ${payoutAmount.toFixed(2)} ₽ (${(rate * 100).toFixed(0)}%)`]
+          [id, user.email, `Выплата: ${payoutAmount.toFixed(2)} ₽ (${(rate * 100).toFixed(0)}%, ${agentTier}). База: ${baseAmount.toFixed(2)} ₽`]
         );
 
-        // T1: Telegram notification — выплата создана
+        // Step 6: Telegram notification
         notifyPayoutCreated(updated.assigned_agent_id, payoutAmount, updated.full_name).catch(() => {});
+
+        // Step 7: Auto-upgrade tier (separate from payout creation)
+        if (agentTier === 'base') {
+          const { rows: wonCount } = await pool.query(
+            `SELECT COUNT(*)::int AS cnt FROM leads WHERE assigned_agent_id = $1 AND status = 'won'`,
+            [updated.assigned_agent_id]
+          );
+          if (wonCount[0]?.cnt >= 5) {
+            await pool.query(
+              `UPDATE agents SET tier = 'silver', updated_at = now() WHERE id = $1 AND tier = 'base'`,
+              [updated.assigned_agent_id]
+            );
+            await pool.query(
+              `INSERT INTO audit_logs (action, details) VALUES ('agent.tier_upgraded', $1)`,
+              [`Agent ${updated.assigned_agent_id} (${agentName}): base → silver (auto, ${wonCount[0].cnt} won leads)`]
+            );
+          }
+        }
       }
     }
 

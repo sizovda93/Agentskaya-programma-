@@ -20,7 +20,7 @@ export async function notifyLeadStatusChanged(
     qualified: 'Квалифицирован',
     proposal: 'Предложение',
     negotiation: 'Переговоры',
-    won: 'Закрыт (выигран)',
+    won: 'Договор заключен',
     lost: 'Потерян',
   };
 

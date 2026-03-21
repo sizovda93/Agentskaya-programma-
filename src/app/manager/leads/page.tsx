@@ -36,6 +36,8 @@ export default function ManagerLeadsPage() {
   const newLeads = filtered.filter((l) => l.status === "new");
   const activeLeads = filtered.filter((l) => !["new", "won", "lost"].includes(l.status));
   const closedLeads = filtered.filter((l) => ["won", "lost"].includes(l.status));
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const conflictLeads = filtered.filter((l: any) => l.conflictStatus === "open");
 
   return (
     <div>
@@ -57,13 +59,23 @@ export default function ManagerLeadsPage() {
         <SearchInput value={search} onChange={setSearch} placeholder="Поиск по имени или городу..." />
       </div>
 
-      <Tabs defaultValue="new">
+      <Tabs defaultValue={conflictLeads.length > 0 ? "conflicts" : "new"}>
         <TabsList>
+          {conflictLeads.length > 0 && (
+            <TabsTrigger value="conflicts" className="text-yellow-600">
+              ⚠ Конфликты ({conflictLeads.length})
+            </TabsTrigger>
+          )}
           <TabsTrigger value="new">Новые ({newLeads.length})</TabsTrigger>
           <TabsTrigger value="active">В работе ({activeLeads.length})</TabsTrigger>
           <TabsTrigger value="closed">Завершённые ({closedLeads.length})</TabsTrigger>
           <TabsTrigger value="all">Все ({filtered.length})</TabsTrigger>
         </TabsList>
+        {conflictLeads.length > 0 && (
+          <TabsContent value="conflicts">
+            <LeadTable leads={conflictLeads} onRowClick={(lead: Lead) => router.push(`/manager/leads/${lead.id}`)} />
+          </TabsContent>
+        )}
         <TabsContent value="new">
           <LeadTable leads={newLeads} onRowClick={(lead: Lead) => router.push(`/manager/leads/${lead.id}`)} />
         </TabsContent>

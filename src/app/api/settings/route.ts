@@ -26,7 +26,10 @@ export async function PATCH(request: NextRequest) {
     const { user } = auth;
 
     const body = await request.json();
-    const allowedKeys = ['commission_rate', 'platform_name', 'support_email', 'support_phone'];
+    const allowedKeys = [
+      'commission_rate', 'commission_rate_base', 'commission_rate_silver', 'commission_rate_gold',
+      'platform_name', 'support_email', 'support_phone',
+    ];
 
     const updates: string[] = [];
     for (const [key, value] of Object.entries(body)) {

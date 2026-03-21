@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const role = req.nextUrl.searchParams.get("role") || auth.user.role;
 
   const { rows: modules } = await pool.query(
-    `SELECT id, role, title, description, icon, sort_order
+    `SELECT id, role, title, description, icon, sort_order, is_required
      FROM learning_modules
      WHERE role = $1
      ORDER BY sort_order`,
@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
     title: m.title,
     description: m.description,
     icon: m.icon,
+    isRequired: m.is_required,
     lessons: lessons
       .filter((l) => l.module_id === m.id)
       .map((l) => ({

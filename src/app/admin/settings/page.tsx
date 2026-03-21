@@ -14,8 +14,13 @@ export default function AdminSettingsPage() {
   const [platformName, setPlatformName] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
   const [supportPhone, setSupportPhone] = useState("");
-  const [commissionRate, setCommissionRate] = useState("");
+  const [rateBase, setRateBase] = useState("");
+  const [rateSilver, setRateSilver] = useState("");
+  const [rateGold, setRateGold] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+
+  const toPercent = (v: string | undefined, fallback: string) =>
+    v ? String(Math.round(parseFloat(v) * 100)) : fallback;
 
   useEffect(() => {
     fetch('/api/settings')
@@ -24,8 +29,9 @@ export default function AdminSettingsPage() {
         setPlatformName(data.platform_name || "");
         setSupportEmail(data.support_email || "");
         setSupportPhone(data.support_phone || "");
-        const rate = data.commission_rate ? String(Math.round(parseFloat(data.commission_rate) * 100)) : "30";
-        setCommissionRate(rate);
+        setRateBase(toPercent(data.commission_rate_base, "25"));
+        setRateSilver(toPercent(data.commission_rate_silver, "30"));
+        setRateGold(toPercent(data.commission_rate_gold, "35"));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -49,11 +55,14 @@ export default function AdminSettingsPage() {
   const saveCommission = async () => {
     setSaving(true);
     setMessage(null);
-    const rate = (parseFloat(commissionRate) / 100).toFixed(2);
     const res = await fetch('/api/settings', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ commission_rate: rate }),
+      body: JSON.stringify({
+        commission_rate_base: (parseFloat(rateBase) / 100).toFixed(2),
+        commission_rate_silver: (parseFloat(rateSilver) / 100).toFixed(2),
+        commission_rate_gold: (parseFloat(rateGold) / 100).toFixed(2),
+      }),
     });
     setSaving(false);
     setMessage(res.ok ? "Сохранено" : "Ошибка сохранения");
@@ -107,9 +116,19 @@ export default function AdminSettingsPage() {
             <CardTitle className="text-base">Комиссии</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm text-muted-foreground mb-1.5 block">Базовая ставка агента (%)</label>
-              <Input type="number" value={commissionRate} onChange={(e) => setCommissionRate(e.target.value)} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Базовый (%)</label>
+                <Input type="number" value={rateBase} onChange={(e) => setRateBase(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Серебро (%)</label>
+                <Input type="number" value={rateSilver} onChange={(e) => setRateSilver(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Золото (%)</label>
+                <Input type="number" value={rateGold} onChange={(e) => setRateGold(e.target.value)} />
+              </div>
             </div>
             <div className="flex justify-end">
               <Button onClick={saveCommission} disabled={saving}>Сохранить</Button>

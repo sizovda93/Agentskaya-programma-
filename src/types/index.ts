@@ -33,6 +33,15 @@ export type DocumentStatus = "draft" | "pending_signature" | "signed" | "expired
 
 export type OnboardingStatus = "pending" | "in_progress" | "completed" | "rejected";
 
+export type AgentLifecycle =
+  | "registered"
+  | "learning_in_progress"
+  | "activated"
+  | "active"
+  | "inactive"
+  | "blocked"
+  | "rejected";
+
 // ==================== ENTITIES ====================
 
 export interface User {
@@ -100,6 +109,8 @@ export interface Message {
   externalId?: string;
 }
 
+export type AgentTier = "base" | "silver" | "gold";
+
 export interface Payout {
   id: string;
   agentId: string;
@@ -109,6 +120,13 @@ export interface Payout {
   period: string;
   createdAt: string;
   description?: string;
+  rejectionReason?: string;
+  leadId?: string;
+  leadName?: string;
+  baseAmount?: number;
+  commissionRate?: number;
+  bonusAmount?: number;
+  tierAtCreation?: AgentTier;
 }
 
 export interface Document {

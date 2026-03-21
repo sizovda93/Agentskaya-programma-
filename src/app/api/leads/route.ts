@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { requireAuth, requireRole } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
+import { normalizePhone } from '@/lib/phone';
+import { touchAgentActivity } from '@/lib/activity';
 
 export async function GET() {
   try {
@@ -36,7 +38,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireRole('manager', 'admin');
+    const auth = await requireRole('agent', 'manager', 'admin');
     if (auth.error) return auth.error;
     const { user } = auth;
 
@@ -50,68 +52,139 @@ export async function POST(request: NextRequest) {
     const validSources = ['website', 'telegram', 'whatsapp', 'referral', 'cold', 'partner'];
     const leadSource = validSources.includes(source) ? source : 'website';
 
-    // Если назначен агент — проверяем что он существует
-    if (assignedAgentId) {
-      const agentCheck = await pool.query('SELECT id FROM agents WHERE id = $1', [assignedAgentId]);
+    const effectiveAgentId = user.role === 'agent' ? user.agentId : assignedAgentId;
+
+    if (effectiveAgentId && user.role !== 'agent') {
+      const agentCheck = await pool.query('SELECT id FROM agents WHERE id = $1', [effectiveAgentId]);
       if (agentCheck.rows.length === 0) {
         return Response.json({ error: 'Агент не найден' }, { status: 400 });
       }
     }
 
-    // Validate ref_code if provided
+    // Validate ref_code
     let validRefCode: string | null = null;
     if (refCode && typeof refCode === "string") {
       const refCheck = await pool.query("SELECT id FROM agents WHERE ref_code = $1", [refCode.toUpperCase()]);
       if (refCheck.rows.length > 0) validRefCode = refCode.toUpperCase();
     }
 
+    // ─── Duplicate detection ─────────────────────────
+    const phoneNorm = normalizePhone(phone);
+    let conflictLeadId: string | null = null;
+    let conflictMatchType: string | null = null;
+
+    // Check by phone
+    if (phoneNorm) {
+      const { rows: phoneMatches } = await pool.query(
+        `SELECT id, full_name, assigned_agent_id FROM leads
+         WHERE phone_normalized = $1 AND status NOT IN ('lost')
+         ORDER BY created_at ASC LIMIT 1`,
+        [phoneNorm]
+      );
+      if (phoneMatches.length > 0) {
+        conflictLeadId = phoneMatches[0].id;
+        conflictMatchType = 'phone';
+      }
+    }
+
+    // Check by email
+    if (email && typeof email === 'string' && email.trim()) {
+      const { rows: emailMatches } = await pool.query(
+        `SELECT id, full_name, assigned_agent_id FROM leads
+         WHERE lower(email) = lower($1) AND status NOT IN ('lost')
+         ORDER BY created_at ASC LIMIT 1`,
+        [email.trim()]
+      );
+      if (emailMatches.length > 0) {
+        if (conflictLeadId && conflictLeadId === emailMatches[0].id) {
+          conflictMatchType = 'both';
+        } else if (!conflictLeadId) {
+          conflictLeadId = emailMatches[0].id;
+          conflictMatchType = 'email';
+        }
+        // If phone matched a different lead than email, use phone match (first created)
+      }
+    }
+
+    const hasConflict = conflictLeadId !== null;
+
+    // ─── Insert lead ─────────────────────────────────
     const { rows } = await pool.query(
-      `INSERT INTO leads (full_name, phone, email, city, source, assigned_agent_id, assigned_manager_id, comment, estimated_value, ref_code)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO leads (full_name, phone, phone_normalized, email, city, source,
+                          assigned_agent_id, assigned_manager_id, comment, estimated_value,
+                          ref_code, conflict_status, conflict_with_lead_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING *`,
       [
         fullName,
         phone,
+        phoneNorm || null,
         email || null,
         city || '',
         validRefCode ? 'referral' : leadSource,
-        assignedAgentId || null,
+        effectiveAgentId || null,
         user.id,
         comment || null,
         estimatedValue || null,
         validRefCode,
+        hasConflict ? 'open' : null,
+        conflictLeadId,
       ]
     );
 
-    // Обновляем active_leads у агента
-    if (assignedAgentId) {
+    const newLead = rows[0];
+
+    // Update agent active_leads
+    if (effectiveAgentId) {
       await pool.query(
         `UPDATE agents SET active_leads = (SELECT count(*) FROM leads WHERE assigned_agent_id = $1 AND status NOT IN ('won','lost'))
          WHERE id = $1`,
-        [assignedAgentId]
+        [effectiveAgentId]
       );
+      touchAgentActivity(effectiveAgentId).catch(() => {});
     }
 
     await pool.query(
       `INSERT INTO audit_logs (action, user_email, details) VALUES ('lead.created', $1, $2)`,
-      [user.email, `Лид: ${fullName}, телефон: ${phone}`]
+      [user.email, `Лид: ${fullName}, телефон: ${phone}${hasConflict ? ' [CONFLICT]' : ''}`]
     );
 
-    // lead_events: создание лида
+    // lead_events: creation
     await pool.query(
       `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'created', $2, $3)`,
-      [rows[0].id, user.email, `Создан лид: ${fullName}`]
+      [newLead.id, user.email, `Создан лид: ${fullName}`]
     );
 
-    // lead_events: назначение агента
-    if (assignedAgentId) {
+    // lead_events: ownership
+    if (effectiveAgentId) {
       await pool.query(
-        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'agent_assigned', $2, $3)`,
-        [rows[0].id, user.email, `Назначен агент: ${assignedAgentId}`]
+        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'ownership_assigned', $2, $3)`,
+        [newLead.id, user.email, `Owner: agent ${effectiveAgentId}`]
       );
     }
 
-    return Response.json(toCamelCase(rows[0]), { status: 201 });
+    // lead_events: conflict detected
+    if (hasConflict) {
+      // Event on new lead
+      await pool.query(
+        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'duplicate_detected', $2, $3)`,
+        [newLead.id, user.email, `Совпадение по ${conflictMatchType} с лидом ${conflictLeadId}`]
+      );
+      // Event on existing lead
+      await pool.query(
+        `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'duplicate_detected', $2, $3)`,
+        [conflictLeadId, user.email, `Возможный дубль: лид ${newLead.id}`]
+      );
+    }
+
+    return Response.json(
+      {
+        ...toCamelCase(newLead),
+        conflict: hasConflict,
+        conflictMatchType: conflictMatchType,
+      },
+      { status: 201 }
+    );
   } catch (err) {
     console.error('POST /api/leads error:', err);
     return Response.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });

@@ -18,12 +18,23 @@ function getProgress(): ProgressMap {
   catch { return {}; }
 }
 
-function markRead(slug: string) {
+function markReadLocal(slug: string) {
   const progress = getProgress();
   if (!progress[slug]) {
     progress[slug] = { completedAt: new Date().toISOString() };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }
+}
+
+async function markReadServer(slug: string) {
+  markReadLocal(slug);
+  try {
+    await fetch("/api/learning/progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    });
+  } catch { /* server sync failed, localStorage still saved */ }
 }
 
 function isRead(slug: string): boolean {
@@ -91,8 +102,8 @@ export default function ManagerLessonPage({ params }: { params: Promise<{ slug: 
   const prev = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const next = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
-  const handleMarkRead = () => {
-    markRead(slug);
+  const handleMarkRead = async () => {
+    await markReadServer(slug);
     setRead(true);
     if (next) router.push(`/${ROLE}/learning/${next.lesson.slug}`);
   };

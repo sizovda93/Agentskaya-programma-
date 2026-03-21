@@ -5,10 +5,11 @@ import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { fetchModules, fetchAllLessons, LearningModule, LearningLesson, ProgressMap } from "@/lib/learning-content";
 import {
   Rocket, Wallet, FileText, MessageSquare, HelpCircle,
-  Target, Plug, ScrollText, BookOpen, CheckCircle2, ChevronRight, Play, Loader2,
+  Target, Plug, ScrollText, BookOpen, CheckCircle2, ChevronRight, Play, Loader2, ShieldCheck,
 } from "lucide-react";
 
 const ROLE = "agent";
@@ -19,7 +20,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Target, Plug, ScrollText, BookOpen,
 };
 
-function getProgress(): ProgressMap {
+function getLocalProgress(): ProgressMap {
   if (typeof window === "undefined") return {};
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
   catch { return {}; }
@@ -32,8 +33,32 @@ export default function AgentLearningPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setProgress(getProgress());
-    Promise.all([fetchModules(ROLE), fetchAllLessons(ROLE)]).then(([m, l]) => {
+    // Load server progress, fall back to localStorage
+    const loadProgress = async () => {
+      try {
+        const res = await fetch("/api/learning/progress");
+        if (res.ok) {
+          const data = await res.json();
+          const serverMap: ProgressMap = {};
+          for (const slug of data.completedSlugs ?? []) {
+            serverMap[slug] = { completedAt: new Date().toISOString() };
+          }
+          // Merge: server wins, localStorage fills gaps
+          const local = getLocalProgress();
+          const merged = { ...local, ...serverMap };
+          setProgress(merged);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          return;
+        }
+      } catch { /* fall through to localStorage */ }
+      setProgress(getLocalProgress());
+    };
+
+    Promise.all([
+      fetchModules(ROLE),
+      fetchAllLessons(ROLE),
+      loadProgress(),
+    ]).then(([m, l]) => {
       setModules(m);
       setAllLessons(l);
       setLoading(false);
@@ -43,6 +68,12 @@ export default function AgentLearningPage() {
   const totalLessons = allLessons.length;
   const completedLessons = allLessons.filter((l) => progress[l.lesson.slug]).length;
   const firstUnread = allLessons.find((l) => !progress[l.lesson.slug]);
+
+  // Required modules progress
+  const requiredModules = modules.filter((m) => m.isRequired);
+  const requiredLessons = allLessons.filter((l) => requiredModules.some((m) => m.id === l.module.id));
+  const requiredCompleted = requiredLessons.filter((l) => progress[l.lesson.slug]).length;
+  const allRequiredDone = requiredLessons.length > 0 && requiredCompleted >= requiredLessons.length;
 
   if (loading) {
     return (
@@ -67,21 +98,47 @@ export default function AgentLearningPage() {
         ]}
       />
 
-      {/* Progress */}
+      {/* Required progress */}
       <Card className="p-5 mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Ваш прогресс</span>
+          <span className="text-sm font-medium flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            Обязательное обучение
+          </span>
           <span className="text-sm text-muted-foreground">
-            {completedLessons} из {totalLessons} уроков
+            {requiredCompleted} из {requiredLessons.length} уроков
           </span>
         </div>
         <div className="h-2 rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: totalLessons ? `${(completedLessons / totalLessons) * 100}%` : "0%" }}
+            className={`h-full rounded-full transition-all ${allRequiredDone ? "bg-green-500" : "bg-primary"}`}
+            style={{ width: requiredLessons.length ? `${(requiredCompleted / requiredLessons.length) * 100}%` : "0%" }}
           />
         </div>
+        {allRequiredDone && (
+          <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Все обязательные модули пройдены
+          </p>
+        )}
       </Card>
+
+      {/* Overall progress (if has optional) */}
+      {totalLessons > requiredLessons.length && (
+        <Card className="p-5 mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Общий прогресс</span>
+            <span className="text-sm text-muted-foreground">
+              {completedLessons} из {totalLessons} уроков
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: totalLessons ? `${(completedLessons / totalLessons) * 100}%` : "0%" }}
+            />
+          </div>
+        </Card>
+      )}
 
       {/* Start here block */}
       {firstUnread && completedLessons < totalLessons && (
@@ -131,7 +188,12 @@ export default function AgentLearningPage() {
                   {allDone ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <Icon className="h-5 w-5 text-primary" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm">{mod.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-sm">{mod.title}</h3>
+                    {mod.isRequired && (
+                      <Badge variant="info" className="text-[10px] px-1.5 py-0">Обязательный</Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
 
                   <div className="mt-3 space-y-1">

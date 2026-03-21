@@ -8,8 +8,10 @@ import {
   ConversationMode,
   UserRole,
   MessageChannel,
+  AgentLifecycle,
+  AgentTier,
 } from "@/types";
-import { Send, Globe } from "lucide-react";
+import { Send, Globe, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 // ====== Lead Status ======
 const leadStatusConfig: Record<LeadStatus, { label: string; variant: "default" | "success" | "warning" | "destructive" | "info" | "secondary" }> = {
@@ -18,7 +20,7 @@ const leadStatusConfig: Record<LeadStatus, { label: string; variant: "default" |
   qualified: { label: "Квалифицирован", variant: "default" },
   proposal: { label: "Предложение", variant: "warning" },
   negotiation: { label: "Переговоры", variant: "warning" },
-  won: { label: "Закрыт", variant: "success" },
+  won: { label: "Договор заключен", variant: "success" },
   lost: { label: "Потерян", variant: "destructive" },
 };
 
@@ -103,6 +105,22 @@ export function RoleBadge({ role }: { role: UserRole }) {
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
+// ====== Lifecycle Badge ======
+const lifecycleConfig: Record<AgentLifecycle, { label: string; variant: "secondary" | "info" | "warning" | "success" | "destructive" }> = {
+  registered: { label: "Зарегистрирован", variant: "secondary" },
+  learning_in_progress: { label: "Обучается", variant: "info" },
+  activated: { label: "Активирован", variant: "warning" },
+  active: { label: "Активен", variant: "success" },
+  inactive: { label: "Неактивен", variant: "secondary" },
+  blocked: { label: "Заблокирован", variant: "destructive" },
+  rejected: { label: "Отклонён", variant: "destructive" },
+};
+
+export function LifecycleBadge({ lifecycle }: { lifecycle: AgentLifecycle }) {
+  const config = lifecycleConfig[lifecycle] ?? lifecycleConfig.registered;
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
 // ====== Channel Badge ======
 export function ChannelBadge({ channel }: { channel: MessageChannel }) {
   if (channel === "telegram") {
@@ -117,4 +135,41 @@ export function ChannelBadge({ channel }: { channel: MessageChannel }) {
       <Globe className="h-3 w-3" /> Web
     </Badge>
   );
+}
+
+// ====== Tier Badge ======
+const tierConfig: Record<AgentTier, { label: string; variant: "secondary" | "info" | "warning" }> = {
+  base: { label: "Базовый", variant: "secondary" },
+  silver: { label: "Серебро", variant: "info" },
+  gold: { label: "Золото", variant: "warning" },
+};
+
+export function TierBadge({ tier }: { tier: AgentTier }) {
+  const config = tierConfig[tier] ?? tierConfig.base;
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+}
+
+// ====== Conflict Badge ======
+export function ConflictBadge({ status, resolution }: { status?: string | null; resolution?: string | null }) {
+  if (status === 'open') {
+    return (
+      <Badge variant="warning" className="gap-1">
+        <AlertTriangle className="h-3 w-3" /> Конфликт
+      </Badge>
+    );
+  }
+  if (status === 'resolved') {
+    const labels: Record<string, string> = {
+      confirmed_duplicate: 'Дубль',
+      kept_existing: 'Решён',
+      overridden: 'Переназначен',
+      kept_separate: 'Разделён',
+    };
+    return (
+      <Badge variant="secondary" className="gap-1">
+        <CheckCircle2 className="h-3 w-3" /> {labels[resolution || ''] || 'Решён'}
+      </Badge>
+    );
+  }
+  return null;
 }

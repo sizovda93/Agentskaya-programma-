@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { sendMessage, validateWebhookSecret } from '@/lib/telegram';
+import { touchAgentActivityByProfile } from '@/lib/activity';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -116,6 +117,14 @@ async function handleStartCommand(
       [profileBind[0].id]
     );
   }
+
+  // Remove stale inactive bindings for this telegram_user_id
+  // (the absolute UNIQUE constraint on telegram_user_id would block re-insert)
+  await pool.query(
+    `DELETE FROM telegram_bindings
+     WHERE telegram_user_id = $1 AND is_active = false`,
+    [telegramUserId]
+  );
 
   // Create binding
   await pool.query(
@@ -267,4 +276,7 @@ async function handleInboundMessage(
      WHERE telegram_user_id = $2 AND is_active = true`,
     [conversationId, telegramUserId]
   );
+
+  // Track agent activity
+  touchAgentActivityByProfile(binding.profile_id).catch(() => {});
 }
