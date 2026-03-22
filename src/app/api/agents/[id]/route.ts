@@ -140,7 +140,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     // Handle managerId assignment
     if (body.managerId !== undefined) {
-      const newManagerId: string | null = body.managerId || null;
+      // "self" shorthand → replace with current user's id
+      const rawManagerId = body.managerId === 'self' ? user.id : body.managerId;
+      const newManagerId: string | null = rawManagerId || null;
 
       if (newManagerId) {
         // Validate manager exists and has role 'manager'
