@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { sendMessage, validateWebhookSecret } from '@/lib/telegram';
 import { touchAgentActivityByProfile } from '@/lib/activity';
+import { classifyMessage } from '@/lib/ai/classify-message';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -256,11 +257,17 @@ async function handleInboundMessage(
   }
 
   // Insert message
-  await pool.query(
+  const { rows: msgRows } = await pool.query(
     `INSERT INTO messages (conversation_id, sender_type, sender_name, text, channel, external_id, status)
-     VALUES ($1, 'agent', $2, $3, 'telegram', $4, 'delivered')`,
+     VALUES ($1, 'agent', $2, $3, 'telegram', $4, 'delivered')
+     RETURNING id`,
     [conversationId, binding.full_name, text, updateId]
   );
+
+  // AI classify (fire-and-forget)
+  if (msgRows[0]?.id) {
+    classifyMessage(msgRows[0].id, text, conversationId, 'telegram').catch(() => {});
+  }
 
   // Update conversation
   await pool.query(

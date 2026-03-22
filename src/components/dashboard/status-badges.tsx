@@ -173,3 +173,24 @@ export function ConflictBadge({ status, resolution }: { status?: string | null; 
   }
   return null;
 }
+
+// ====== AI Classification Badge ======
+const classificationConfig: Record<string, { label: string; variant: "secondary" | "info" | "warning" | "destructive" }> = {
+  lead: { label: "Лид", variant: "info" },
+  question: { label: "Вопрос", variant: "secondary" },
+  status_request: { label: "Статус", variant: "secondary" },
+  document: { label: "Документ", variant: "secondary" },
+  objection: { label: "Возражение", variant: "warning" },
+  escalation: { label: "Эскалация", variant: "destructive" },
+  other: { label: "Прочее", variant: "secondary" },
+};
+
+export function ClassificationBadge({ classification }: { classification?: string | null }) {
+  if (!classification) return null;
+  const config = classificationConfig[classification] ?? classificationConfig.other;
+  return <Badge variant={config.variant} className="text-[10px] px-1.5 py-0">{config.label}</Badge>;
+}
+
+export function AttentionDot() {
+  return <span className="h-2.5 w-2.5 rounded-full bg-red-500 shrink-0" title="Требует внимания" />;
+}

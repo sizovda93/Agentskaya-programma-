@@ -10,9 +10,11 @@ interface ChatWindowProps {
   messages: Message[];
   currentUserType?: string;
   onSend?: (text: string) => void;
+  showClassification?: boolean;
+  onInputRef?: (ref: { insert: (text: string) => void }) => void;
 }
 
-export function ChatWindow({ conversation, messages, currentUserType = "agent", onSend }: ChatWindowProps) {
+export function ChatWindow({ conversation, messages, currentUserType = "agent", onSend, showClassification, onInputRef }: ChatWindowProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -36,12 +38,13 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent", 
             key={msg.id}
             message={msg}
             isOwn={msg.senderType === currentUserType}
+            showClassification={showClassification}
           />
         ))}
       </div>
 
       {/* Input */}
-      <MessageInput onSend={onSend ?? (() => {})} />
+      <MessageInput onSend={onSend ?? (() => {})} onInputRef={onInputRef} />
     </div>
   );
 }

@@ -1,16 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MessageInputProps {
   onSend: (text: string) => void;
   placeholder?: string;
+  onInputRef?: (ref: { insert: (text: string) => void }) => void;
 }
 
-export function MessageInput({ onSend, placeholder = "Напишите сообщение..." }: MessageInputProps) {
+export function MessageInput({ onSend, placeholder = "Напишите сообщение...", onInputRef }: MessageInputProps) {
   const [text, setText] = useState("");
+
+  const insert = useCallback((draft: string) => {
+    setText(draft);
+  }, []);
+
+  useEffect(() => {
+    if (onInputRef) {
+      onInputRef({ insert });
+    }
+  }, [onInputRef, insert]);
 
   const handleSend = () => {
     if (text.trim()) {

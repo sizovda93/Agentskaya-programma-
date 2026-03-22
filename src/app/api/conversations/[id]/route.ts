@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
 import { sendMessage as sendTgMessage, getProfileIdByAgentId } from '@/lib/telegram';
 import { touchAgentActivityByProfile } from '@/lib/activity';
+import { classifyMessage } from '@/lib/ai/classify-message';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -85,6 +86,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Track agent activity
     if (senderType === 'agent') {
       touchAgentActivityByProfile(user.id).catch(() => {});
+    }
+
+    // AI classify (fire-and-forget, agent messages only)
+    if (senderType === 'agent') {
+      classifyMessage(rows[0].id, text.trim(), id, 'web').catch(() => {});
     }
 
     // T1: Outbound to Telegram — if manager sends and agent has Telegram linked
