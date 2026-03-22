@@ -104,7 +104,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             [profileId]
           );
           if (bindRows.length > 0) {
-            const tgText = `[${conv.client_name}]\n${text.trim()}`;
+            const tgText = text.trim();
             const tgResult = await sendTgMessage(bindRows[0].telegram_chat_id, tgText);
 
             if (tgResult.ok) {
