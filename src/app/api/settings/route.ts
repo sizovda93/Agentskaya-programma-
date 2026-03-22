@@ -29,6 +29,7 @@ export async function PATCH(request: NextRequest) {
     const allowedKeys = [
       'commission_rate', 'commission_rate_base', 'commission_rate_silver', 'commission_rate_gold',
       'platform_name', 'support_email', 'support_phone',
+      'auto_reply_enabled', 'relationship_messages_enabled',
     ];
 
     const updates: string[] = [];

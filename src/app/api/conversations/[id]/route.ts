@@ -90,7 +90,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // AI classify (fire-and-forget, agent messages only)
     if (senderType === 'agent') {
-      classifyMessage(rows[0].id, text.trim(), id, 'web').catch(() => {});
+      classifyMessage(rows[0].id, text.trim(), id, 'web', conv.agent_id).catch(() => {});
     }
 
     // T1: Outbound to Telegram — if manager sends and agent has Telegram linked

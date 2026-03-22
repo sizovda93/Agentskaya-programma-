@@ -266,7 +266,7 @@ async function handleInboundMessage(
 
   // AI classify (fire-and-forget)
   if (msgRows[0]?.id) {
-    classifyMessage(msgRows[0].id, text, conversationId, 'telegram').catch(() => {});
+    classifyMessage(msgRows[0].id, text, conversationId, 'telegram', binding.agent_id).catch(() => {});
   }
 
   // Update conversation

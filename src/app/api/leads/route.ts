@@ -61,6 +61,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine assigned_manager_id
+    let effectiveManagerId: string | null = user.id; // default: creator
+    if (user.role === 'agent' && user.agentId) {
+      // Agent creates lead → manager from binding
+      const { rows: agentRows } = await pool.query(
+        'SELECT manager_id FROM agents WHERE id = $1',
+        [user.agentId]
+      );
+      effectiveManagerId = agentRows[0]?.manager_id || null;
+    }
+
     // Validate ref_code
     let validRefCode: string | null = null;
     if (refCode && typeof refCode === "string") {
@@ -123,7 +134,7 @@ export async function POST(request: NextRequest) {
         city || '',
         validRefCode ? 'referral' : leadSource,
         effectiveAgentId || null,
-        user.id,
+        effectiveManagerId,
         comment || null,
         estimatedValue || null,
         validRefCode,
@@ -175,6 +186,24 @@ export async function POST(request: NextRequest) {
         `INSERT INTO lead_events (lead_id, event_type, actor_email, details) VALUES ($1, 'duplicate_detected', $2, $3)`,
         [conflictLeadId, user.email, `Возможный дубль: лид ${newLead.id}`]
       );
+    }
+
+    // Notify manager about new lead (in-app + Telegram)
+    if (effectiveManagerId && user.role === 'agent') {
+      const agentName = user.fullName || 'Агент';
+      const notifText = `Новый лид от агента ${agentName}: ${fullName}, тел. ${phone}`;
+
+      // In-app notification
+      pool.query(
+        `INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, 'info')`,
+        [effectiveManagerId, 'Новый лид', notifText]
+      ).catch(() => {});
+
+      // Telegram notification to manager
+      import('@/lib/telegram').then(({ notifyAgent }) => {
+        // notifyAgent looks up telegram by profile_id
+        notifyAgent(effectiveManagerId!, notifText).catch(() => {});
+      }).catch(() => {});
     }
 
     return Response.json(

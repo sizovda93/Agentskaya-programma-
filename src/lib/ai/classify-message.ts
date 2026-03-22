@@ -1,4 +1,5 @@
 import pool from "@/lib/db";
+import { tryAutoReply } from "./auto-reply";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const API_URL = "https://api.voidai.app/v1/chat/completions";
@@ -48,7 +49,8 @@ export async function classifyMessage(
   messageId: string,
   text: string,
   conversationId: string,
-  channel: string = "web"
+  channel: string = "web",
+  agentId: string | null = null
 ): Promise<void> {
   try {
     // Guard: no API key
@@ -180,6 +182,28 @@ export async function classifyMessage(
        WHERE id = $3`,
       [classification, needsAttention, conversationId]
     );
+
+    // Try auto-reply (only if not needs_attention and agent is known)
+    if (!needsAttention && agentId) {
+      try {
+        const result = await tryAutoReply(classification, text, agentId, confidence);
+        if (result) {
+          // Insert auto-reply as AI message
+          await pool.query(
+            `INSERT INTO messages (conversation_id, sender_type, sender_name, text, is_auto_reply)
+             VALUES ($1, 'ai', 'AI-помощник', $2, true)`,
+            [conversationId, result.replyText]
+          );
+          // Update conversation last_message
+          await pool.query(
+            `UPDATE conversations SET last_message = $1, last_message_at = NOW() WHERE id = $2`,
+            [result.replyText.substring(0, 255), conversationId]
+          );
+        }
+      } catch (autoErr) {
+        console.error("Auto-reply error:", autoErr instanceof Error ? autoErr.message : autoErr);
+      }
+    }
   } catch (err) {
     // Never let classification errors propagate
     if (err instanceof Error && err.name === "AbortError") {

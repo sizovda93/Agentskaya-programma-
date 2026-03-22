@@ -9,7 +9,7 @@ export async function GET() {
     const auth = await requireRole('manager', 'admin');
     if (auth.error) return auth.error;
 
-    const [conflicts, agents, telegramBindings, feedback] = await Promise.all([
+    const [conflicts, agents, telegramBindings, feedback, unassignedLeads] = await Promise.all([
       // Open conflicts
       pool.query(
         `SELECT l.id AS lead_id, l.full_name AS lead_name, l.created_at,
@@ -42,6 +42,16 @@ export async function GET() {
          WHERE f.handled_at IS NULL
          ORDER BY f.created_at DESC
          LIMIT 20`
+      ),
+      // Leads without manager
+      pool.query(
+        `SELECT l.id AS lead_id, l.full_name AS lead_name, l.phone, l.created_at,
+                pa.full_name AS agent_name
+         FROM leads l
+         LEFT JOIN agents a ON a.id = l.assigned_agent_id
+         LEFT JOIN profiles pa ON pa.id = a.user_id
+         WHERE l.assigned_manager_id IS NULL AND l.status NOT IN ('won', 'lost')
+         ORDER BY l.created_at ASC`
       ),
     ]);
 
@@ -132,6 +142,13 @@ export async function GET() {
         agentName: r.agent_name,
         type: r.type,
         message: r.message,
+        createdAt: r.created_at,
+      })),
+      unassignedLeads: unassignedLeads.rows.map((r) => ({
+        leadId: r.lead_id,
+        leadName: r.lead_name,
+        phone: r.phone,
+        agentName: r.agent_name,
         createdAt: r.created_at,
       })),
     };

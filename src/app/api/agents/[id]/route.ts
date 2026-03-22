@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     // Load current agent
     const { rows: agentRows } = await pool.query(
-      `SELECT a.id, a.user_id, a.onboarding_status, a.total_leads, a.tier,
+      `SELECT a.id, a.user_id, a.onboarding_status, a.total_leads, a.tier, a.manager_id,
               p.status as user_status, p.full_name, p.email
        FROM agents a
        JOIN profiles p ON p.id = a.user_id
@@ -136,6 +136,39 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         [newTier, id]
       );
       changes.push(`tier: ${agent.tier} → ${newTier}`);
+    }
+
+    // Handle managerId assignment
+    if (body.managerId !== undefined) {
+      const newManagerId: string | null = body.managerId || null;
+
+      if (newManagerId) {
+        // Validate manager exists and has role 'manager'
+        const { rows: mgrCheck } = await pool.query(
+          `SELECT id, role FROM profiles WHERE id = $1`,
+          [newManagerId]
+        );
+        if (mgrCheck.length === 0 || mgrCheck[0].role !== 'manager') {
+          return Response.json({ error: 'Менеджер не найден' }, { status: 400 });
+        }
+
+        // Manager: can only assign self, only if currently NULL
+        if (user.role === 'manager') {
+          if (newManagerId !== user.id) {
+            return Response.json({ error: 'Менеджер может закрепить только себя' }, { status: 403 });
+          }
+          if (agent.manager_id !== null) {
+            return Response.json({ error: 'У агента уже назначен менеджер' }, { status: 403 });
+          }
+        }
+        // Admin: can assign any manager (no restrictions)
+      }
+
+      await pool.query(
+        `UPDATE agents SET manager_id = $1, updated_at = now() WHERE id = $2`,
+        [newManagerId, id]
+      );
+      changes.push(`manager: ${agent.manager_id || 'none'} → ${newManagerId || 'none'}`);
     }
 
     // Handle managerContactedAt
