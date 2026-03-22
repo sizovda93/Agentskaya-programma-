@@ -171,6 +171,21 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         [newManagerId, id]
       );
       changes.push(`manager: ${agent.manager_id || 'none'} → ${newManagerId || 'none'}`);
+
+      // Auto-create conversation between agent and manager
+      if (newManagerId) {
+        const { rows: existingConv } = await pool.query(
+          `SELECT id FROM conversations WHERE agent_id = $1 AND manager_id = $2 AND status != 'closed' LIMIT 1`,
+          [id, newManagerId]
+        );
+        if (existingConv.length === 0) {
+          await pool.query(
+            `INSERT INTO conversations (agent_id, manager_id, client_name, mode, status)
+             VALUES ($1, $2, $3, 'manual', 'active')`,
+            [id, newManagerId, agent.full_name]
+          );
+        }
+      }
     }
 
     // Handle managerContactedAt
