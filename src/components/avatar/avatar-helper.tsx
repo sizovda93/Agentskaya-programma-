@@ -82,15 +82,19 @@ export function AvatarHelper() {
 
       // Play audio when ready
       const audioBlob = await ttsPromise;
-      if (audioBlob) {
+      if (audioBlob && audioBlob.size > 0) {
         const url = URL.createObjectURL(audioBlob);
         audioUrlRef.current = url;
         const audio = new Audio(url);
         audio.muted = muted;
         audioRef.current = audio;
-        audio.play().catch((err) => {
-          console.warn("Audio autoplay blocked:", err);
-        });
+        try {
+          await audio.play();
+        } catch (err) {
+          console.warn("Audio play failed:", err);
+        }
+      } else {
+        console.warn("TTS returned no audio");
       }
     },
     [state, muted]
@@ -115,8 +119,8 @@ export function AvatarHelper() {
   return (
     <Card className="overflow-hidden border-0 bg-transparent shadow-none">
       <CardContent className="p-0">
-        {/* Video — transparent bg, no black */}
-        <div className="relative w-full" style={{ aspectRatio: "1 / 1" }}>
+        {/* Video — multiply blend hides checkerboard on dark bg */}
+        <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
           <video
             ref={videoRef}
             src={IDLE_VIDEO}
@@ -125,20 +129,21 @@ export function AvatarHelper() {
             muted
             playsInline
             className="w-full h-full object-contain"
+            style={{ mixBlendMode: "screen" }}
             onEnded={handleVideoEnded}
           />
 
           {/* Mute toggle */}
           <button
             onClick={toggleMute}
-            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/70 flex items-center justify-center text-foreground hover:bg-background transition-colors"
+            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/70 flex items-center justify-center text-foreground hover:bg-background transition-colors z-10"
           >
             {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
           </button>
 
           {/* Loading indicator */}
           {state === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center z-10">
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
           )}
