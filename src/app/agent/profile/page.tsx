@@ -24,6 +24,10 @@ interface ProfileData {
   rating?: number;
   totalLeads?: number;
   agentId?: string;
+  gender?: string;
+  birthYear?: number | null;
+  profession?: string | null;
+  preferredMessenger?: string;
 }
 
 interface TelegramStatus {
@@ -37,7 +41,16 @@ export default function AgentProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ fullName: "", phone: "" });
+  const [form, setForm] = useState({
+    fullName: "",
+    phone: "",
+    gender: "not_specified",
+    birthYear: "" as string,
+    profession: "",
+    preferredMessenger: "telegram",
+    city: "",
+    specialization: "",
+  });
   const [message, setMessage] = useState<string | null>(null);
 
   // Telegram state
@@ -63,7 +76,16 @@ export default function AgentProfilePage() {
       .then((r) => r.json())
       .then((data) => {
         setProfile(data);
-        setForm({ fullName: data.fullName || "", phone: data.phone || "" });
+        setForm({
+          fullName: data.fullName || "",
+          phone: data.phone || "",
+          gender: data.gender || "not_specified",
+          birthYear: data.birthYear ? String(data.birthYear) : "",
+          profession: data.profession || "",
+          preferredMessenger: data.preferredMessenger || "telegram",
+          city: data.city || "",
+          specialization: data.specialization || "",
+        });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -102,7 +124,16 @@ export default function AgentProfilePage() {
       const res = await fetch(`/api/users/${profile.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName: form.fullName, phone: form.phone }),
+        body: JSON.stringify({
+          fullName: form.fullName,
+          phone: form.phone,
+          gender: form.gender,
+          birthYear: form.birthYear ? Number(form.birthYear) : null,
+          profession: form.profession || null,
+          preferredMessenger: form.preferredMessenger,
+          city: form.city,
+          specialization: form.specialization,
+        }),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -158,6 +189,18 @@ export default function AgentProfilePage() {
                   <span>{profile.specialization}</span>
                 </div>
               )}
+              {profile.profession && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Профессия</span>
+                  <span>{profile.profession}</span>
+                </div>
+              )}
+              {profile.birthYear && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Возраст</span>
+                  <span>{new Date().getFullYear() - profile.birthYear} лет</span>
+                </div>
+              )}
               {profile.rating !== undefined && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Рейтинг</span>
@@ -192,6 +235,57 @@ export default function AgentProfilePage() {
                 <div>
                   <label className="text-sm text-muted-foreground mb-1.5 block">Телефон</label>
                   <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Город</label>
+                  <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Специализация</label>
+                  <Input value={form.specialization} onChange={(e) => setForm((f) => ({ ...f, specialization: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Профессия</label>
+                  <Input
+                    value={form.profession}
+                    onChange={(e) => setForm((f) => ({ ...f, profession: e.target.value }))}
+                    placeholder="Например: юрист, риэлтор..."
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Пол</label>
+                  <select
+                    className="w-full h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground"
+                    value={form.gender}
+                    onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
+                  >
+                    <option value="not_specified">Не указан</option>
+                    <option value="male">Мужской</option>
+                    <option value="female">Женский</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Год рождения</label>
+                  <Input
+                    type="number"
+                    min={1940}
+                    max={2010}
+                    placeholder="Например: 1990"
+                    value={form.birthYear}
+                    onChange={(e) => setForm((f) => ({ ...f, birthYear: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1.5 block">Предпочтительный мессенджер</label>
+                  <select
+                    className="w-full h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground"
+                    value={form.preferredMessenger}
+                    onChange={(e) => setForm((f) => ({ ...f, preferredMessenger: e.target.value }))}
+                  >
+                    <option value="telegram">Telegram</option>
+                    <option value="max">MAX</option>
+                    <option value="vk">VK</option>
+                  </select>
                 </div>
               </div>
               {message && <p className="text-sm text-muted-foreground">{message}</p>}

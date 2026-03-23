@@ -30,6 +30,10 @@ interface AgentData {
   userStatus: string;
   lifecycle: AgentLifecycle;
   tier: AgentTier;
+  gender?: string;
+  birthYear?: number | null;
+  profession?: string | null;
+  preferredMessenger?: string;
 }
 
 interface LearningModule {
@@ -188,9 +192,35 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
                 <span className="text-muted-foreground">Специализация</span>
                 <span>{agent.specialization || "—"}</span>
               </div>
+              {agent.profession && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Профессия</span>
+                  <span>{agent.profession}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Телефон</span>
                 <span>{agent.phone || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Пол</span>
+                <span>
+                  {agent.gender === "male" ? "М" : agent.gender === "female" ? "Ж" : "—"}
+                </span>
+              </div>
+              {agent.birthYear && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Возраст</span>
+                  <span>{new Date().getFullYear() - agent.birthYear} лет</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Мессенджер</span>
+                <span>
+                  {agent.preferredMessenger === "telegram" ? "Telegram" :
+                   agent.preferredMessenger === "max" ? "MAX" :
+                   agent.preferredMessenger === "vk" ? "VK" : "—"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Рейтинг</span>
