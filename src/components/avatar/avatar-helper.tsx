@@ -12,11 +12,13 @@ interface AvatarQuestion {
   answerText: string;
 }
 
+const IDLE_VIDEO = "/avatar/answer-q1.mp4";
+
 const questions: AvatarQuestion[] = [
   {
     id: "q1",
     label: "Что это за платформа?",
-    video: "/avatar/answer-q1.mp4",
+    video: "/avatar/idle.mp4",
     answerText:
       "Это партнёрская платформа, через которую вы можете передавать лидов по банкротству физических лиц, следить за их статусами, получать материалы для продвижения, общаться с менеджером и видеть свои начисления. Простыми словами: здесь всё, что нужно партнёру для работы и заработка, собрано в одном месте.",
   },
@@ -37,7 +39,6 @@ export function AvatarHelper() {
     setState("idle");
     setActiveQuestion(null);
 
-    // Stop audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -47,9 +48,8 @@ export function AvatarHelper() {
       audioUrlRef.current = null;
     }
 
-    // Switch video to idle
     if (videoRef.current) {
-      videoRef.current.src = "/avatar/idle.mp4";
+      videoRef.current.src = IDLE_VIDEO;
       videoRef.current.loop = true;
       videoRef.current.play().catch(() => {});
     }
@@ -88,17 +88,17 @@ export function AvatarHelper() {
         const audio = new Audio(url);
         audio.muted = muted;
         audioRef.current = audio;
-        audio.play().catch(() => {});
+        audio.play().catch((err) => {
+          console.warn("Audio autoplay blocked:", err);
+        });
       }
     },
     [state, muted]
   );
 
   const handleVideoEnded = useCallback(() => {
-    // Answer video finished — wait for audio to finish too, then go idle
     if (audioRef.current && !audioRef.current.ended) {
       audioRef.current.addEventListener("ended", switchToIdle, { once: true });
-      // Keep last frame visible while audio finishes
     } else {
       switchToIdle();
     }
@@ -113,40 +113,40 @@ export function AvatarHelper() {
   }, []);
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-0 bg-transparent shadow-none">
       <CardContent className="p-0">
-        {/* Video */}
-        <div className="relative aspect-video bg-black">
+        {/* Video — transparent bg, no black */}
+        <div className="relative w-full" style={{ aspectRatio: "1 / 1" }}>
           <video
             ref={videoRef}
-            src="/avatar/idle.mp4"
+            src={IDLE_VIDEO}
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             onEnded={handleVideoEnded}
           />
 
           {/* Mute toggle */}
           <button
             onClick={toggleMute}
-            className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/70 flex items-center justify-center text-foreground hover:bg-background transition-colors"
           >
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
           </button>
 
           {/* Loading indicator */}
           {state === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <Loader2 className="h-8 w-8 text-white animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
           )}
         </div>
 
         {/* Questions */}
-        <div className="p-4">
-          <p className="text-xs text-muted-foreground mb-3">Задайте вопрос помощнику:</p>
+        <div className="pt-2 pb-1">
+          <p className="text-xs text-muted-foreground mb-2">Задайте вопрос помощнику:</p>
           <div className="flex flex-wrap gap-2">
             {questions.map((q) => (
               <Button
