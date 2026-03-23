@@ -11,6 +11,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare, DollarSign } from "lucide-react";
 import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
+import { AvatarHelper } from "@/components/avatar/avatar-helper";
 
 interface ChecklistState {
   profileFilled: boolean;
@@ -225,6 +226,11 @@ export default function AgentDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Avatar Helper */}
+      <div className="mb-6 max-w-md">
+        <AvatarHelper />
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

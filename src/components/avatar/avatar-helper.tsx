@@ -1,0 +1,168 @@
+"use client";
+
+import { useState, useRef, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Loader2 } from "lucide-react";
+
+interface AvatarQuestion {
+  id: string;
+  label: string;
+  video: string;
+  answerText: string;
+}
+
+const questions: AvatarQuestion[] = [
+  {
+    id: "q1",
+    label: "Что это за платформа?",
+    video: "/avatar/answer-q1.mp4",
+    answerText:
+      "Это партнёрская платформа, через которую вы можете передавать лидов по банкротству физических лиц, следить за их статусами, получать материалы для продвижения, общаться с менеджером и видеть свои начисления. Простыми словами: здесь всё, что нужно партнёру для работы и заработка, собрано в одном месте.",
+  },
+];
+
+type AvatarState = "idle" | "loading" | "answering";
+
+export function AvatarHelper() {
+  const [state, setState] = useState<AvatarState>("idle");
+  const [muted, setMuted] = useState(false);
+  const [activeQuestion, setActiveQuestion] = useState<AvatarQuestion | null>(null);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+
+  const switchToIdle = useCallback(() => {
+    setState("idle");
+    setActiveQuestion(null);
+
+    // Stop audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+
+    // Switch video to idle
+    if (videoRef.current) {
+      videoRef.current.src = "/avatar/idle.mp4";
+      videoRef.current.loop = true;
+      videoRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  const handleQuestion = useCallback(
+    async (q: AvatarQuestion) => {
+      if (state === "loading" || state === "answering") return;
+
+      setState("loading");
+      setActiveQuestion(q);
+
+      // Start TTS fetch and video switch in parallel
+      const ttsPromise = fetch("/api/avatar/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: q.answerText }),
+      })
+        .then((r) => (r.ok ? r.blob() : null))
+        .catch(() => null);
+
+      // Switch to answer video
+      if (videoRef.current) {
+        videoRef.current.loop = false;
+        videoRef.current.src = q.video;
+        videoRef.current.play().catch(() => {});
+      }
+
+      setState("answering");
+
+      // Play audio when ready
+      const audioBlob = await ttsPromise;
+      if (audioBlob) {
+        const url = URL.createObjectURL(audioBlob);
+        audioUrlRef.current = url;
+        const audio = new Audio(url);
+        audio.muted = muted;
+        audioRef.current = audio;
+        audio.play().catch(() => {});
+      }
+    },
+    [state, muted]
+  );
+
+  const handleVideoEnded = useCallback(() => {
+    // Answer video finished — wait for audio to finish too, then go idle
+    if (audioRef.current && !audioRef.current.ended) {
+      audioRef.current.addEventListener("ended", switchToIdle, { once: true });
+      // Keep last frame visible while audio finishes
+    } else {
+      switchToIdle();
+    }
+  }, [switchToIdle]);
+
+  const toggleMute = useCallback(() => {
+    setMuted((prev) => {
+      const next = !prev;
+      if (audioRef.current) audioRef.current.muted = next;
+      return next;
+    });
+  }, []);
+
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        {/* Video */}
+        <div className="relative aspect-video bg-black">
+          <video
+            ref={videoRef}
+            src="/avatar/idle.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            onEnded={handleVideoEnded}
+          />
+
+          {/* Mute toggle */}
+          <button
+            onClick={toggleMute}
+            className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+
+          {/* Loading indicator */}
+          {state === "loading" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+              <Loader2 className="h-8 w-8 text-white animate-spin" />
+            </div>
+          )}
+        </div>
+
+        {/* Questions */}
+        <div className="p-4">
+          <p className="text-xs text-muted-foreground mb-3">Задайте вопрос помощнику:</p>
+          <div className="flex flex-wrap gap-2">
+            {questions.map((q) => (
+              <Button
+                key={q.id}
+                size="sm"
+                variant={activeQuestion?.id === q.id ? "default" : "outline"}
+                onClick={() => handleQuestion(q)}
+                disabled={state === "loading"}
+                className="text-xs"
+              >
+                {q.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
