@@ -101,7 +101,7 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
   if (!agent) {
     return (
       <div>
-        <PageHeader title="Партнёр не найден" breadcrumbs={[{ title: "Агенты", href: "/manager/agents" }, { title: "Не найден" }]} />
+        <PageHeader title="Партнёр не найден" breadcrumbs={[{ title: "Партнёры", href: "/manager/agents" }, { title: "Не найден" }]} />
       </div>
     );
   }

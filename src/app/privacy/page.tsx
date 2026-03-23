@@ -11,7 +11,7 @@ export default function PrivacyPage() {
               <Scale className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-semibold tracking-tight">Агентум Про</span>
-            <span className="text-xs text-muted-foreground ml-2">система управления агентской сетью</span>
+            <span className="text-xs text-muted-foreground ml-2">система управления партнёрской сетью</span>
           </Link>
         </div>
       </header>

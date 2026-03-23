@@ -32,7 +32,7 @@ export default function ManagerFinancePage() {
     <div>
       <PageHeader
         title="Финансы"
-        description="Выплаты и комиссии агентов"
+        description="Выплаты и комиссии партнёров"
         breadcrumbs={[
           { title: "Дашборд", href: "/manager/dashboard" },
           { title: "Финансы" },

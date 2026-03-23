@@ -50,7 +50,7 @@ type ChannelType = "web" | "telegram" | "both";
 type View = "list" | "create" | "detail";
 
 const audienceLabels: Record<AudienceType, string> = {
-  all: "Все мои агенты",
+  all: "Все мои партнёры",
   active: "Активные (есть лиды)",
   activated: "Готовы, без первого лида",
   learning: "На обучении",
@@ -158,7 +158,7 @@ export default function ManagerBroadcastsPage() {
       return;
     }
     if (audienceType === "manual" && selectedAgents.length === 0) {
-      setError("Выберите хотя бы одного агента");
+      setError("Выберите хотя бы одного партнёра");
       return;
     }
 
@@ -277,7 +277,7 @@ export default function ManagerBroadcastsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                        <th className="px-3 py-2">Агент</th>
+                        <th className="px-3 py-2">Партнёр</th>
                         <th className="px-3 py-2">Web</th>
                         <th className="px-3 py-2">Telegram</th>
                         <th className="px-3 py-2">Ошибка</th>
@@ -396,11 +396,11 @@ export default function ManagerBroadcastsPage() {
             {audienceType === "manual" && (
               <div>
                 <label className="text-sm text-muted-foreground mb-1.5 block">
-                  Выберите агентов ({selectedAgents.length} выбрано)
+                  Выберите партнёров ({selectedAgents.length} выбрано)
                 </label>
                 <div className="max-h-60 overflow-y-auto border border-border rounded-lg divide-y divide-border">
                   {agents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground p-3">Нет закреплённых агентов</p>
+                    <p className="text-sm text-muted-foreground p-3">Нет закреплённых партнёров</p>
                   ) : (
                     agents.map((a) => (
                       <label
@@ -425,7 +425,7 @@ export default function ManagerBroadcastsPage() {
             {/* Preview */}
             <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
               {audienceType === "manual"
-                ? `Будет отправлено ${selectedAgents.length} агентам`
+                ? `Будет отправлено ${selectedAgents.length} партнёрам`
                 : `Сегмент: ${audienceLabels[audienceType]}`
               }
               {" через "}
@@ -460,7 +460,7 @@ export default function ManagerBroadcastsPage() {
     <div>
       <PageHeader
         title="Рассылки"
-        description="Массовые сообщения для ваших агентов"
+        description="Массовые сообщения для ваших партнёров"
         breadcrumbs={[
           { title: "Дашборд", href: "/manager/dashboard" },
           { title: "Рассылки" },
@@ -475,7 +475,7 @@ export default function ManagerBroadcastsPage() {
       {broadcasts.length === 0 ? (
         <EmptyState
           title="Нет рассылок"
-          description="Создайте первую рассылку для ваших агентов"
+          description="Создайте первую рассылку для ваших партнёров"
           action={
             <Button size="sm" onClick={handleCreate}>
               <Send className="h-4 w-4 mr-1" /> Создать рассылку

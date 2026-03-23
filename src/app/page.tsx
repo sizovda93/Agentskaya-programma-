@@ -15,7 +15,7 @@ export default function HomePage() {
               <Scale className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-semibold tracking-tight">Агентум Про</span>
-            <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">система управления агентской сетью</span>
+            <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">система управления партнёрской сетью</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -40,14 +40,14 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground mb-8">
             <Zap className="h-3.5 w-3.5 text-primary" />
-            Агентская программа нового поколения
+            Партнёрская программа нового поколения
           </div>
           <h1 className="text-4xl lg:text-6xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
-            Управляйте агентской сетью{" "}
+            Управляйте партнёрской сетью{" "}
             <span className="text-primary">эффективно</span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Современная платформа для координации работы юридических агентов, управления лидами
+            Современная платформа для координации работы юридических партнёров, управления лидами
             и автоматизации коммуникаций
           </p>
           <div className="flex items-center justify-center gap-4 mt-10">
@@ -76,7 +76,7 @@ export default function HomePage() {
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">Управление агентами</h3>
+              <h3 className="font-semibold mb-2">Управление партнёрами</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Онбординг, мониторинг эффективности, распределение лидов и контроль качества коммуникаций
               </p>

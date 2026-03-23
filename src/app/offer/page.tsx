@@ -11,7 +11,7 @@ export default function OfferPage() {
               <Scale className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-semibold tracking-tight">Агентум Про</span>
-            <span className="text-xs text-muted-foreground ml-2">система управления агентской сетью</span>
+            <span className="text-xs text-muted-foreground ml-2">система управления партнёрской сетью</span>
           </Link>
         </div>
       </header>
@@ -20,7 +20,7 @@ export default function OfferPage() {
         <div className="prose prose-invert prose-sm max-w-none space-y-4 text-muted-foreground">
           <p>Настоящая публичная оферта (далее — «Оферта») определяет условия использования платформы Агентум Про (далее — «Платформа»).</p>
           <h2 className="text-lg font-medium text-foreground mt-8">1. Общие положения</h2>
-          <p>1.1. Платформа предоставляет сервис для координации работы юридических агентов, управления лидами и автоматизации коммуникаций.</p>
+          <p>1.1. Платформа предоставляет сервис для координации работы юридических партнёров, управления лидами и автоматизации коммуникаций.</p>
           <p>1.2. Регистрируясь на Платформе, Пользователь принимает условия настоящей Оферты в полном объёме.</p>
           <h2 className="text-lg font-medium text-foreground mt-8">2. Предмет оферты</h2>
           <p>2.1. Компания предоставляет Пользователю доступ к функциональности Платформы в соответствии с выбранным тарифным планом.</p>

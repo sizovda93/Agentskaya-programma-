@@ -37,8 +37,8 @@ export default function AgentLeadDetailPage({ params }: { params: Promise<{ id: 
             id: e.id,
             title: e.eventType === 'status_changed' ? 'Смена статуса'
               : e.eventType === 'created' ? 'Лид создан'
-              : e.eventType === 'agent_assigned' ? 'Назначен агент'
-              : e.eventType === 'agent_reassigned' ? 'Переназначен агент'
+              : e.eventType === 'agent_assigned' ? 'Назначен партнёр'
+              : e.eventType === 'agent_reassigned' ? 'Переназначен партнёр'
               : e.eventType === 'payout_created' ? 'Создана выплата'
               : e.eventType,
             description: e.details || undefined,

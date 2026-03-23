@@ -92,7 +92,7 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
       if (res.ok) {
         const updated = await res.json();
         setLead(updated);
-        setStatusMsg(newStatus === "won" ? "Статус обновлён. Выплата агенту создана автоматически." : "Статус обновлён");
+        setStatusMsg(newStatus === "won" ? "Статус обновлён. Выплата партнёру создана автоматически." : "Статус обновлён");
         loadEvents();
       } else {
         const err = await res.json();
@@ -156,7 +156,7 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
           <div className="flex gap-2">
             <ConflictBadge status={lead.conflictStatus} resolution={lead.conflictResolution} />
             <Button variant="outline" size="sm">
-              <UserPlus className="h-4 w-4 mr-1" /> Назначить агента
+              <UserPlus className="h-4 w-4 mr-1" /> Назначить партнёра
             </Button>
             <Button size="sm">
               <MessageSquare className="h-4 w-4 mr-1" /> Открыть диалог
@@ -180,7 +180,7 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
                 <p>{conflictLead.fullName}</p>
                 <p className="text-muted-foreground">{conflictLead.phone}</p>
                 {conflictLead.email && <p className="text-muted-foreground">{conflictLead.email}</p>}
-                <p className="text-muted-foreground">Агент: {conflictLead.agentName || "—"}</p>
+                <p className="text-muted-foreground">Партнёр: {conflictLead.agentName || "—"}</p>
                 <p className="text-muted-foreground">Создан: {formatDate(conflictLead.createdAt)}</p>
               </div>
               <div className="text-sm space-y-1">
@@ -188,7 +188,7 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
                 <p>{lead.fullName}</p>
                 <p className="text-muted-foreground">{lead.phone}</p>
                 {lead.email && <p className="text-muted-foreground">{lead.email}</p>}
-                <p className="text-muted-foreground">Агент: {lead.agentName || "—"}</p>
+                <p className="text-muted-foreground">Партнёр: {lead.agentName || "—"}</p>
                 <p className="text-muted-foreground">Создан: {formatDate(lead.createdAt)}</p>
               </div>
             </div>

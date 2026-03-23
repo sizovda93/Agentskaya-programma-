@@ -214,7 +214,7 @@ export default function ManagerAgentsPage() {
         description="Управление партнёрской сетью"
         breadcrumbs={[
           { title: "Дашборд", href: "/manager/dashboard" },
-          { title: "Агенты" },
+          { title: "Партнёры" },
         ]}
         actions={
           <div className="flex gap-2">

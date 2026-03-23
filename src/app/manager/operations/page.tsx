@@ -78,7 +78,7 @@ export default function ManagerOperationsPage() {
     <div>
       <PageHeader
         title="Операции"
-        description="Рабочие очереди и контроль агентской сети"
+        description="Рабочие очереди и контроль партнёрской сети"
         breadcrumbs={[
           { title: "Дашборд", href: "/manager/dashboard" },
           { title: "Операции" },
@@ -101,7 +101,7 @@ export default function ManagerOperationsPage() {
         <Card className="p-8 text-center">
           <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-3" />
           <p className="text-sm font-medium">Все очереди пусты</p>
-          <p className="text-xs text-muted-foreground mt-1">Нет агентов, требующих внимания</p>
+          <p className="text-xs text-muted-foreground mt-1">Нет партнёров, требующих внимания</p>
         </Card>
       )}
 
@@ -136,7 +136,7 @@ export default function ManagerOperationsPage() {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {isConflict
-                              ? `Агент: ${item.agentName || "—"} · ${formatDate(item.createdAt)}`
+                              ? `Партнёр: ${item.agentName || "—"} · ${formatDate(item.createdAt)}`
                               : item.reason}
                           </p>
                         </div>
@@ -171,7 +171,7 @@ export default function ManagerOperationsPage() {
       {data.recentFeedback?.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Обратная связь от агентов</CardTitle>
+            <CardTitle className="text-base">Обратная связь от партнёров</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
