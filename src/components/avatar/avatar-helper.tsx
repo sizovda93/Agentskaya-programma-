@@ -12,13 +12,13 @@ interface AvatarQuestion {
   answerText: string;
 }
 
-const IDLE_VIDEO = "/avatar/answer-q1.mp4";
+const IDLE_VIDEO = "/avatar/idle.mp4";
 
 const questions: AvatarQuestion[] = [
   {
     id: "q1",
     label: "Что это за платформа?",
-    video: "/avatar/idle.mp4",
+    video: "/avatar/answer-q1.mp4",
     answerText:
       "Это партнёрская платформа, через которую вы можете передавать лидов по банкротству физических лиц, следить за их статусами, получать материалы для продвижения, общаться с менеджером и видеть свои начисления. Простыми словами: здесь всё, что нужно партнёру для работы и заработка, собрано в одном месте.",
   },
@@ -117,10 +117,9 @@ export function AvatarHelper() {
   }, []);
 
   return (
-    <Card className="overflow-hidden border-0 bg-transparent shadow-none">
+    <Card className="overflow-hidden rounded-2xl">
       <CardContent className="p-0">
-        {/* Video — multiply blend hides checkerboard on dark bg */}
-        <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+        <div className="relative">
           <video
             ref={videoRef}
             src={IDLE_VIDEO}
@@ -128,29 +127,28 @@ export function AvatarHelper() {
             loop
             muted
             playsInline
-            className="w-full h-full object-contain"
-            style={{ mixBlendMode: "screen" }}
+            className="w-full h-auto block rounded-t-2xl"
             onEnded={handleVideoEnded}
           />
 
           {/* Mute toggle */}
           <button
             onClick={toggleMute}
-            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/70 flex items-center justify-center text-foreground hover:bg-background transition-colors z-10"
+            className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
           >
-            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
 
           {/* Loading indicator */}
           {state === "loading" && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
-              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              <Loader2 className="h-8 w-8 text-white animate-spin" />
             </div>
           )}
         </div>
 
         {/* Questions */}
-        <div className="pt-2 pb-1">
+        <div className="p-4">
           <p className="text-xs text-muted-foreground mb-2">Задайте вопрос помощнику:</p>
           <div className="flex flex-wrap gap-2">
             {questions.map((q) => (

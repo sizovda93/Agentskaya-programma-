@@ -20,7 +20,9 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/avatar/") ||
     pathname === "/api/telegram/webhook" ||
+    pathname === "/api/leads/public" ||
     (pathname === "/api/referral" && request.method === "POST") ||
     pathname === "/favicon.ico"
   ) {
