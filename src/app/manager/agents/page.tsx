@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { SearchInput } from "@/components/dashboard/search-input";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { DataTable } from "@/components/dashboard/data-table";
 import { LifecycleBadge } from "@/components/dashboard/status-badges";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Filter, X } from "lucide-react";
 import type { AgentLifecycle } from "@/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -22,6 +22,10 @@ interface AgentRow {
   email: string;
   city: string;
   specialization: string;
+  profession: string | null;
+  birthYear: number | null;
+  gender: string;
+  preferredMessenger: string;
   activeLeads: number;
   totalLeads: number;
   totalRevenue: number;
@@ -31,29 +35,70 @@ interface AgentRow {
 }
 
 type TabFilter = "all" | "learning" | "ready" | "active" | "problem";
+type SortKey = "newest" | "oldest" | "age_asc" | "age_desc" | "name_asc" | "name_desc" | "leads_desc" | "revenue_desc";
+
+const sortLabels: Record<SortKey, string> = {
+  newest: "Новые",
+  oldest: "Старые",
+  name_asc: "Имя А→Я",
+  name_desc: "Имя Я→А",
+  age_asc: "Возраст ↑",
+  age_desc: "Возраст ↓",
+  leads_desc: "Лиды ↓",
+  revenue_desc: "Доход ↓",
+};
 
 export default function ManagerAgentsPage() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [unassigned, setUnassigned] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabFilter>("all");
   const [claiming, setClaiming] = useState<string | null>(null);
   const [showUnassigned, setShowUnassigned] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
-  const loadData = () =>
+  // Filter state
+  const [search, setSearch] = useState("");
+  const [gender, setGender] = useState("");
+  const [city, setCity] = useState("");
+  const [profession, setProfession] = useState("");
+  const [minAge, setMinAge] = useState("");
+  const [maxAge, setMaxAge] = useState("");
+  const [sort, setSort] = useState<SortKey>("newest");
+
+  const buildQuery = useCallback(() => {
+    const p = new URLSearchParams();
+    if (search.trim()) p.set("search", search.trim());
+    if (gender) p.set("gender", gender);
+    if (city.trim()) p.set("city", city.trim());
+    if (profession.trim()) p.set("profession", profession.trim());
+    if (minAge) p.set("minAge", minAge);
+    if (maxAge) p.set("maxAge", maxAge);
+    if (sort !== "newest") p.set("sort", sort);
+    return p.toString() ? `?${p.toString()}` : "";
+  }, [search, gender, city, profession, minAge, maxAge, sort]);
+
+  const loadData = useCallback(() =>
     Promise.all([
-      fetch("/api/agents").then((r) => (r.ok ? r.json() : [])),
+      fetch(`/api/agents${buildQuery()}`).then((r) => (r.ok ? r.json() : [])),
       fetch("/api/agents?unassigned=true").then((r) => (r.ok ? r.json() : [])),
     ]).then(([myAgents, free]) => {
       setAgents(myAgents);
       setUnassigned(free);
-    });
+    }), [buildQuery]);
 
+  // Initial load
   useEffect(() => {
     loadData().finally(() => setLoading(false));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reload on filter/sort change (debounced for text inputs)
+  useEffect(() => {
+    if (loading) return;
+    const timer = setTimeout(() => { loadData(); }, 300);
+    return () => clearTimeout(timer);
+  }, [search, gender, city, profession, minAge, maxAge, sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClaim = async (agentId: string) => {
     setClaiming(agentId);
@@ -65,21 +110,33 @@ export default function ManagerAgentsPage() {
       });
       if (res.ok) {
         await loadData();
-        setShowUnassigned(unassigned.length > 1); // hide if was last one
+        setShowUnassigned(unassigned.length > 1);
       }
     } catch { /* ignore */ }
     finally { setClaiming(null); }
   };
 
+  const resetFilters = () => {
+    setSearch("");
+    setGender("");
+    setCity("");
+    setProfession("");
+    setMinAge("");
+    setMaxAge("");
+    setSort("newest");
+  };
+
+  const hasActiveFilters = gender || city || profession || minAge || maxAge || sort !== "newest";
+
   if (loading) return <LoadingSkeleton />;
 
-  // Stats
+  // Stats (from current result set)
   const learning = agents.filter((a) => ["registered", "learning_in_progress"].includes(a.lifecycle));
   const activated = agents.filter((a) => a.lifecycle === "activated");
   const active = agents.filter((a) => a.lifecycle === "active");
   const problem = agents.filter((a) => ["inactive", "blocked", "rejected"].includes(a.lifecycle));
 
-  // Filter by tab
+  // Client-side tab filter (lifecycle tabs stay client-side for instant UX)
   const tabFiltered = (() => {
     switch (tab) {
       case "learning": return learning;
@@ -89,13 +146,6 @@ export default function ManagerAgentsPage() {
       default: return agents;
     }
   })();
-
-  // Filter by search
-  const filtered = tabFiltered.filter(
-    (a) =>
-      a.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      (a.city || "").toLowerCase().includes(search.toLowerCase())
-  );
 
   const tabs: { key: TabFilter; label: string; count: number }[] = [
     { key: "all", label: "Все", count: agents.length },
@@ -112,7 +162,9 @@ export default function ManagerAgentsPage() {
       render: (a: AgentRow) => (
         <div>
           <p className="font-medium">{a.fullName}</p>
-          <p className="text-xs text-muted-foreground">{a.city}</p>
+          <p className="text-xs text-muted-foreground">
+            {[a.city, a.profession].filter(Boolean).join(" · ") || "—"}
+          </p>
         </div>
       ),
     },
@@ -120,6 +172,15 @@ export default function ManagerAgentsPage() {
       key: "lifecycle",
       title: "Статус",
       render: (a: AgentRow) => <LifecycleBadge lifecycle={a.lifecycle} />,
+    },
+    {
+      key: "age",
+      title: "Возраст",
+      render: (a: AgentRow) => (
+        <span className="text-muted-foreground">
+          {a.birthYear ? `${new Date().getFullYear() - a.birthYear}` : "—"}
+        </span>
+      ),
     },
     {
       key: "leads",
@@ -156,12 +217,23 @@ export default function ManagerAgentsPage() {
           { title: "Агенты" },
         ]}
         actions={
-          unassigned.length > 0 ? (
-            <Button size="sm" variant="outline" onClick={() => setShowUnassigned(!showUnassigned)}>
-              <UserPlus className="h-4 w-4 mr-1" />
-              Незакреплённые ({unassigned.length})
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant={showFilters ? "default" : "outline"}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4 mr-1" />
+              Фильтры
+              {hasActiveFilters && <span className="ml-1 text-xs">●</span>}
             </Button>
-          ) : undefined
+            {unassigned.length > 0 && (
+              <Button size="sm" variant="outline" onClick={() => setShowUnassigned(!showUnassigned)}>
+                <UserPlus className="h-4 w-4 mr-1" />
+                Незакреплённые ({unassigned.length})
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -193,12 +265,106 @@ export default function ManagerAgentsPage() {
         </Card>
       )}
 
+      {/* Filter panel */}
+      {showFilters && (
+        <Card className="mb-6">
+          <CardContent className="pt-4 pb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Пол</label>
+                <select
+                  className="w-full h-8 rounded-md border border-border bg-background px-2 text-sm"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <option value="">Все</option>
+                  <option value="male">Мужской</option>
+                  <option value="female">Женский</option>
+                  <option value="not_specified">Не указан</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Город</label>
+                <Input
+                  className="h-8"
+                  placeholder="Город..."
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Профессия</label>
+                <Input
+                  className="h-8"
+                  placeholder="Профессия..."
+                  value={profession}
+                  onChange={(e) => setProfession(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Возраст от</label>
+                <Input
+                  className="h-8"
+                  type="number"
+                  min={18}
+                  max={80}
+                  placeholder="18"
+                  value={minAge}
+                  onChange={(e) => setMinAge(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Возраст до</label>
+                <Input
+                  className="h-8"
+                  type="number"
+                  min={18}
+                  max={80}
+                  placeholder="80"
+                  value={maxAge}
+                  onChange={(e) => setMaxAge(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Сортировка</label>
+                <select
+                  className="w-full h-8 rounded-md border border-border bg-background px-2 text-sm"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                >
+                  {Object.entries(sortLabels).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {hasActiveFilters && (
+              <div className="mt-3 flex justify-end">
+                <Button size="sm" variant="ghost" onClick={resetFilters}>
+                  <X className="h-3.5 w-3.5 mr-1" /> Сбросить
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <StatCard title="Всего" value={agents.length} icon="Users" />
         <StatCard title="Обучаются" value={learning.length} icon="BookOpen" />
         <StatCard title="Активные" value={active.length} icon="UserCheck" />
         <StatCard title="Проблемные" value={problem.length} icon="AlertTriangle" />
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <Input
+          placeholder="Поиск по имени или email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-md"
+        />
       </div>
 
       {/* Tabs */}
@@ -216,13 +382,9 @@ export default function ManagerAgentsPage() {
         ))}
       </div>
 
-      <div className="mb-6">
-        <SearchInput value={search} onChange={setSearch} placeholder="Поиск агента..." />
-      </div>
-
       <DataTable
         columns={columns}
-        data={filtered}
+        data={tabFiltered}
         onRowClick={(a: AgentRow) => router.push(`/manager/agents/${a.id}`)}
       />
     </div>

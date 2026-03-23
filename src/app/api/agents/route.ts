@@ -11,27 +11,96 @@ export async function GET(request: NextRequest) {
     if (auth.error) return auth.error;
     const { user } = auth;
 
+    const sp = request.nextUrl.searchParams;
+
     // ?unassigned=true — show agents without manager (for "claim" UI)
-    const showUnassigned = request.nextUrl.searchParams.get('unassigned') === 'true';
+    const showUnassigned = sp.get('unassigned') === 'true';
 
     let query = `SELECT a.*, p.full_name, p.email, p.phone, p.avatar_url, p.status as user_status,
                         pm.full_name as manager_name
                  FROM agents a
                  JOIN profiles p ON p.id = a.user_id
                  LEFT JOIN profiles pm ON pm.id = a.manager_id`;
-    const params: string[] = [];
 
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    let idx = 1;
+
+    // Scope: manager sees own, admin sees all, unassigned override
     if (showUnassigned) {
-      // Any manager/admin can see unassigned agents
-      query += ` WHERE a.manager_id IS NULL`;
+      conditions.push(`a.manager_id IS NULL`);
     } else if (user.role === 'manager') {
-      // Manager sees only their agents
-      query += ` WHERE a.manager_id = $1`;
+      conditions.push(`a.manager_id = $${idx}`);
       params.push(user.id);
+      idx++;
     }
-    // Admin sees all agents (no filter)
 
-    query += ` ORDER BY a.created_at DESC`;
+    // Filter: gender
+    const gender = sp.get('gender');
+    if (gender && ['male', 'female', 'not_specified'].includes(gender)) {
+      conditions.push(`a.gender = $${idx}`);
+      params.push(gender);
+      idx++;
+    }
+
+    // Filter: city (ILIKE)
+    const city = sp.get('city');
+    if (city && city.trim()) {
+      conditions.push(`a.city ILIKE $${idx}`);
+      params.push(`%${city.trim()}%`);
+      idx++;
+    }
+
+    // Filter: profession (ILIKE)
+    const profession = sp.get('profession');
+    if (profession && profession.trim()) {
+      conditions.push(`a.profession ILIKE $${idx}`);
+      params.push(`%${profession.trim()}%`);
+      idx++;
+    }
+
+    // Filter: age range via birth_year
+    const currentYear = new Date().getFullYear();
+    const minAge = sp.get('minAge');
+    if (minAge && !isNaN(Number(minAge))) {
+      // minAge=25 → birth_year <= currentYear - 25
+      conditions.push(`a.birth_year <= $${idx}`);
+      params.push(currentYear - Number(minAge));
+      idx++;
+    }
+    const maxAge = sp.get('maxAge');
+    if (maxAge && !isNaN(Number(maxAge))) {
+      // maxAge=40 → birth_year >= currentYear - 40
+      conditions.push(`a.birth_year >= $${idx}`);
+      params.push(currentYear - Number(maxAge));
+      idx++;
+    }
+
+    // Filter: search (name or email)
+    const search = sp.get('search');
+    if (search && search.trim()) {
+      conditions.push(`(p.full_name ILIKE $${idx} OR p.email ILIKE $${idx})`);
+      params.push(`%${search.trim()}%`);
+      idx++;
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    // Sorting
+    const sort = sp.get('sort') || 'newest';
+    const orderMap: Record<string, string> = {
+      newest: 'a.created_at DESC',
+      oldest: 'a.created_at ASC',
+      age_asc: 'a.birth_year DESC NULLS LAST',   // younger first = higher birth_year
+      age_desc: 'a.birth_year ASC NULLS LAST',    // older first = lower birth_year
+      name_asc: 'p.full_name ASC',
+      name_desc: 'p.full_name DESC',
+      leads_desc: 'a.total_leads DESC',
+      revenue_desc: 'a.total_revenue DESC',
+    };
+    query += ` ORDER BY ${orderMap[sort] || orderMap.newest}`;
 
     const { rows } = await pool.query(query, params);
 
