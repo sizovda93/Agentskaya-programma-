@@ -13,7 +13,6 @@ interface AvatarQuestion {
 }
 
 const IDLE_VIDEO = "/avatar/idle.mp4";
-
 const ELEVENLABS_VOICE_ID = "txnCCHHGKmYIwrn7HfHQ";
 
 const questions: AvatarQuestion[] = [
@@ -30,10 +29,7 @@ type AvatarState = "idle" | "loading" | "answering";
 
 async function fetchTTS(text: string): Promise<Blob | null> {
   const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
-  if (!apiKey) {
-    console.error("NEXT_PUBLIC_ELEVENLABS_API_KEY not set");
-    return null;
-  }
+  if (!apiKey) return null;
 
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
@@ -52,11 +48,7 @@ async function fetchTTS(text: string): Promise<Blob | null> {
     }
   );
 
-  if (!res.ok) {
-    console.error("ElevenLabs error:", res.status);
-    return null;
-  }
-
+  if (!res.ok) return null;
   return res.blob();
 }
 
@@ -96,40 +88,47 @@ export function AvatarHelper() {
       setState("loading");
       setActiveQuestion(q);
 
-      // Switch to answer video immediately
-      if (videoRef.current) {
-        videoRef.current.loop = false;
-        videoRef.current.src = q.video;
-        videoRef.current.play().catch(() => {});
-      }
-
-      setState("answering");
-
-      // Fetch TTS audio directly from ElevenLabs (client-side)
+      // Fetch TTS first, THEN start video + audio together
       try {
         const audioBlob = await fetchTTS(q.answerText);
-        if (audioBlob && audioBlob.size > 0) {
-          const url = URL.createObjectURL(audioBlob);
-          audioUrlRef.current = url;
-          const audio = new Audio(url);
-          audio.muted = muted;
-          audioRef.current = audio;
-          await audio.play();
+
+        if (!audioBlob || audioBlob.size === 0) {
+          // No audio — just play video without sound
+          if (videoRef.current) {
+            videoRef.current.loop = false;
+            videoRef.current.src = q.video;
+            videoRef.current.play().catch(() => {});
+          }
+          setState("answering");
+          return;
         }
+
+        const url = URL.createObjectURL(audioBlob);
+        audioUrlRef.current = url;
+        const audio = new Audio(url);
+        audio.muted = muted;
+        audioRef.current = audio;
+
+        // Switch to answer video — LOOP it so it plays as long as audio lasts
+        if (videoRef.current) {
+          videoRef.current.loop = true;
+          videoRef.current.src = q.video;
+          videoRef.current.play().catch(() => {});
+        }
+
+        // Start audio simultaneously
+        setState("answering");
+        await audio.play();
+
+        // When audio ends → switch back to idle
+        audio.addEventListener("ended", switchToIdle, { once: true });
       } catch (err) {
         console.error("TTS error:", err);
+        switchToIdle();
       }
     },
-    [state, muted]
+    [state, muted, switchToIdle]
   );
-
-  const handleVideoEnded = useCallback(() => {
-    if (audioRef.current && !audioRef.current.ended) {
-      audioRef.current.addEventListener("ended", switchToIdle, { once: true });
-    } else {
-      switchToIdle();
-    }
-  }, [switchToIdle]);
 
   const toggleMute = useCallback(() => {
     setMuted((prev) => {
@@ -151,7 +150,6 @@ export function AvatarHelper() {
             muted
             playsInline
             className="w-full h-auto block"
-            onEnded={handleVideoEnded}
           />
 
           <button
@@ -162,7 +160,7 @@ export function AvatarHelper() {
           </button>
 
           {state === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20 rounded-2xl">
               <Loader2 className="h-6 w-6 text-white animate-spin" />
             </div>
           )}
