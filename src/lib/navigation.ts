@@ -28,6 +28,7 @@ export const managerNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { title: "Дашборд", href: "/admin/dashboard", icon: "LayoutDashboard" },
   { title: "Пользователи", href: "/admin/users", icon: "Users" },
+  { title: "Лиды", href: "/admin/leads", icon: "UserPlus" },
   { title: "Финансы", href: "/admin/finance", icon: "Wallet" },
   { title: "Роли", href: "/admin/roles", icon: "Shield" },
   { title: "Настройки", href: "/admin/settings", icon: "Settings" },
