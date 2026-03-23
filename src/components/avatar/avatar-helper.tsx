@@ -14,6 +14,8 @@ interface AvatarQuestion {
 
 const IDLE_VIDEO = "/avatar/idle.mp4";
 
+const ELEVENLABS_VOICE_ID = "txnCCHHGKmYIwrn7HfHQ";
+
 const questions: AvatarQuestion[] = [
   {
     id: "q1",
@@ -25,6 +27,38 @@ const questions: AvatarQuestion[] = [
 ];
 
 type AvatarState = "idle" | "loading" | "answering";
+
+async function fetchTTS(text: string): Promise<Blob | null> {
+  const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    console.error("NEXT_PUBLIC_ELEVENLABS_API_KEY not set");
+    return null;
+  }
+
+  const res = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
+    {
+      method: "POST",
+      headers: {
+        "xi-api-key": apiKey,
+        "Content-Type": "application/json",
+        Accept: "audio/mpeg",
+      },
+      body: JSON.stringify({
+        text,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    console.error("ElevenLabs error:", res.status);
+    return null;
+  }
+
+  return res.blob();
+}
 
 export function AvatarHelper() {
   const [state, setState] = useState<AvatarState>("idle");
@@ -71,22 +105,10 @@ export function AvatarHelper() {
 
       setState("answering");
 
-      // Fetch TTS audio
+      // Fetch TTS audio directly from ElevenLabs (client-side)
       try {
-        const res = await fetch("/api/avatar/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ text: q.answerText }),
-        });
-
-        if (!res.ok) {
-          console.error("TTS API error:", res.status, await res.text());
-          return;
-        }
-
-        const audioBlob = await res.blob();
-        if (audioBlob.size > 0) {
+        const audioBlob = await fetchTTS(q.answerText);
+        if (audioBlob && audioBlob.size > 0) {
           const url = URL.createObjectURL(audioBlob);
           audioUrlRef.current = url;
           const audio = new Audio(url);
@@ -95,7 +117,7 @@ export function AvatarHelper() {
           await audio.play();
         }
       } catch (err) {
-        console.error("TTS fetch/play error:", err);
+        console.error("TTS error:", err);
       }
     },
     [state, muted]
@@ -132,7 +154,6 @@ export function AvatarHelper() {
             onEnded={handleVideoEnded}
           />
 
-          {/* Mute toggle */}
           <button
             onClick={toggleMute}
             className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
@@ -140,7 +161,6 @@ export function AvatarHelper() {
             {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
           </button>
 
-          {/* Loading indicator */}
           {state === "loading" && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <Loader2 className="h-6 w-6 text-white animate-spin" />
@@ -148,7 +168,6 @@ export function AvatarHelper() {
           )}
         </div>
 
-        {/* Questions */}
         <div className="p-3">
           <p className="text-xs text-muted-foreground mb-2">Задайте вопрос:</p>
           <div className="flex flex-wrap gap-2">
