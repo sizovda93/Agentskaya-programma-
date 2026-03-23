@@ -62,16 +62,7 @@ export function AvatarHelper() {
       setState("loading");
       setActiveQuestion(q);
 
-      // Start TTS fetch and video switch in parallel
-      const ttsPromise = fetch("/api/avatar/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: q.answerText }),
-      })
-        .then((r) => (r.ok ? r.blob() : null))
-        .catch(() => null);
-
-      // Switch to answer video
+      // Switch to answer video immediately
       if (videoRef.current) {
         videoRef.current.loop = false;
         videoRef.current.src = q.video;
@@ -80,21 +71,31 @@ export function AvatarHelper() {
 
       setState("answering");
 
-      // Play audio when ready
-      const audioBlob = await ttsPromise;
-      if (audioBlob && audioBlob.size > 0) {
-        const url = URL.createObjectURL(audioBlob);
-        audioUrlRef.current = url;
-        const audio = new Audio(url);
-        audio.muted = muted;
-        audioRef.current = audio;
-        try {
-          await audio.play();
-        } catch (err) {
-          console.warn("Audio play failed:", err);
+      // Fetch TTS audio
+      try {
+        const res = await fetch("/api/avatar/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ text: q.answerText }),
+        });
+
+        if (!res.ok) {
+          console.error("TTS API error:", res.status, await res.text());
+          return;
         }
-      } else {
-        console.warn("TTS returned no audio");
+
+        const audioBlob = await res.blob();
+        if (audioBlob.size > 0) {
+          const url = URL.createObjectURL(audioBlob);
+          audioUrlRef.current = url;
+          const audio = new Audio(url);
+          audio.muted = muted;
+          audioRef.current = audio;
+          await audio.play();
+        }
+      } catch (err) {
+        console.error("TTS fetch/play error:", err);
       }
     },
     [state, muted]
@@ -117,7 +118,7 @@ export function AvatarHelper() {
   }, []);
 
   return (
-    <Card className="overflow-hidden rounded-2xl">
+    <Card className="overflow-hidden rounded-2xl max-w-xs">
       <CardContent className="p-0">
         <div className="relative">
           <video
@@ -127,29 +128,29 @@ export function AvatarHelper() {
             loop
             muted
             playsInline
-            className="w-full h-auto block rounded-t-2xl"
+            className="w-full h-auto block"
             onEnded={handleVideoEnded}
           />
 
           {/* Mute toggle */}
           <button
             onClick={toggleMute}
-            className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
           >
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
           </button>
 
           {/* Loading indicator */}
           {state === "loading" && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
-              <Loader2 className="h-8 w-8 text-white animate-spin" />
+              <Loader2 className="h-6 w-6 text-white animate-spin" />
             </div>
           )}
         </div>
 
         {/* Questions */}
-        <div className="p-4">
-          <p className="text-xs text-muted-foreground mb-2">Задайте вопрос помощнику:</p>
+        <div className="p-3">
+          <p className="text-xs text-muted-foreground mb-2">Задайте вопрос:</p>
           <div className="flex flex-wrap gap-2">
             {questions.map((q) => (
               <Button
