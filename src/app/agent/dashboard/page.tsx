@@ -8,7 +8,7 @@ import { LeadStatusBadge } from "@/components/dashboard/status-badges";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare, DollarSign } from "lucide-react";
 import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
 
@@ -174,6 +174,57 @@ export default function AgentDashboard() {
           </div>
         </Card>
       )}
+
+      {/* How to earn block */}
+      <Card className="mb-6 border-green-500/20 bg-green-500/5">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold">Как зарабатывать с платформой</h3>
+              <p className="text-xs text-muted-foreground">5 простых шагов к первому вознаграждению</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-5">
+            {[
+              { step: "1", text: "Найдите человека с проблемой долгов — среди знакомых, клиентов или через рекламу" },
+              { step: "2", text: "Передайте контакт в платформу — создайте лида с именем и телефоном" },
+              { step: "3", text: "Менеджер берёт клиента в работу — вы отслеживаете статус в кабинете" },
+              { step: "4", text: "Клиент заключает договор на банкротство — сделка переходит в статус «Won»" },
+              { step: "5", text: "Вы получаете вознаграждение — выплата фиксируется в разделе «Финансы»" },
+            ].map((item) => (
+              <div key={item.step} className="flex gap-2.5 items-start">
+                <div className="h-6 w-6 rounded-full bg-green-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-green-600">{item.step}</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick actions */}
+          <div className="flex flex-wrap gap-2">
+            <Link href="/agent/leads" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
+              <UserPlus className="h-3.5 w-3.5" /> Создать лида
+            </Link>
+            <Link href="/agent/marketing" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
+              <BookOpen className="h-3.5 w-3.5" /> Материалы
+            </Link>
+            <Link href="/agent/referral" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
+              <Share2 className="h-3.5 w-3.5" /> Реферальная ссылка
+            </Link>
+            <Link href="/agent/learning" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
+              <GraduationCap className="h-3.5 w-3.5" /> Обучение
+            </Link>
+            <Link href="/agent/messages" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
+              <MessageSquare className="h-3.5 w-3.5" /> Написать менеджеру
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

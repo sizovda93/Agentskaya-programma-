@@ -173,7 +173,7 @@ export default function AgentProfilePage() {
             <h2 className="text-lg font-semibold">{profile.fullName}</h2>
             <p className="text-sm text-muted-foreground mt-1">{profile.email}</p>
             <div className="flex items-center gap-2 mt-3">
-              <Badge variant="info">Агент</Badge>
+              <Badge variant="info">Партнёр</Badge>
               <Badge variant="success">{profile.status === "active" ? "Активен" : profile.status}</Badge>
             </div>
             <div className="w-full mt-6 pt-6 border-t border-border space-y-3 text-sm">

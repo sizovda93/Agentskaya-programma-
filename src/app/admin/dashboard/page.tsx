@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Агентов" value={s?.totalAgents ?? 0} icon="Users" />
+        <StatCard title="Партнёров" value={s?.totalAgents ?? 0} icon="Users" />
         <StatCard title="Лидов всего" value={s?.totalLeads ?? 0} icon="Target" />
         <StatCard title="Won за месяц" value={s?.wonThisMonth ?? 0} icon="UserCheck" />
         <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="Wallet" />
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
                   <div key={t.tier} className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-2">
                       <TierBadge tier={t.tier as AgentTier} />
-                      <span className="text-sm">{t.agentCount} агентов</span>
+                      <span className="text-sm">{t.agentCount} партнёров</span>
                     </div>
                     <div className="text-right text-xs text-muted-foreground">
                       {t.payoutsCount > 0 ? (
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
       {topAgents && topAgents.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Топ агентов</CardTitle>
+            <CardTitle className="text-base">Топ партнёров</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

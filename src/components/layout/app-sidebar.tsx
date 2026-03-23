@@ -64,7 +64,7 @@ export function AppSidebar({ items, role }: AppSidebarProps) {
           </div>
           <div>
             <span className="font-semibold text-sm tracking-tight">Агентум Про</span>
-            <span className="text-[10px] text-muted-foreground block -mt-0.5">система управления агентской сетью</span>
+            <span className="text-[10px] text-muted-foreground block -mt-0.5">система управления партнёрской сетью</span>
           </div>
         </Link>
       </div>

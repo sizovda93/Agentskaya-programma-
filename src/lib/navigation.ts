@@ -14,7 +14,7 @@ export const agentNav: NavItem[] = [
 
 export const managerNav: NavItem[] = [
   { title: "Дашборд", href: "/manager/dashboard", icon: "LayoutDashboard" },
-  { title: "Агенты", href: "/manager/agents", icon: "Users" },
+  { title: "Партнёры", href: "/manager/agents", icon: "Users" },
   { title: "Лиды", href: "/manager/leads", icon: "UserPlus" },
   { title: "Диалоги", href: "/manager/conversations", icon: "MessageSquare", badge: 5 },
   { title: "Финансы", href: "/manager/finance", icon: "Wallet" },
@@ -52,7 +52,7 @@ export function getNavByRole(role: UserRole): NavItem[] {
 export function getRoleLabel(role: UserRole): string {
   switch (role) {
     case "agent":
-      return "Агент";
+      return "Партнёр";
     case "manager":
       return "Менеджер";
     case "admin":

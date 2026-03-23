@@ -158,7 +158,7 @@ export default function ManagerAgentsPage() {
   const columns = [
     {
       key: "name",
-      title: "Агент",
+      title: "Партнёр",
       render: (a: AgentRow) => (
         <div>
           <p className="font-medium">{a.fullName}</p>
@@ -210,8 +210,8 @@ export default function ManagerAgentsPage() {
   return (
     <div>
       <PageHeader
-        title="Агенты"
-        description="Управление агентской сетью"
+        title="Партнёры"
+        description="Управление партнёрской сетью"
         breadcrumbs={[
           { title: "Дашборд", href: "/manager/dashboard" },
           { title: "Агенты" },
@@ -241,7 +241,7 @@ export default function ManagerAgentsPage() {
       {showUnassigned && unassigned.length > 0 && (
         <Card className="mb-6 border-blue-500/20 bg-blue-500/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Агенты без менеджера</CardTitle>
+            <CardTitle className="text-base">Партнёры без менеджера</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

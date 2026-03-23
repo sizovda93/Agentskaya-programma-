@@ -49,12 +49,12 @@ export default function ManagerDashboard() {
     <div>
       <PageHeader
         title="Дашборд менеджера"
-        description="Обзор агентской сети и показателей"
+        description="Обзор партнёрской сети и показателей"
       />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Агентов" value={s?.totalAgents ?? 0} icon="Users" />
+        <StatCard title="Партнёров" value={s?.totalAgents ?? 0} icon="Users" />
         <StatCard title="Лидов в работе" value={s?.activeLeads ?? 0} icon="UserPlus" />
         <StatCard title="Won за месяц" value={s?.wonThisMonth ?? 0} icon="Target" />
         <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="Wallet" />
@@ -64,7 +64,7 @@ export default function ManagerDashboard() {
       {segments && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-base">Сегменты агентов</CardTitle>
+            <CardTitle className="text-base">Сегменты партнёров</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export default function ManagerDashboard() {
         {topAgents && topAgents.length > 0 && (
           <Card>
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="text-base">Топ агентов</CardTitle>
+              <CardTitle className="text-base">Топ партнёров</CardTitle>
               <Link href="/manager/agents" className="text-sm text-primary hover:underline flex items-center gap-1">
                 Все <ArrowRight className="h-3.5 w-3.5" />
               </Link>

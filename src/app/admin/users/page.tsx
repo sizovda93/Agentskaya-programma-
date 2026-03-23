@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
   const agentColumns = [
     {
       key: "name",
-      title: "Агент",
+      title: "Партнёр",
       render: (a: UserRow) => (
         <div>
           <p className="font-medium">{a.fullName}</p>
@@ -250,7 +250,7 @@ export default function AdminUsersPage() {
     <div>
       <PageHeader
         title="Пользователи"
-        description="Управление пользователями и агентами"
+        description="Управление пользователями и партнёрами"
         breadcrumbs={[
           { title: "Дашборд", href: "/admin/dashboard" },
           { title: "Пользователи" },
@@ -287,7 +287,7 @@ export default function AdminUsersPage() {
           variant={viewMode === "agents" ? "default" : "outline"}
           onClick={() => setViewMode("agents")}
         >
-          Агенты
+          Партнёры
           <span className="ml-1.5 text-xs opacity-70">{agents.length}</span>
         </Button>
       </div>

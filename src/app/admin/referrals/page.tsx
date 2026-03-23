@@ -37,13 +37,13 @@ export default function AdminReferralsPage() {
     <>
       <PageHeader
         title="Реферальная программа"
-        description="Статистика рефералов по агентам"
+        description="Статистика рефералов по партнёрам"
         breadcrumbs={[{ title: "Дашборд", href: "/admin/dashboard" }, { title: "Рефералы" }]}
       />
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground">Агентов с рефералами</p>
+          <p className="text-xs text-muted-foreground">Партнёров с рефералами</p>
           <p className="text-2xl font-semibold mt-1">{data.filter((d) => d.uniqueClicks > 0).length}</p>
         </Card>
         <Card className="p-4">
@@ -61,7 +61,7 @@ export default function AdminReferralsPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "fullName", title: "Агент", render: (row) => row.fullName },
+            { key: "fullName", title: "Партнёр", render: (row) => row.fullName },
             { key: "email", title: "Email", render: (row) => <span className="text-muted-foreground">{row.email}</span> },
             { key: "refCode", title: "Код", render: (row) => <span className="font-mono text-xs">{row.refCode}</span> },
             { key: "uniqueClicks", title: "Переходы", render: (row) => row.uniqueClicks },
