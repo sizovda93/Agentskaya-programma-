@@ -146,65 +146,67 @@ export function AvatarHelper() {
   }, []);
 
   return (
-    <Card className="overflow-hidden rounded-2xl max-w-[200px]">
-      <CardContent className="p-0">
-        {/* Video — crop top/bottom empty space */}
-        <div className="relative overflow-hidden" style={{ height: 180 }}>
-          <video
-            ref={videoRef}
-            src={IDLE_VIDEO}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-auto block absolute left-0"
-            style={{ top: "-45%" }}
-          />
+    <div className="flex items-start gap-4">
+      {/* Video card — left */}
+      <Card className="overflow-hidden rounded-2xl shrink-0" style={{ width: 180 }}>
+        <CardContent className="p-0">
+          <div className="relative overflow-hidden" style={{ height: 170 }}>
+            <video
+              ref={videoRef}
+              src={IDLE_VIDEO}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-auto block absolute left-0"
+              style={{ top: "-45%" }}
+            />
 
-          <button
-            onClick={toggleMute}
-            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
-          >
-            {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-          </button>
+            <button
+              onClick={toggleMute}
+              className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+            >
+              {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+            </button>
 
-          {state === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
-              <Loader2 className="h-5 w-5 text-white animate-spin" />
-            </div>
-          )}
-        </div>
-
-        {/* Name & description */}
-        <div className="px-3 pt-2 pb-1">
-          <p className="text-sm font-semibold">Барсик</p>
-          <p className="text-[11px] text-muted-foreground leading-snug">
-            Ваш помощник на платформе. Подскажу, как всё устроено и с чего начать.
-          </p>
-        </div>
-
-        {/* Questions */}
-        <div className="px-3 pb-3 pt-1">
-          <div className="flex flex-wrap gap-1.5">
-            {questions.map((q) => (
-              <Button
-                key={q.id}
-                size="sm"
-                variant="outline"
-                onClick={() => handleQuestion(q)}
-                disabled={state === "loading"}
-                className={`text-[11px] h-7 px-2.5 ${
-                  activeQuestion?.id === q.id
-                    ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
-                    : "border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
-                }`}
-              >
-                {q.label}
-              </Button>
-            ))}
+            {state === "loading" && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
+                <Loader2 className="h-5 w-5 text-white animate-spin" />
+              </div>
+            )}
           </div>
+
+          <div className="px-3 py-2">
+            <p className="text-sm font-semibold">Барсик</p>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Ваш помощник на платформе
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Questions — right */}
+      <div className="pt-2 space-y-3">
+        <p className="text-xs text-muted-foreground">Подскажу, как всё устроено и с чего начать:</p>
+        <div className="flex flex-col gap-2">
+          {questions.map((q) => (
+            <Button
+              key={q.id}
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuestion(q)}
+              disabled={state === "loading"}
+              className={`text-xs h-8 px-3 justify-start ${
+                activeQuestion?.id === q.id
+                  ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+                  : "border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+              }`}
+            >
+              {q.label}
+            </Button>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

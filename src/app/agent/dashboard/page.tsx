@@ -228,7 +228,7 @@ export default function AgentDashboard() {
       </Card>
 
       {/* Avatar Helper */}
-      <div className="mb-6 max-w-md">
+      <div className="mb-6">
         <AvatarHelper />
       </div>
 
