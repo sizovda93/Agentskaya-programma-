@@ -177,7 +177,7 @@ export function AvatarHelper() {
           </div>
 
           <div className="px-3 py-2">
-            <p className="text-sm font-semibold">Барсик</p>
+            <p className="text-sm font-semibold">Сэр Бонифаций</p>
             <p className="text-[11px] text-muted-foreground leading-snug">
               Ваш помощник на платформе
             </p>
