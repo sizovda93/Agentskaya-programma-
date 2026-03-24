@@ -19,7 +19,7 @@ const questions: AvatarQuestion[] = [
   {
     id: "q1",
     label: "Что это за платформа?",
-    video: "/avatar/answer-q1.mp4",
+    video: "/avatar/answer-q1.webm",
     answerText:
       "Это партнёрская платформа, где вы можете передавать клиентов, следить за их статусами и зарабатывать через партнёрскую программу",
   },
