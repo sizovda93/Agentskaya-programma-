@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "./app-sidebar";
 import { AppHeader } from "./app-header";
+import { ThemeProvider } from "./theme-provider";
 import { User, UserRole } from "@/types";
 import { getNavByRole } from "@/lib/navigation";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
@@ -66,6 +67,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
   const navItems = getNavByRole(role);
 
   return (
+    <ThemeProvider>
     <div className="flex min-h-screen">
       <AppSidebar items={navItems} role={role} />
 
@@ -83,5 +85,6 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
         <main className="flex-1 p-6 lg:p-8">{children}</main>
       </div>
     </div>
+    </ThemeProvider>
   );
 }
