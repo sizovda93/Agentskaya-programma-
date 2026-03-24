@@ -13,7 +13,7 @@ interface AvatarQuestion {
 }
 
 const IDLE_VIDEO = "/avatar/idle.mp4";
-const ELEVENLABS_VOICE_ID = "txnCCHHGKmYIwrn7HfHQ";
+const ELEVENLABS_VOICE_ID = "yl2ZDV1MzN4HbQJbMihG";
 
 const questions: AvatarQuestion[] = [
   {
