@@ -139,9 +139,10 @@ export function AvatarHelper() {
   }, []);
 
   return (
-    <Card className="overflow-hidden rounded-2xl max-w-xs">
+    <Card className="overflow-hidden rounded-2xl max-w-[200px]">
       <CardContent className="p-0">
-        <div className="relative">
+        {/* Video — crop top/bottom empty space */}
+        <div className="relative overflow-hidden" style={{ height: 180 }}>
           <video
             ref={videoRef}
             src={IDLE_VIDEO}
@@ -149,26 +150,35 @@ export function AvatarHelper() {
             loop
             muted
             playsInline
-            className="w-full h-auto block"
+            className="w-full h-auto block absolute left-0"
+            style={{ top: "-45%" }}
           />
 
           <button
             onClick={toggleMute}
-            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
           >
-            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
           </button>
 
           {state === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20 rounded-2xl">
-              <Loader2 className="h-6 w-6 text-white animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
+              <Loader2 className="h-5 w-5 text-white animate-spin" />
             </div>
           )}
         </div>
 
-        <div className="p-3">
-          <p className="text-xs text-muted-foreground mb-2">Задайте вопрос:</p>
-          <div className="flex flex-wrap gap-2">
+        {/* Name & description */}
+        <div className="px-3 pt-2 pb-1">
+          <p className="text-sm font-semibold">Барсик</p>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            Ваш помощник на платформе. Подскажу, как всё устроено и с чего начать.
+          </p>
+        </div>
+
+        {/* Questions */}
+        <div className="px-3 pb-3 pt-1">
+          <div className="flex flex-wrap gap-1.5">
             {questions.map((q) => (
               <Button
                 key={q.id}
@@ -176,7 +186,7 @@ export function AvatarHelper() {
                 variant={activeQuestion?.id === q.id ? "default" : "outline"}
                 onClick={() => handleQuestion(q)}
                 disabled={state === "loading"}
-                className="text-xs"
+                className="text-[11px] h-7 px-2.5"
               >
                 {q.label}
               </Button>
