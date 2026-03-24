@@ -12,7 +12,7 @@ interface AvatarQuestion {
   answerText: string;
 }
 
-const IDLE_VIDEO = "/avatar/idle.webm";
+const IDLE_VIDEO = "/avatar/idle.webm?v=2";
 const ELEVENLABS_VOICE_ID = "yl2ZDV1MzN4HbQJbMihG";
 
 const questions: AvatarQuestion[] = [
