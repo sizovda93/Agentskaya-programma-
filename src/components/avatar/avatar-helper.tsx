@@ -23,6 +23,13 @@ const questions: AvatarQuestion[] = [
     answerText:
       "Это партнёрская платформа, где вы можете передавать клиентов, следить за их статусами и зарабатывать через партнёрскую программу",
   },
+  {
+    id: "q2",
+    label: "Как здесь зарабатывать?",
+    video: "/avatar/answer-q2.webm",
+    answerText:
+      "Вы передаёте клиентов в платформу, команда берёт их в работу, а вы получаете вознаграждение по результату",
+  },
 ];
 
 type AvatarState = "idle" | "loading" | "answering";
@@ -183,10 +190,14 @@ export function AvatarHelper() {
               <Button
                 key={q.id}
                 size="sm"
-                variant={activeQuestion?.id === q.id ? "default" : "outline"}
+                variant="outline"
                 onClick={() => handleQuestion(q)}
                 disabled={state === "loading"}
-                className="text-[11px] h-7 px-2.5"
+                className={`text-[11px] h-7 px-2.5 ${
+                  activeQuestion?.id === q.id
+                    ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+                    : "border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                }`}
               >
                 {q.label}
               </Button>
