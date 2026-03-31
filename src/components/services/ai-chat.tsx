@@ -10,11 +10,33 @@ interface ChatMessage {
   content: string;
 }
 
+function saveMsg(role: string, content: string) {
+  fetch("/api/chat/history", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role, content }),
+  }).catch(() => {});
+}
+
 export function AiChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load chat history on mount
+  useEffect(() => {
+    fetch("/api/chat/history")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: ChatMessage[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setMessages(data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setHistoryLoaded(true));
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -32,6 +54,9 @@ export function AiChat() {
     setInput("");
     setLoading(true);
 
+    // Save user message to DB
+    saveMsg("user", text);
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -40,12 +65,13 @@ export function AiChat() {
       });
 
       if (!res.ok || !res.body) {
-        setMessages((prev) => [...prev, { role: "assistant", content: "Ошибка сервера. Попробуйте позже." }]);
+        const errMsg = "Ошибка сервера. Попробуйте позже.";
+        setMessages((prev) => [...prev, { role: "assistant", content: errMsg }]);
+        saveMsg("assistant", errMsg);
         setLoading(false);
         return;
       }
 
-      // Stream the response
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let assistantText = "";
@@ -78,16 +104,28 @@ export function AiChat() {
               });
             }
           } catch {
-            // skip unparseable chunks
+            // skip
           }
         }
       }
+
+      // Save assistant response to DB
+      if (assistantText) {
+        saveMsg("assistant", assistantText);
+      }
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Не удалось получить ответ. Проверьте подключение." }]);
+      const errMsg = "Не удалось получить ответ. Проверьте подключение.";
+      setMessages((prev) => [...prev, { role: "assistant", content: errMsg }]);
+      saveMsg("assistant", errMsg);
     }
 
     setLoading(false);
   }, [input, loading, messages]);
+
+  const clearChat = useCallback(async () => {
+    setMessages([]);
+    fetch("/api/chat/history", { method: "DELETE" }).catch(() => {});
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -96,9 +134,16 @@ export function AiChat() {
     }
   };
 
+  if (!historyLoaded) {
+    return (
+      <div className="flex items-center justify-center h-[420px]">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[420px]">
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 p-3">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -144,7 +189,6 @@ export function AiChat() {
         )}
       </div>
 
-      {/* Input */}
       <div className="border-t border-border p-3 flex gap-2">
         <Input
           value={input}
@@ -158,12 +202,7 @@ export function AiChat() {
           <Send className="h-4 w-4" />
         </Button>
         {messages.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setMessages([])}
-            disabled={loading}
-          >
+          <Button size="sm" variant="outline" onClick={clearChat} disabled={loading}>
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
