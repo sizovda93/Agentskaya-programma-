@@ -247,7 +247,66 @@ export default function AgentDashboard() {
         </CardContent>
       </Card>
 
-      {/* ====== 6. RECENT ACTIVITY ====== */}
+      {/* ====== 6. BECOME A PARTNER ====== */}
+      <Card className="mb-8 overflow-hidden">
+        <div className="bg-primary/5 border-b border-primary/10 p-5">
+          <h2 className="text-lg font-semibold">Станьте партнёром ГК «Федеральная Экспертная Служба»</h2>
+          <p className="text-sm text-muted-foreground mt-1">Зарабатывайте от 10 000 ₽ за каждую рекомендацию</p>
+        </div>
+        <CardContent className="p-5">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+            Всё просто — вы рекомендуете нашу компанию как экспертов по списанию долгов,
+            а мы выплачиваем вам вознаграждение за каждого клиента, который обратился по вашей рекомендации.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Что получают клиенты */}
+            <div className="rounded-xl border border-border p-4">
+              <h3 className="text-sm font-semibold mb-3">Что получают ваши знакомые</h3>
+              <div className="space-y-2.5">
+                {[
+                  "1–3 гарантированных варианта решения проблем с долгами",
+                  "Гарантия списания долгов, прописанная в договоре",
+                  "Фиксированная стоимость с рассрочкой на 10–12 месяцев",
+                  "Индивидуальный подход к ситуации каждого клиента",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                    <span className="text-xs text-muted-foreground leading-relaxed">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Что получает партнёр */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <h3 className="text-sm font-semibold mb-3">Что получаете вы</h3>
+              <div className="space-y-3">
+                {[
+                  { num: "01", text: "Благодарность близких за совет, который изменит их жизнь к лучшему" },
+                  { num: "02", text: "Вознаграждение от 10 000 ₽ за каждого клиента, заключившего договор на банкротство" },
+                  { num: "03", text: "Бесплатная правовая защита для вашей семьи на целый год по любым юридическим вопросам" },
+                  { num: "04", text: "Скидки и бонусы от партнёров компании" },
+                ].map((item) => (
+                  <div key={item.num} className="flex items-start gap-3">
+                    <span className="text-xs font-mono font-bold text-primary shrink-0 mt-0.5">{item.num}</span>
+                    <span className="text-xs text-muted-foreground leading-relaxed">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link href="/agent/leads" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+              <UserPlus className="h-4 w-4" /> Передать первого клиента
+            </Link>
+            <span className="text-xs text-muted-foreground">Начните зарабатывать прямо сейчас</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ====== 7. RECENT ACTIVITY ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
