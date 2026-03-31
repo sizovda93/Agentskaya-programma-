@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const validCategories = ['social', 'direct', 'howto', 'scripts'];
-    const validTypes = ['post', 'message', 'guide', 'cta'];
+    const validTypes = ['post', 'message', 'guide', 'cta', 'hook'];
     const validStatuses = ['draft', 'published', 'archived'];
 
     if (!validCategories.includes(category)) {

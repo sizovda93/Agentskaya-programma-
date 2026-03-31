@@ -10,7 +10,7 @@ export default function AgentServicesPage() {
   return (
     <div>
       <PageHeader
-        title="Сервис для партнёров"
+        title="Сервис для партнёра"
         description="Юридическая поддержка и консультации"
         breadcrumbs={[
           { title: "О платформе", href: "/agent/dashboard" },

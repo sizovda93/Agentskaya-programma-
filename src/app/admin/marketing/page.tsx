@@ -34,7 +34,7 @@ const categoryLabels: Record<string, string> = {
   social: "Соцсети", direct: "Личные сообщения", howto: "Инструкции", scripts: "Скрипты",
 };
 const typeLabels: Record<string, string> = {
-  post: "Пост", message: "Сообщение", guide: "Руководство", cta: "CTA",
+  post: "Пост", message: "Сообщение", guide: "Руководство", cta: "Призыв", hook: "Призыв",
 };
 const statusLabels: Record<string, { label: string; variant: "success" | "secondary" | "destructive" }> = {
   published: { label: "Опубликован", variant: "success" },

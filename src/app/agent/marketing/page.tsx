@@ -22,7 +22,7 @@ const categoryLabels: Record<string, string> = {
   social: "Соцсети",
   direct: "Личные сообщения",
   howto: "Как продвигать",
-  scripts: "Скрипты и CTA",
+  scripts: "Скрипты и призывы",
 };
 
 const categoryIcons: Record<string, string> = {
