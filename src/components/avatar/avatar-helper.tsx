@@ -158,7 +158,7 @@ export function AvatarHelper() {
               loop
               muted
               playsInline
-              className="w-full h-auto block absolute left-0"
+              className="w-full h-auto block absolute left-0 dark:brightness-100 brightness-75"
               style={{ top: "-45%" }}
             />
 
@@ -177,7 +177,7 @@ export function AvatarHelper() {
           </div>
 
           <div className="px-3 py-2">
-            <p className="text-sm font-semibold">Сэр Бонифаций</p>
+            <p className="text-sm font-semibold">Котофей Петрович</p>
             <p className="text-[11px] text-muted-foreground leading-snug">
               Ваш помощник на платформе
             </p>
