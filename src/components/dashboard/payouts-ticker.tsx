@@ -1,111 +1,85 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Scale } from "lucide-react";
 
-interface PayoutEntry {
-  name: string;
-  amount: number;
+interface TickerEntry {
+  text: string;
 }
 
-// Mock data — rotate through these, refresh every 3 hours
-const MOCK_PAYOUTS: PayoutEntry[] = [
-  { name: "Иванов А.", amount: 20000 },
-  { name: "Петрова М.", amount: 35000 },
-  { name: "Сидоров К.", amount: 15000 },
-  { name: "Козлова Е.", amount: 28000 },
-  { name: "Новиков Д.", amount: 42000 },
-  { name: "Морозова А.", amount: 18000 },
-  { name: "Волков С.", amount: 31000 },
-  { name: "Лебедева О.", amount: 25000 },
-  { name: "Соколов П.", amount: 50000 },
-  { name: "Фёдорова И.", amount: 22000 },
-  { name: "Кузнецов В.", amount: 37000 },
-  { name: "Попова Н.", amount: 19000 },
-  { name: "Смирнов Г.", amount: 45000 },
-  { name: "Васильева Т.", amount: 27000 },
-  { name: "Михайлов Р.", amount: 33000 },
+// --- Выплаты партнёрам (mock) ---
+const PAYOUT_ENTRIES: TickerEntry[] = [
+  { text: "Партнёр Иванов А. получил выплату 20 000 ₽ — Поздравляем!" },
+  { text: "Партнёр Петрова М. получила выплату 35 000 ₽ — Поздравляем!" },
+  { text: "Партнёр Сидоров К. получил выплату 15 000 ₽ — Поздравляем!" },
+  { text: "Партнёр Козлова Е. получила выплату 28 000 ₽ — Поздравляем!" },
+  { text: "Партнёр Новиков Д. получил выплату 42 000 ₽ — Поздравляем!" },
 ];
 
-function getVisiblePayouts(): PayoutEntry[] {
-  // Select 5 payouts based on current 3-hour window
-  const hoursSlot = Math.floor(Date.now() / (3 * 60 * 60 * 1000));
-  const startIdx = (hoursSlot * 5) % MOCK_PAYOUTS.length;
-  const result: PayoutEntry[] = [];
-  for (let i = 0; i < 5; i++) {
-    result.push(MOCK_PAYOUTS[(startIdx + i) % MOCK_PAYOUTS.length]);
-  }
-  return result;
-}
+// --- Завершённые дела из Арбитражного суда (mock) ---
+const COURT_ENTRIES: TickerEntry[] = [
+  { text: "Поздравляем партнёра Иванова! Его доверитель Рябинская Юлия Александровна (А53-40604/2024) полностью освобождена от долгов!" },
+  { text: "Поздравляем партнёра Петрову! Её доверитель Кузнецов Андрей Викторович (А41-18753/2024) полностью освобождён от долгов!" },
+  { text: "Поздравляем партнёра Сидорова! Его доверитель Белова Марина Сергеевна (А40-92147/2024) полностью освобождена от долгов!" },
+  { text: "Поздравляем партнёра Козлову! Её доверитель Тарасов Игорь Николаевич (А56-31285/2024) полностью освобождён от долгов!" },
+  { text: "Поздравляем партнёра Новикова! Его доверитель Фёдорова Анна Павловна (А32-7849/2025) полностью освобождена от долгов!" },
+];
 
-function formatAmount(n: number): string {
-  return n.toLocaleString("ru-RU") + " ₽";
+function MarqueeBar({
+  entries,
+  icon,
+  colorClass,
+  speed = 30,
+}: {
+  entries: TickerEntry[];
+  icon: React.ReactNode;
+  colorClass: string;
+  speed?: number;
+}) {
+  // Duplicate entries for seamless loop
+  const doubled = [...entries, ...entries];
+  const totalChars = entries.reduce((s, e) => s + e.text.length, 0);
+  const duration = Math.max(totalChars / speed, 20);
+
+  return (
+    <div className={`rounded-xl border ${colorClass} px-3 py-2 flex items-center gap-3 overflow-hidden`}>
+      <div className="shrink-0 z-10">{icon}</div>
+      <div className="flex-1 overflow-hidden relative">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[var(--background)] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--background)] to-transparent z-10 pointer-events-none" />
+        <div className="marquee-track flex whitespace-nowrap" style={{ animationDuration: `${duration}s` }}>
+          {doubled.map((e, i) => (
+            <span key={i} className="text-sm mx-8">{e.text}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function PayoutsTicker() {
-  const [payouts, setPayouts] = useState<PayoutEntry[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    setPayouts(getVisiblePayouts());
-
-    // Check for refresh every minute
-    const refreshTimer = setInterval(() => {
-      setPayouts(getVisiblePayouts());
-    }, 60 * 1000);
-
-    return () => clearInterval(refreshTimer);
-  }, []);
-
-  useEffect(() => {
-    if (payouts.length === 0) return;
-
-    timerRef.current = setInterval(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        setActiveIndex((prev) => (prev + 1) % payouts.length);
-        setIsVisible(true);
-      }, 400);
-    }, 4000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [payouts]);
-
-  if (payouts.length === 0) return null;
-
-  const current = payouts[activeIndex];
-
   return (
-    <div className="mb-4 rounded-xl border border-success/20 bg-success/5 px-4 py-2.5 flex items-center gap-3 overflow-hidden">
-      <div className="h-7 w-7 rounded-full bg-success/15 flex items-center justify-center shrink-0">
-        <DollarSign className="h-3.5 w-3.5 text-success" />
-      </div>
-      <div
-        className={`flex-1 transition-all duration-300 ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
-        }`}
-      >
-        <span className="text-sm">
-          Партнёр <span className="font-semibold">{current?.name}</span> получил выплату{" "}
-          <span className="font-semibold text-success">{formatAmount(current?.amount ?? 0)}</span>
-          {" — "}
-          <span className="text-muted-foreground">Поздравляем!</span>
-        </span>
-      </div>
-      <div className="flex gap-1 shrink-0">
-        {payouts.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 w-1.5 rounded-full transition-colors ${
-              i === activeIndex ? "bg-success" : "bg-muted"
-            }`}
-          />
-        ))}
-      </div>
+    <div className="space-y-3 mb-6">
+      <MarqueeBar
+        entries={PAYOUT_ENTRIES}
+        colorClass="border-success/20 bg-success/5"
+        icon={
+          <div className="h-7 w-7 rounded-full bg-success/15 flex items-center justify-center">
+            <DollarSign className="h-3.5 w-3.5 text-success" />
+          </div>
+        }
+        speed={25}
+      />
+      <MarqueeBar
+        entries={COURT_ENTRIES}
+        colorClass="border-primary/20 bg-primary/5"
+        icon={
+          <div className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center">
+            <Scale className="h-3.5 w-3.5 text-primary" />
+          </div>
+        }
+        speed={20}
+      />
     </div>
   );
 }
