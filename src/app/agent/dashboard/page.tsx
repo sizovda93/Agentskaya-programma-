@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -30,6 +30,7 @@ export default function AgentDashboard() {
   const [showChecklist, setShowChecklist] = useState(false);
   const [agentRank, setAgentRank] = useState<{ rank: number | null; totalAgents: number } | null>(null);
   const [agentTier, setAgentTier] = useState<AgentTier>("base");
+  const [activeTab, setActiveTab] = useState<"main" | "history" | "partner">("main");
 
   useEffect(() => {
     Promise.all([
@@ -96,6 +97,28 @@ export default function AgentDashboard() {
       {/* ====== 1. SOCIAL PROOF — Бегущие строки ====== */}
       <PayoutsTicker />
 
+      {/* ====== TABS ====== */}
+      <div className="flex gap-2 mb-6">
+        {([
+          { key: "main" as const, label: "О платформе" },
+          { key: "history" as const, label: "История компании" },
+          { key: "partner" as const, label: "Стать партнёром" },
+        ]).map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setActiveTab(t.key)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === t.key
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "main" && (<>
       {/* ====== 2. AVATAR + HOW TO EARN — рядом ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Как зарабатывать */}
@@ -219,6 +242,9 @@ export default function AgentDashboard() {
         <StatCard title="Конверсия" value={`${conversionRate}%`} icon="Target" />
       </div>
 
+      </>)}
+
+      {activeTab === "history" && (<>
       {/* ====== 5. COMPANY HISTORY ====== */}
       <Card className="mb-8">
         <CardContent className="p-5">
@@ -247,6 +273,9 @@ export default function AgentDashboard() {
         </CardContent>
       </Card>
 
+      </>)}
+
+      {activeTab === "partner" && (<>
       {/* ====== 6. BECOME A PARTNER ====== */}
       <Card className="mb-8 overflow-hidden">
         <div className="bg-primary/5 border-b border-primary/10 p-5">
@@ -305,6 +334,8 @@ export default function AgentDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      </>)}
 
       {/* ====== 7. RECENT ACTIVITY ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
