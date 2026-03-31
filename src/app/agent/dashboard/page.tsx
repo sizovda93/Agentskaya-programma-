@@ -201,7 +201,7 @@ export default function AgentDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Ваш рейтинг:</span>
-              <span className="text-lg font-bold">#{agentRank.rank}</span>
+              <span className="text-lg font-bold">{agentRank.rank}</span>
               <span className="text-sm text-muted-foreground">из {agentRank.totalAgents}</span>
             </div>
             <div className="flex items-center gap-2">
