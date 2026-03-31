@@ -9,6 +9,7 @@ export const agentNav: NavItem[] = [
   { title: "Рефералы", href: "/agent/referral", icon: "Share2" },
   { title: "Материалы", href: "/agent/marketing", icon: "Megaphone" },
   { title: "Обучение", href: "/agent/learning", icon: "GraduationCap" },
+  { title: "Сервис", href: "/agent/services", icon: "Scale" },
   { title: "Профиль", href: "/agent/profile", icon: "User" },
 ];
 

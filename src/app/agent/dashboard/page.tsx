@@ -13,9 +13,6 @@ import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
 import { PayoutsTicker } from "@/components/dashboard/payouts-ticker";
-import { AiChat } from "@/components/services/ai-chat";
-import { LawyerQuestion } from "@/components/services/lawyer-question";
-import { Bot, Scale } from "lucide-react";
 
 interface ChecklistState {
   profileFilled: boolean;
@@ -222,32 +219,7 @@ export default function AgentDashboard() {
         <StatCard title="Конверсия" value={`${conversionRate}%`} icon="Target" />
       </div>
 
-      {/* ====== 5. SERVICES FOR PARTNERS ====== */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4">Сервис для партнёров</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Вопрос юристу */}
-          <Card className="overflow-hidden">
-            <LawyerQuestion />
-          </Card>
-
-          {/* Чат с ИИ */}
-          <Card className="overflow-hidden">
-            <div className="flex items-center gap-3 p-4 pb-0">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Bot className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold">Чат с ИИ</h4>
-                <p className="text-xs text-muted-foreground">Быстрая юридическая консультация</p>
-              </div>
-            </div>
-            <AiChat />
-          </Card>
-        </div>
-      </div>
-
-      {/* ====== 6. RECENT ACTIVITY ====== */}
+      {/* ====== 5. RECENT ACTIVITY ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex-row items-center justify-between">

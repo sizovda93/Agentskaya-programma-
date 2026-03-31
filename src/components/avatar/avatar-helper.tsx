@@ -12,21 +12,21 @@ interface AvatarQuestion {
   answerText: string;
 }
 
-const IDLE_VIDEO = "/avatar/idle.webm?v=2";
+const IDLE_VIDEO = "/avatar/idle.mp4";
 const ELEVENLABS_VOICE_ID = "yl2ZDV1MzN4HbQJbMihG";
 
 const questions: AvatarQuestion[] = [
   {
     id: "q1",
     label: "Что это за платформа?",
-    video: "/avatar/answer-q1.webm",
+    video: "/avatar/answer-q1.mp4",
     answerText:
       "Это партнёрская платформа, где вы можете передавать клиентов, следить за их статусами и зарабатывать через партнёрскую программу",
   },
   {
     id: "q2",
     label: "Как здесь зарабатывать?",
-    video: "/avatar/answer-q2.webm",
+    video: "/avatar/answer-q2.mp4",
     answerText:
       "Вы передаёте клиентов в платформу, команда берёт их в работу, а вы получаете вознаграждение по результату",
   },
@@ -150,7 +150,10 @@ export function AvatarHelper() {
       {/* Video card — left */}
       <Card className="overflow-hidden rounded-2xl shrink-0" style={{ width: 180 }}>
         <CardContent className="p-0">
-          <div className="relative overflow-hidden" style={{ height: 170 }}>
+          <div
+            className="relative overflow-hidden"
+            style={{ height: 170, backgroundColor: state === "answering" ? "#000" : "#45704C" }}
+          >
             <video
               ref={videoRef}
               src={IDLE_VIDEO}
@@ -158,7 +161,7 @@ export function AvatarHelper() {
               loop
               muted
               playsInline
-              className="w-full h-auto block absolute left-0 dark:brightness-100 brightness-75"
+              className="w-full h-auto block absolute left-0"
               style={{ top: "-45%" }}
             />
 

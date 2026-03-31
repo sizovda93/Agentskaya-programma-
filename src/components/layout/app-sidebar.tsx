@@ -44,6 +44,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Share2,
   Megaphone,
   ClipboardList,
+  Scale,
 };
 
 interface AppSidebarProps {
