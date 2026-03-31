@@ -12,6 +12,7 @@ import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen
 import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
+import { PayoutsTicker } from "@/components/dashboard/payouts-ticker";
 
 interface ChecklistState {
   profileFilled: boolean;
@@ -100,9 +101,12 @@ export default function AgentDashboard() {
   return (
     <div>
       <PageHeader
-        title="Дашборд"
+        title="О платформе"
         description="Обзор вашей активности и ключевые показатели"
       />
+
+      {/* Payouts ticker */}
+      <PayoutsTicker />
 
       {/* Onboarding Checklist */}
       {showChecklist && checklist && (
