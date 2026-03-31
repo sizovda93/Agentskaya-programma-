@@ -8,11 +8,14 @@ import { LeadStatusBadge } from "@/components/dashboard/status-badges";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare, DollarSign } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, DollarSign } from "lucide-react";
 import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
 import { PayoutsTicker } from "@/components/dashboard/payouts-ticker";
+import { AiChat } from "@/components/services/ai-chat";
+import { LawyerQuestion } from "@/components/services/lawyer-question";
+import { Bot, Scale } from "lucide-react";
 
 interface ChecklistState {
   profileFilled: boolean;
@@ -143,7 +146,7 @@ export default function AgentDashboard() {
                 <GraduationCap className="h-3.5 w-3.5" /> Обучение
               </Link>
               <Link href="/agent/messages" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
-                <MessageSquare className="h-3.5 w-3.5" /> Написать менеджеру
+                <MessageSquareIcon className="h-3.5 w-3.5" /> Написать менеджеру
               </Link>
             </div>
           </CardContent>
@@ -219,7 +222,32 @@ export default function AgentDashboard() {
         <StatCard title="Конверсия" value={`${conversionRate}%`} icon="Target" />
       </div>
 
-      {/* ====== 5. RECENT ACTIVITY ====== */}
+      {/* ====== 5. SERVICES FOR PARTNERS ====== */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-4">Сервис для партнёров</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Вопрос юристу */}
+          <Card className="overflow-hidden">
+            <LawyerQuestion />
+          </Card>
+
+          {/* Чат с ИИ */}
+          <Card className="overflow-hidden">
+            <div className="flex items-center gap-3 p-4 pb-0">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold">Чат с ИИ</h4>
+                <p className="text-xs text-muted-foreground">Быстрая юридическая консультация</p>
+              </div>
+            </div>
+            <AiChat />
+          </Card>
+        </div>
+      </div>
+
+      {/* ====== 6. RECENT ACTIVITY ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
