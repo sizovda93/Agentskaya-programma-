@@ -24,6 +24,7 @@ import {
   Share2,
   Megaphone,
   ClipboardList,
+  Bell,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -45,6 +46,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Megaphone,
   ClipboardList,
   Scale,
+  Bell,
 };
 
 interface AppSidebarProps {

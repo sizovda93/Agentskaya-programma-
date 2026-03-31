@@ -28,6 +28,7 @@ interface ProfileData {
   birthYear?: number | null;
   profession?: string | null;
   preferredMessenger?: string;
+  partnerNumber?: number;
 }
 
 interface TelegramStatus {
@@ -172,6 +173,9 @@ export default function AgentProfilePage() {
             </Avatar>
             <h2 className="text-lg font-semibold">{profile.fullName}</h2>
             <p className="text-sm text-muted-foreground mt-1">{profile.email}</p>
+            {profile.partnerNumber && (
+              <p className="text-xs text-primary font-mono mt-1">Партнёр №{profile.partnerNumber}</p>
+            )}
             <div className="flex items-center gap-2 mt-3">
               <Badge variant="info">Партнёр</Badge>
               <Badge variant="success">{profile.status === "active" ? "Активен" : profile.status}</Badge>
