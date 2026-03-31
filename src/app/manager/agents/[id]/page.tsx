@@ -235,7 +235,7 @@ export default function ManagerAgentDetailPage({ params }: { params: Promise<{ i
           <div className="grid grid-cols-2 gap-4">
             <StatCard title="Активные лиды" value={agent.activeLeads} icon="Users" />
             <StatCard title="Всего лидов" value={agent.totalLeads} icon="UserPlus" />
-            <StatCard title="Общий доход" value={formatCurrency(Number(agent.totalRevenue))} icon="Wallet" />
+            <StatCard title="Общий доход" value={formatCurrency(Number(agent.totalRevenue))} icon="RussianRuble" />
             <StatCard title="Рейтинг" value={`⭐ ${agent.rating}`} icon="Target" />
           </div>
 

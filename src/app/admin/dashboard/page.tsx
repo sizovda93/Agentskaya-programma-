@@ -45,7 +45,7 @@ export default function AdminDashboard() {
         <StatCard title="Партнёров" value={s?.totalAgents ?? 0} icon="Users" />
         <StatCard title="Лидов всего" value={s?.totalLeads ?? 0} icon="Target" />
         <StatCard title="Won за месяц" value={s?.wonThisMonth ?? 0} icon="UserCheck" />
-        <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="Wallet" />
+        <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="RussianRuble" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

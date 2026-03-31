@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign, Scale } from "lucide-react";
+import { RussianRuble, Scale } from "lucide-react";
 
 interface TickerEntry {
   text: string;
@@ -65,7 +65,7 @@ export function PayoutsTicker() {
         colorClass="border-success/20 bg-success/5"
         icon={
           <div className="h-7 w-7 rounded-full bg-success/15 flex items-center justify-center">
-            <DollarSign className="h-3.5 w-3.5 text-success" />
+            <RussianRuble className="h-3.5 w-3.5 text-success" />
           </div>
         }
         speed={25}

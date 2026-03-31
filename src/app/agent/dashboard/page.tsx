@@ -8,7 +8,7 @@ import { LeadStatusBadge } from "@/components/dashboard/status-badges";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, DollarSign } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble } from "lucide-react";
 import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
@@ -106,7 +106,7 @@ export default function AgentDashboard() {
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-9 w-9 rounded-lg bg-green-500/10 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-green-600" />
+                <RussianRuble className="h-5 w-5 text-green-600" />
               </div>
               <div>
                 <h3 className="text-sm font-semibold">Как зарабатывать с платформой</h3>
@@ -218,7 +218,7 @@ export default function AgentDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard title="Активные лиды" value={activeLeads.length} icon="Users" />
         <StatCard title="Непрочитанные" value={unreadCount} icon="MessageSquare" />
-        <StatCard title="Заработано" value={formatCurrency(Number(stats.totalRevenue || 0))} icon="Wallet" />
+        <StatCard title="Заработано" value={formatCurrency(Number(stats.totalRevenue || 0))} icon="RussianRuble" />
         <StatCard title="Конверсия" value={`${conversionRate}%`} icon="Target" />
       </div>
 

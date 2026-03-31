@@ -4,7 +4,7 @@ import {
   TrendingDown,
   Minus,
   Users,
-  Wallet,
+  RussianRuble,
   FileText,
   MessageSquare,
   LayoutDashboard,
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Users,
-  Wallet,
+  RussianRuble,
   FileText,
   MessageSquare,
   LayoutDashboard,

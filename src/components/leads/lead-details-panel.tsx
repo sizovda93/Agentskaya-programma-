@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LeadStatusBadge } from "@/components/dashboard/status-badges";
 import { Lead } from "@/types";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { MapPin, Phone, Mail, Calendar, MessageSquare, DollarSign } from "lucide-react";
+import { MapPin, Phone, Mail, Calendar, MessageSquare, RussianRuble } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const sourceLabels: Record<string, string> = {
@@ -54,7 +54,7 @@ export function LeadDetailsPanel({ lead }: LeadDetailsPanelProps) {
             </div>
             {lead.estimatedValue && (
               <div className="flex items-center gap-3 text-sm">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <RussianRuble className="h-4 w-4 text-muted-foreground" />
                 <span>{formatCurrency(lead.estimatedValue)}</span>
               </div>
             )}

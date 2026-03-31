@@ -57,7 +57,7 @@ export default function ManagerDashboard() {
         <StatCard title="Партнёров" value={s?.totalAgents ?? 0} icon="Users" />
         <StatCard title="Лидов в работе" value={s?.activeLeads ?? 0} icon="UserPlus" />
         <StatCard title="Won за месяц" value={s?.wonThisMonth ?? 0} icon="Target" />
-        <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="Wallet" />
+        <StatCard title="Revenue за месяц" value={formatCurrency(s?.revenueThisMonth ?? 0)} icon="RussianRuble" />
       </div>
 
       {/* Segments */}

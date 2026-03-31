@@ -8,7 +8,7 @@ import { getRoleLabel } from "@/lib/navigation";
 import {
   LayoutDashboard,
   Users,
-  Wallet,
+  RussianRuble,
   FileText,
   MessageSquare,
   User,
@@ -29,7 +29,7 @@ import {
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
   Users,
-  Wallet,
+  RussianRuble,
   FileText,
   MessageSquare,
   User,
