@@ -219,7 +219,35 @@ export default function AgentDashboard() {
         <StatCard title="Конверсия" value={`${conversionRate}%`} icon="Target" />
       </div>
 
-      {/* ====== 5. RECENT ACTIVITY ====== */}
+      {/* ====== 5. COMPANY HISTORY ====== */}
+      <Card className="mb-8">
+        <CardContent className="p-5">
+          <h2 className="text-base font-semibold mb-4">История компании</h2>
+          <div className="relative pl-6 border-l-2 border-primary/20 space-y-6">
+            {[
+              { year: "2019", title: "Основание", text: "Команда юристов начала специализироваться на банкротстве физических лиц по ФЗ-127. Первые дела в Арбитражном суде, формирование экспертизы." },
+              { year: "2020", title: "Первые 100 клиентов", text: "Выстроена система полного сопровождения: от анализа долгов до завершения процедуры. Заключены соглашения с арбитражными управляющими." },
+              { year: "2021", title: "Масштабирование", text: "Открыты представительства в нескольких регионах. Подключение к СРО «Дело» и АСПБ. Команда выросла до 20 специалистов." },
+              { year: "2022", title: "Цифровизация", text: "Запуск внутренней CRM для управления делами. Автоматизация документооборота и взаимодействия с судами." },
+              { year: "2023", title: "Партнёрская модель", text: "Разработана концепция партнёрской сети. Пилотный запуск с первыми партнёрами, отработка модели вознаграждения." },
+              { year: "2024", title: "Запуск платформы Агентум Про", text: "Создана цифровая платформа для партнёров: личный кабинет, передача лидов, отслеживание статусов, выплаты. Присоединение к СРО «Гарантия»." },
+              { year: "2025", title: "Рост сети", text: "Партнёрская сеть выросла до 500+ участников. Внедрение ИИ-помощника, системы обучения и маркетинговых материалов для партнёров." },
+              { year: "2026", title: "Сегодня", text: "Более 1000 завершённых дел о банкротстве. Платформа работает по всей России. Средняя сумма списанных долгов — 1.8 млн рублей на клиента." },
+            ].map((item) => (
+              <div key={item.year} className="relative">
+                <div className="absolute -left-[1.95rem] top-0.5 h-3 w-3 rounded-full bg-primary" />
+                <div className="flex items-baseline gap-3 mb-1">
+                  <span className="text-xs font-mono text-primary font-semibold">{item.year}</span>
+                  <span className="text-sm font-semibold">{item.title}</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ====== 6. RECENT ACTIVITY ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
