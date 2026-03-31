@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 import { FunnelBar } from "@/components/analytics/funnel-bar";
+import { PayoutsTicker } from "@/components/dashboard/payouts-ticker";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -48,9 +49,12 @@ export default function ManagerDashboard() {
   return (
     <div>
       <PageHeader
-        title="Дашборд менеджера"
+        title="О платформе"
         description="Обзор партнёрской сети и показателей"
       />
+
+      {/* Social proof tickers */}
+      <PayoutsTicker />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -115,7 +119,7 @@ export default function ManagerDashboard() {
                     className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-muted-foreground w-5">#{a.rank}</span>
+                      <span className="text-xs font-bold text-muted-foreground w-5">{a.rank}</span>
                       <div>
                         <p className="text-sm font-medium">{a.fullName}</p>
                         <p className="text-xs text-muted-foreground">{a.wonLeads} won · {formatCurrency(a.revenue)}</p>

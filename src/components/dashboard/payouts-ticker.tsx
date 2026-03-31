@@ -1,55 +1,50 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { RussianRuble, Scale } from "lucide-react";
 
 interface TickerEntry {
+  id: string;
+  type: string;
   text: string;
+  isActive: boolean;
 }
 
-// --- Выплаты партнёрам (mock) ---
-const PAYOUT_ENTRIES: TickerEntry[] = [
-  { text: "Партнёр Иванов Алексей Сергеевич получил выплату 20 000 ₽ — Поздравляем!" },
-  { text: "Партнёр Петрова Мария Владимировна получила выплату 35 000 ₽ — Поздравляем!" },
-  { text: "Партнёр Сидоров Константин Игоревич получил выплату 15 000 ₽ — Поздравляем!" },
-  { text: "Партнёр Козлова Елена Дмитриевна получила выплату 28 000 ₽ — Поздравляем!" },
-  { text: "Партнёр Новиков Дмитрий Андреевич получил выплату 42 000 ₽ — Поздравляем!" },
+// Fallback data while loading
+const FALLBACK_PAYOUTS = [
+  "Партнёр Иванов Алексей Сергеевич получил выплату 20 000 ₽ — Поздравляем!",
+  "Партнёр Петрова Мария Владимировна получила выплату 35 000 ₽ — Поздравляем!",
 ];
-
-// --- Завершённые дела из Арбитражного суда (mock) ---
-const COURT_ENTRIES: TickerEntry[] = [
-  { text: "Поздравляем партнёра Иванова Алексея Сергеевича! Его доверитель Рябинская Юлия Александровна (А53-40604/2024) полностью освобождена от долгов!" },
-  { text: "Поздравляем партнёра Петрову Марию Владимировну! Её доверитель Кузнецов Андрей Викторович (А41-18753/2024) полностью освобождён от долгов!" },
-  { text: "Поздравляем партнёра Сидорова Константина Игоревича! Его доверитель Белова Марина Сергеевна (А40-92147/2024) полностью освобождена от долгов!" },
-  { text: "Поздравляем партнёра Козлову Елену Дмитриевну! Её доверитель Тарасов Игорь Николаевич (А56-31285/2024) полностью освобождён от долгов!" },
-  { text: "Поздравляем партнёра Новикова Дмитрия Андреевича! Его доверитель Фёдорова Анна Павловна (А32-7849/2025) полностью освобождена от долгов!" },
+const FALLBACK_COURT = [
+  "Поздравляем партнёра Иванова Алексея Сергеевича! Его доверитель Рябинская Юлия Александровна (А53-40604/2024) полностью освобождена от долгов!",
 ];
 
 function MarqueeBar({
-  entries,
+  texts,
   icon,
   colorClass,
   speed = 30,
 }: {
-  entries: TickerEntry[];
+  texts: string[];
   icon: React.ReactNode;
   colorClass: string;
   speed?: number;
 }) {
-  // Duplicate entries for seamless loop
-  const doubled = [...entries, ...entries];
-  const totalChars = entries.reduce((s, e) => s + e.text.length, 0);
+  if (texts.length === 0) return null;
+
+  const doubled = [...texts, ...texts];
+  const totalChars = texts.reduce((s, t) => s + t.length, 0);
   const duration = Math.max(totalChars / speed, 20);
 
   return (
     <div className={`rounded-xl border ${colorClass} px-3 py-2 flex items-center gap-3 overflow-hidden`}>
       <div className="shrink-0 z-10">{icon}</div>
       <div className="flex-1 overflow-hidden relative">
-        {/* Fade edges */}
         <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[var(--background)] to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--background)] to-transparent z-10 pointer-events-none" />
         <div className="marquee-track flex whitespace-nowrap" style={{ animationDuration: `${duration}s` }}>
-          {doubled.map((e, i) => (
-            <span key={i} className="text-sm mx-8">{e.text}</span>
+          {doubled.map((t, i) => (
+            <span key={i} className="text-sm mx-8">{t}</span>
           ))}
         </div>
       </div>
@@ -58,10 +53,26 @@ function MarqueeBar({
 }
 
 export function PayoutsTicker() {
+  const [payouts, setPayouts] = useState<string[]>(FALLBACK_PAYOUTS);
+  const [court, setCourt] = useState<string[]>(FALLBACK_COURT);
+
+  useEffect(() => {
+    fetch("/api/tickers")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: TickerEntry[]) => {
+        const active = data.filter((e) => e.isActive);
+        const p = active.filter((e) => e.type === "payout").map((e) => e.text);
+        const c = active.filter((e) => e.type === "court").map((e) => e.text);
+        if (p.length > 0) setPayouts(p);
+        if (c.length > 0) setCourt(c);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="space-y-3 mb-6">
       <MarqueeBar
-        entries={PAYOUT_ENTRIES}
+        texts={payouts}
         colorClass="border-success/20 bg-success/5"
         icon={
           <div className="h-7 w-7 rounded-full bg-success/15 flex items-center justify-center">
@@ -71,7 +82,7 @@ export function PayoutsTicker() {
         speed={25}
       />
       <MarqueeBar
-        entries={COURT_ENTRIES}
+        texts={court}
         colorClass="border-primary/20 bg-primary/5"
         icon={
           <div className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center">

@@ -14,7 +14,7 @@ export const agentNav: NavItem[] = [
 ];
 
 export const managerNav: NavItem[] = [
-  { title: "Дашборд", href: "/manager/dashboard", icon: "LayoutDashboard" },
+  { title: "О платформе", href: "/manager/dashboard", icon: "LayoutDashboard" },
   { title: "Партнёры", href: "/manager/agents", icon: "Users" },
   { title: "Лиды", href: "/manager/leads", icon: "UserPlus" },
   { title: "Диалоги", href: "/manager/conversations", icon: "MessageSquare", badge: 5 },
@@ -37,6 +37,7 @@ export const adminNav: NavItem[] = [
   { title: "Логи", href: "/admin/logs", icon: "ScrollText" },
   { title: "Рефералы", href: "/admin/referrals", icon: "Share2" },
   { title: "Материалы", href: "/admin/marketing", icon: "Megaphone" },
+  { title: "Объявления", href: "/admin/announcements", icon: "Bell" },
   { title: "Обучение", href: "/admin/learning", icon: "GraduationCap" },
 ];
 
