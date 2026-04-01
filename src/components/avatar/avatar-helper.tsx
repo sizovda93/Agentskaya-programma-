@@ -175,11 +175,11 @@ export function AvatarHelper() {
   return (
     <div className="flex items-start gap-4">
       {/* Video card — left */}
-      <Card className="overflow-hidden rounded-2xl shrink-0" style={{ width: 180 }}>
+      <Card className="overflow-hidden rounded-2xl shrink-0" style={{ width: 220 }}>
         <CardContent className="p-0">
           <div
             className="relative overflow-hidden"
-            style={{ height: 170, backgroundColor: state === "answering" ? "#000" : "#45704C", borderRadius: "1rem" }}
+            style={{ height: 210, backgroundColor: state === "answering" ? "#000" : "#45704C", borderRadius: "1rem" }}
           >
             <video
               ref={videoRef}
