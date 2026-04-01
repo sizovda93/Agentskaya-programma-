@@ -363,66 +363,67 @@ export default function AgentProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Feedback */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" /> Обратная связь
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {fbSent ? (
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <Check className="h-4 w-4" /> Спасибо за обратную связь!
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">Расскажите, что можно улучшить или что мешает работе</p>
-                  <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                    value={fbType}
-                    onChange={(e) => setFbType(e.target.value)}
-                  >
-                    <option value="platform">О платформе</option>
-                    <option value="onboarding">Об обучении</option>
-                    <option value="suggestion">Предложение</option>
-                    <option value="problem">Проблема</option>
-                  </select>
-                  <textarea
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[80px]"
-                    placeholder="Ваш комментарий..."
-                    value={fbMessage}
-                    onChange={(e) => setFbMessage(e.target.value)}
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      size="sm"
-                      disabled={fbSending || !fbMessage.trim()}
-                      onClick={async () => {
-                        setFbSending(true);
-                        try {
-                          const res = await fetch("/api/feedback", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ type: fbType, message: fbMessage }),
-                          });
-                          if (res.ok) {
-                            setFbSent(true);
-                            setFbMessage("");
-                          }
-                        } catch { /* ignore */ }
-                        finally { setFbSending(false); }
-                      }}
-                    >
-                      {fbSending ? "Отправка..." : "Отправить"}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      {/* Feedback — full width */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" /> Обратная связь
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {fbSent ? (
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <Check className="h-4 w-4" /> Спасибо за обратную связь!
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Расскажите, что можно улучшить или что мешает работе</p>
+              <select
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                value={fbType}
+                onChange={(e) => setFbType(e.target.value)}
+              >
+                <option value="platform">О платформе</option>
+                <option value="onboarding">Об обучении</option>
+                <option value="suggestion">Предложение</option>
+                <option value="problem">Проблема</option>
+              </select>
+              <textarea
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[80px]"
+                placeholder="Ваш комментарий..."
+                value={fbMessage}
+                onChange={(e) => setFbMessage(e.target.value)}
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  disabled={fbSending || !fbMessage.trim()}
+                  onClick={async () => {
+                    setFbSending(true);
+                    try {
+                      const res = await fetch("/api/feedback", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ type: fbType, message: fbMessage }),
+                      });
+                      if (res.ok) {
+                        setFbSent(true);
+                        setFbMessage("");
+                      }
+                    } catch { /* ignore */ }
+                    finally { setFbSending(false); }
+                  }}
+                >
+                  {fbSending ? "Отправка..." : "Отправить"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
