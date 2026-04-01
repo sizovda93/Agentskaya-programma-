@@ -77,7 +77,7 @@ const convStatusConfig: Record<ConversationStatus, { label: string; variant: "su
 };
 
 export function ConversationStatusBadge({ status }: { status: ConversationStatus }) {
-  const config = convStatusConfig[status];
+  const config = convStatusConfig[status] || { label: status || "—", variant: "secondary" as const };
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
@@ -89,7 +89,7 @@ const modeConfig: Record<ConversationMode, { label: string; variant: "info" | "d
 };
 
 export function ModeBadge({ mode }: { mode: ConversationMode }) {
-  const config = modeConfig[mode];
+  const config = modeConfig[mode] || { label: mode || "—", variant: "default" as const };
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 

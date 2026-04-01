@@ -61,30 +61,37 @@ export default function AgentMessagesPage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-xl border border-border overflow-hidden h-[600px]">
-        <div className="border-r border-border overflow-y-auto">
-          <ConversationList
-            conversations={conversations}
-            activeId={activeConv?.id}
-            onSelect={setActiveConv}
-          />
+      {conversations.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-sm text-muted-foreground">Нет активных диалогов</p>
+          <p className="text-xs text-muted-foreground mt-1">Диалог с менеджером создаётся автоматически при закреплении</p>
         </div>
-
-        <div className="lg:col-span-2">
-          {activeConv ? (
-            <ChatWindow
-              conversation={activeConv}
-              messages={messages}
-              currentUserType="agent"
-              onSend={handleSend}
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-xl border border-border overflow-hidden h-[600px]">
+          <div className="border-r border-border overflow-y-auto">
+            <ConversationList
+              conversations={conversations}
+              activeId={activeConv?.id}
+              onSelect={setActiveConv}
             />
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-              Выберите диалог
-            </div>
-          )}
+          </div>
+
+          <div className="lg:col-span-2">
+            {activeConv ? (
+              <ChatWindow
+                conversation={activeConv}
+                messages={messages}
+                currentUserType="agent"
+                onSend={handleSend}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                Выберите диалог
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
