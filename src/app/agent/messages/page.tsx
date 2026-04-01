@@ -36,6 +36,26 @@ export default function AgentMessagesPage() {
     if (activeConv) loadMessages(activeConv.id);
   }, [activeConv, loadMessages]);
 
+  // Auto-refresh messages every 5 seconds
+  useEffect(() => {
+    if (!activeConv) return;
+    const timer = setInterval(() => loadMessages(activeConv.id), 5000);
+    return () => clearInterval(timer);
+  }, [activeConv, loadMessages]);
+
+  // Auto-refresh conversation list every 15 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      fetch("/api/conversations")
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setConversations(data);
+        })
+        .catch(() => {});
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleSend = async (text: string) => {
     if (!activeConv) return;
     const res = await fetch(`/api/conversations/${activeConv.id}`, {
