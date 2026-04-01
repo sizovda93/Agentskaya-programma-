@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, CheckCircle2, Scale } from "lucide-react";
+import { Send, CheckCircle2, Scale, Percent } from "lucide-react";
 
 export function LawyerQuestion() {
   const [subject, setSubject] = useState("");
@@ -41,51 +41,66 @@ export function LawyerQuestion() {
   };
 
   return (
-    <div className="p-4 flex flex-col h-[420px]">
+    <div className="p-5">
       <div className="flex items-center gap-3 mb-4">
         <div className="h-9 w-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
           <Scale className="h-5 w-5 text-orange-500" />
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Вопрос юристу</h4>
+          <h4 className="text-sm font-semibold">Обращение к юристу</h4>
           <p className="text-xs text-muted-foreground">Персональная консультация от юриста платформы</p>
         </div>
       </div>
 
+      {/* Discount banner */}
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 mb-5">
+        <div className="flex items-start gap-3">
+          <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+            <Percent className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-primary mb-1">Скидка 20% для партнёров</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              В случае необходимости представительства в суде, составления процессуальных документов или иных юридических услуг,
+              партнёрам платформы предоставляется скидка в размере 20% от стоимости услуг при обращении через данную форму.
+              Скидка распространяется на все виды юридической помощи, оказываемой специалистами компании.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {sent ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center justify-center text-center py-8">
           <CheckCircle2 className="h-10 w-10 text-success mb-3" />
-          <p className="text-sm font-medium">Вопрос отправлен!</p>
+          <p className="text-sm font-medium">Обращение отправлено!</p>
           <p className="text-xs text-muted-foreground mt-1">Юрист ответит в течение рабочего дня в разделе «Сообщения»</p>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col">
-          <div className="space-y-3 flex-1">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Тема (необязательно)</label>
-              <Input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Например: вопрос по банкротству"
-                className="text-sm"
-              />
-            </div>
-            <div className="flex-1 flex flex-col">
-              <label className="text-xs text-muted-foreground mb-1 block">Ваш вопрос</label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Опишите ситуацию подробно — чем больше деталей, тем точнее будет ответ юриста..."
-                className="flex-1 min-h-[140px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Тема обращения (необязательно)</label>
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Например: представительство в суде, составление документов"
+              className="text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Описание вопроса</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Опишите ситуацию подробно — чем больше деталей, тем точнее будет ответ юриста..."
+              className="min-h-[160px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
           </div>
 
-          <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center justify-between pt-2">
             <p className="text-[11px] text-muted-foreground">Ответ придёт в раздел «Сообщения»</p>
             <Button size="sm" onClick={handleSubmit} disabled={sending || !message.trim()}>
               <Send className="h-4 w-4 mr-1" />
-              {sending ? "Отправка..." : "Отправить"}
+              {sending ? "Отправка..." : "Отправить обращение"}
             </Button>
           </div>
         </div>
