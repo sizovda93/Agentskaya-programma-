@@ -12,56 +12,56 @@ interface AvatarQuestion {
   answerText: string;
 }
 
-const IDLE_VIDEO = "/avatar/idle.webm?v=3";
+const IDLE_VIDEO = "/avatar/idle.mp4";
 const ELEVENLABS_VOICE_ID = "yl2ZDV1MzN4HbQJbMihG";
 
 const questions: AvatarQuestion[] = [
   {
     id: "q1",
     label: "Что это за платформа?",
-    video: "/avatar/answer-q1.webm",
+    video: "/avatar/answer-q1.mp4",
     answerText:
       "Это партнёрская платформа, где вы можете передавать клиентов, следить за их статусами и зарабатывать через партнёрскую программу",
   },
   {
     id: "q2",
     label: "Как здесь зарабатывать?",
-    video: "/avatar/answer-q2.webm",
+    video: "/avatar/answer-q2.mp4",
     answerText:
       "Вы передаёте клиентов в платформу, команда берёт их в работу, а вы получаете вознаграждение по результату",
   },
   {
     id: "q3",
     label: "Кто может стать партнёром?",
-    video: "/avatar/answer-q1.webm",
+    video: "/avatar/answer-q1.mp4",
     answerText:
       "Партнёром может стать любой совершеннолетний гражданин России. Юридическое образование не требуется. Главное — желание помогать людям решить проблему с долгами и готовность рекомендовать нашу компанию.",
   },
   {
     id: "q4",
     label: "Сколько можно заработать?",
-    video: "/avatar/answer-q2.webm",
+    video: "/avatar/answer-q2.mp4",
     answerText:
       "Вознаграждение составляет от 10 до 25 тысяч рублей за каждого клиента, заключившего договор. Чем больше клиентов вы приводите, тем выше ваш уровень и размер комиссии. Верхнего предела заработка нет.",
   },
   {
     id: "q5",
     label: "Что такое банкротство?",
-    video: "/avatar/answer-q1.webm",
+    video: "/avatar/answer-q1.mp4",
     answerText:
       "Банкротство физических лиц — это законная процедура списания долгов по федеральному закону 127. Если у человека долги от 300 тысяч рублей и он не может их выплачивать, суд может полностью освободить его от обязательств перед кредиторами.",
   },
   {
     id: "q6",
     label: "Как передать клиента?",
-    video: "/avatar/answer-q2.webm",
+    video: "/avatar/answer-q2.mp4",
     answerText:
       "Зайдите в раздел Лиды, нажмите Передать клиента, укажите имя и телефон человека. Это занимает одну минуту. Дальше менеджер свяжется с клиентом, проведёт консультацию и возьмёт дело в работу. Вы будете видеть статус в личном кабинете.",
   },
   {
     id: "q7",
     label: "Когда приходит выплата?",
-    video: "/avatar/answer-q1.webm",
+    video: "/avatar/answer-q1.mp4",
     answerText:
       "Выплата начисляется после того, как клиент заключает договор и вносит первый платёж. Обычно это происходит в течение одной-двух недель после передачи контакта. Все начисления вы видите в разделе Финансы в личном кабинете.",
   },
@@ -187,7 +187,7 @@ export function AvatarHelper() {
         <CardContent className="p-0">
           <div
             className="relative overflow-hidden"
-            style={{ height: 170 }}
+            style={{ height: 170, backgroundColor: state === "answering" ? "#000" : "#45704C", borderRadius: "1rem" }}
           >
             <video
               ref={videoRef}
