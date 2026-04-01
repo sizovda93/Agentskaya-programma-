@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Message, Conversation } from "@/types";
 import { MessageBubble } from "./message-bubble";
 import { MessageInput } from "./message-input";
@@ -15,10 +16,19 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ conversation, messages, currentUserType = "agent", onSend, showClassification, onInputRef }: ChatWindowProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-h-full">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
           <h3 className="font-medium">{conversation.clientName}</h3>
           <div className="flex items-center gap-2 mt-1">
@@ -31,8 +41,8 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent", 
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1">
+      {/* Messages — scrollable */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-1 min-h-0">
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id}
@@ -43,8 +53,10 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent", 
         ))}
       </div>
 
-      {/* Input */}
-      <MessageInput onSend={onSend ?? (() => {})} onInputRef={onInputRef} />
+      {/* Input — always visible at bottom */}
+      <div className="shrink-0">
+        <MessageInput onSend={onSend ?? (() => {})} onInputRef={onInputRef} />
+      </div>
     </div>
   );
 }
