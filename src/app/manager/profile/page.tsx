@@ -108,9 +108,9 @@ export default function ManagerProfilePage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left column: profile card + telegram */}
-        <div className="self-start space-y-6">
+        <div className="space-y-6">
           <Card>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <Avatar className="h-20 w-20 mb-4">
@@ -164,8 +164,8 @@ export default function ManagerProfilePage() {
           </Card>
         </div>
 
-        {/* Right column: edit form */}
-        <div className="lg:col-span-2">
+        {/* Right column: edit form + feedback */}
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Личные данные</CardTitle>
@@ -191,11 +191,7 @@ export default function ManagerProfilePage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
-      {/* Feedback — full width */}
-      <Card className="mt-6">
+          <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <MessageCircle className="h-4 w-4" /> Обратная связь
@@ -225,7 +221,9 @@ export default function ManagerProfilePage() {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
