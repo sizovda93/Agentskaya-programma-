@@ -26,6 +26,7 @@ export const managerNav: NavItem[] = [
   { title: "Операции", href: "/manager/operations", icon: "ClipboardList" },
   { title: "Рефералы", href: "/manager/referrals", icon: "Share2" },
   { title: "Обучение", href: "/manager/learning", icon: "GraduationCap" },
+  { title: "Профиль", href: "/manager/profile", icon: "User" },
 ];
 
 export const adminNav: NavItem[] = [
