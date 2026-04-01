@@ -67,7 +67,7 @@ export default function AgentMessagesPage() {
           <p className="text-xs text-muted-foreground mt-1">Диалог с менеджером создаётся автоматически при закреплении</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-xl border border-border overflow-hidden h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-xl border border-border overflow-hidden" style={{ height: "calc(100vh - 200px)" }}>
           <div className="border-r border-border overflow-y-auto">
             <ConversationList
               conversations={conversations}
