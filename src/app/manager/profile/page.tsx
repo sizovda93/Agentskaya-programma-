@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import { getInitials } from "@/lib/utils";
-import { Send, Unlink, MessageCircle, Check } from "lucide-react";
+import { Send, Unlink, MessageCircle, Check, Link2, Plug } from "lucide-react";
 
 interface ProfileData {
   id: string;
@@ -33,12 +33,10 @@ export default function ManagerProfilePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Telegram
   const [tgStatus, setTgStatus] = useState<TelegramStatus | null>(null);
   const [tgDeepLink, setTgDeepLink] = useState<string | null>(null);
   const [tgLoading, setTgLoading] = useState(false);
 
-  // Feedback
   const [fbType, setFbType] = useState("platform");
   const [fbMessage, setFbMessage] = useState("");
   const [fbSending, setFbSending] = useState(false);
@@ -70,10 +68,10 @@ export default function ManagerProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (res.ok) setMessage("Сохранено");
+      if (res.ok) setMessage("Изменения сохранены");
       else setMessage("Ошибка сохранения");
-    } catch { setMessage("Ошибка"); }
-    finally { setSaving(false); }
+    } catch { setMessage("Ошибка соединения"); }
+    finally { setSaving(false); setTimeout(() => setMessage(""), 3000); }
   };
 
   const handleTgConnect = async () => {
@@ -101,62 +99,84 @@ export default function ManagerProfilePage() {
     <div>
       <PageHeader
         title="Профиль"
-        description="Личные данные и настройки"
+        description="Управление личными данными и настройками"
         breadcrumbs={[
           { title: "О платформе", href: "/manager/dashboard" },
           { title: "Профиль" },
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Left column: profile card + telegram */}
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5 items-start">
+
+        {/* ====== LEFT: Identity + Integrations ====== */}
+        <div className="space-y-5">
+
+          {/* Profile card — compact */}
           <Card>
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <Avatar className="h-20 w-20 mb-4">
-                <AvatarFallback className="text-xl">{getInitials(profile.fullName)}</AvatarFallback>
-              </Avatar>
-              <h2 className="text-lg font-semibold">{profile.fullName}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{profile.email}</p>
-              <div className="flex items-center gap-2 mt-3">
-                <Badge variant="warning">Менеджер</Badge>
-                <Badge variant="success">{profile.status === "active" ? "Активен" : profile.status}</Badge>
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="text-sm font-semibold">{getInitials(profile.fullName)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{profile.fullName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Badge variant="outline" className="text-[10px] font-normal">Менеджер</Badge>
+                <Badge variant="outline" className="text-[10px] font-normal text-success border-success/30">
+                  {profile.status === "active" ? "Активен" : profile.status}
+                </Badge>
               </div>
             </CardContent>
           </Card>
 
+          {/* Integrations — Telegram */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Send className="h-4 w-4" /> Telegram
+            <CardHeader className="pb-2 pt-4 px-5">
+              <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1.5">
+                <Plug className="h-3 w-3" /> Подключения
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {tgStatus?.connected ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="success">Подключён</Badge>
-                    {tgStatus.telegramUsername && <span className="text-sm text-muted-foreground">@{tgStatus.telegramUsername}</span>}
-                    {!tgStatus.telegramUsername && tgStatus.telegramFirstName && <span className="text-sm text-muted-foreground">{tgStatus.telegramFirstName}</span>}
+            <CardContent className="px-5 pb-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-[#2AABEE]/10 flex items-center justify-center">
+                    <Send className="h-3.5 w-3.5 text-[#2AABEE]" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Вы получаете уведомления в Telegram.</p>
-                  <Button variant="outline" size="sm" onClick={handleTgDisconnect} disabled={tgLoading}>
-                    <Unlink className="h-3.5 w-3.5 mr-1" /> {tgLoading ? "..." : "Отключить"}
+                  <div>
+                    <p className="text-sm font-medium">Telegram</p>
+                    {tgStatus?.connected ? (
+                      <p className="text-[11px] text-success">
+                        {tgStatus.telegramUsername ? `@${tgStatus.telegramUsername}` : "Подключён"}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">Не подключён</p>
+                    )}
+                  </div>
+                </div>
+                {tgStatus?.connected ? (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={handleTgDisconnect} disabled={tgLoading}>
+                    <Unlink className="h-3 w-3 mr-1" /> Отключить
                   </Button>
-                </div>
-              ) : tgDeepLink ? (
-                <div className="space-y-3">
-                  <p className="text-sm">Откройте ссылку и нажмите Start в боте:</p>
-                  <a href={tgDeepLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2AABEE] text-white text-sm font-medium hover:bg-[#229ED9] transition-colors">
-                    <Send className="h-4 w-4" /> Открыть Telegram
+                ) : tgDeepLink ? (
+                  <a href={tgDeepLink} target="_blank" rel="noopener noreferrer">
+                    <Button size="sm" className="h-7 text-xs bg-[#2AABEE] hover:bg-[#229ED9]">
+                      <Link2 className="h-3 w-3 mr-1" /> Открыть
+                    </Button>
                   </a>
-                  <Button variant="ghost" size="sm" onClick={() => { setTgDeepLink(null); loadTgStatus(); }}>Обновить статус</Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">Подключите Telegram для уведомлений.</p>
-                  <Button onClick={handleTgConnect} disabled={tgLoading}>
-                    <Send className="h-4 w-4 mr-1" /> {tgLoading ? "..." : "Подключить Telegram"}
+                ) : (
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleTgConnect} disabled={tgLoading}>
+                    {tgLoading ? "..." : "Подключить"}
+                  </Button>
+                )}
+              </div>
+              {tgDeepLink && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-[11px] text-muted-foreground mb-2">Нажмите Start в боте, затем:</p>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs w-full" onClick={() => { setTgDeepLink(null); loadTgStatus(); }}>
+                    Обновить статус
                   </Button>
                 </div>
               )}
@@ -164,63 +184,79 @@ export default function ManagerProfilePage() {
           </Card>
         </div>
 
-        {/* Right column: edit form + feedback */}
-        <div className="space-y-6">
+        {/* ====== RIGHT: Forms ====== */}
+        <div className="space-y-5">
+
+          {/* Personal info */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Личные данные</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Личные данные</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">Основная информация вашего аккаунта</p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-4 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1.5 block">ФИО</label>
-                  <Input value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} />
+                  <label className="text-xs text-muted-foreground mb-1 block">ФИО</label>
+                  <Input className="h-9 text-sm" value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1.5 block">Email</label>
-                  <Input value={profile.email} disabled />
+                  <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                  <Input className="h-9 text-sm bg-muted/50" value={profile.email} disabled />
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1.5 block">Телефон</label>
-                  <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+                  <label className="text-xs text-muted-foreground mb-1 block">Телефон</label>
+                  <Input className="h-9 text-sm" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="+7 (___) ___-__-__" />
                 </div>
               </div>
-              {message && <p className="text-sm text-muted-foreground">{message}</p>}
-              <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={saving}>{saving ? "Сохранение..." : "Сохранить"}</Button>
+              <div className="flex items-center justify-between pt-1">
+                {message ? (
+                  <p className="text-xs text-success flex items-center gap-1"><Check className="h-3 w-3" /> {message}</p>
+                ) : (
+                  <div />
+                )}
+                <Button size="sm" className="h-8" onClick={handleSave} disabled={saving}>
+                  {saving ? "Сохранение..." : "Сохранить изменения"}
+                </Button>
               </div>
             </CardContent>
           </Card>
+
+          {/* Feedback */}
           <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" /> Обратная связь
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {fbSent ? (
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <Check className="h-4 w-4" /> Спасибо за обратную связь!
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Расскажите, что можно улучшить</p>
-              <select className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={fbType} onChange={(e) => setFbType(e.target.value)}>
-                <option value="platform">О платформе</option>
-                <option value="suggestion">Предложение</option>
-                <option value="problem">Проблема</option>
-              </select>
-              <textarea className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[80px]" placeholder="Ваш комментарий..." value={fbMessage} onChange={(e) => setFbMessage(e.target.value)} />
-              <div className="flex justify-end">
-                <Button size="sm" disabled={fbSending || !fbMessage.trim()} onClick={async () => {
-                  setFbSending(true);
-                  try { const res = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: fbType, message: fbMessage }) }); if (res.ok) { setFbSent(true); setFbMessage(""); } } catch {}
-                  finally { setFbSending(false); }
-                }}>{fbSending ? "Отправка..." : "Отправить"}</Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" /> Обратная связь
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">Помогите нам улучшить платформу</p>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {fbSent ? (
+                <div className="flex items-center gap-2 text-sm text-success py-3">
+                  <Check className="h-4 w-4" /> Спасибо! Ваше сообщение отправлено.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <select className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-xs" value={fbType} onChange={(e) => setFbType(e.target.value)}>
+                    <option value="platform">О платформе</option>
+                    <option value="suggestion">Предложение</option>
+                    <option value="problem">Проблема</option>
+                  </select>
+                  <textarea
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[70px] resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder="Опишите вашу идею или проблему..."
+                    value={fbMessage}
+                    onChange={(e) => setFbMessage(e.target.value)}
+                  />
+                  <div className="flex justify-end">
+                    <Button size="sm" variant="outline" className="h-8 text-xs" disabled={fbSending || !fbMessage.trim()} onClick={async () => {
+                      setFbSending(true);
+                      try { const res = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: fbType, message: fbMessage }) }); if (res.ok) { setFbSent(true); setFbMessage(""); setTimeout(() => setFbSent(false), 4000); } } catch {}
+                      finally { setFbSending(false); }
+                    }}>{fbSending ? "..." : "Отправить"}</Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </div>
       </div>
