@@ -8,6 +8,7 @@ export const agentNav: NavItem[] = [
   { title: "Рефералы", href: "/agent/referral", icon: "Share2" },
   { title: "Материалы", href: "/agent/marketing", icon: "Megaphone" },
   { title: "Обучение", href: "/agent/learning", icon: "GraduationCap" },
+  { title: "Вакансии", href: "/agent/vacancies", icon: "Briefcase" },
   { title: "Объявления", href: "/agent/announcements", icon: "Bell" },
   { title: "Сервис для партнёра", href: "/agent/services", icon: "Scale" },
   { title: "Профиль", href: "/agent/profile", icon: "User" },
@@ -37,6 +38,7 @@ export const adminNav: NavItem[] = [
   { title: "Логи", href: "/admin/logs", icon: "ScrollText" },
   { title: "Рефералы", href: "/admin/referrals", icon: "Share2" },
   { title: "Материалы", href: "/admin/marketing", icon: "Megaphone" },
+  { title: "Вакансии", href: "/admin/vacancies", icon: "Briefcase" },
   { title: "Объявления", href: "/admin/announcements", icon: "Bell" },
   { title: "Обучение", href: "/admin/learning", icon: "GraduationCap" },
 ];
