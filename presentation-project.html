@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Агентская программа — Презентация проекта</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; background: white; }
+
+  .slide {
+    width: 297mm; height: 210mm;
+    padding: 40px 60px;
+    page-break-after: always;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide:last-child { page-break-after: avoid; }
+
+  /* Slide variants */
+  .slide-cover {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: white;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  .slide-cover h1 { font-size: 52px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+  .slide-cover .subtitle { font-size: 22px; opacity: 0.85; margin-bottom: 40px; }
+  .slide-cover .meta { font-size: 15px; opacity: 0.5; }
+
+  .slide-section {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    text-align: center;
+    align-items: center;
+  }
+  .slide-section h2 { font-size: 44px; font-weight: 700; }
+  .slide-section .section-sub { font-size: 20px; opacity: 0.8; margin-top: 12px; }
+
+  .slide-content { justify-content: flex-start; padding-top: 50px; }
+  .slide-content h2 { font-size: 30px; font-weight: 700; color: #302b63; margin-bottom: 28px; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+  .slide-content h3 { font-size: 20px; font-weight: 600; color: #444; margin: 18px 0 10px; }
+
+  .cols { display: flex; gap: 40px; }
+  .col { flex: 1; }
+
+  ul { list-style: none; padding: 0; }
+  ul li { padding: 6px 0 6px 24px; position: relative; font-size: 16px; line-height: 1.5; }
+  ul li::before { content: "→"; position: absolute; left: 0; color: #667eea; font-weight: bold; }
+  ul.check li::before { content: "✓"; color: #22c55e; }
+  ul.dot li::before { content: "●"; font-size: 8px; top: 11px; color: #667eea; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
+  th { background: #f0f0ff; text-align: left; padding: 10px 12px; font-weight: 600; border-bottom: 2px solid #667eea; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e5e5e5; }
+  tr:nth-child(even) td { background: #fafafe; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 20px 0; }
+  .stat-card { background: #f8f8ff; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e8e8f0; }
+  .stat-card .value { font-size: 36px; font-weight: 800; color: #302b63; }
+  .stat-card .label { font-size: 13px; color: #666; margin-top: 4px; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin: 2px 4px; }
+  .badge-blue { background: #e8f0fe; color: #1a56db; }
+  .badge-green { background: #e8fbe8; color: #16a34a; }
+  .badge-yellow { background: #fef9e7; color: #ca8a04; }
+  .badge-purple { background: #f0e8fe; color: #7c3aed; }
+  .badge-gray { background: #f3f4f6; color: #4b5563; }
+
+  .timeline { position: relative; padding-left: 30px; }
+  .timeline::before { content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px; width: 2px; background: #667eea; }
+  .timeline-item { position: relative; margin-bottom: 12px; }
+  .timeline-item::before { content: ""; position: absolute; left: -26px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #667eea; }
+  .timeline-item .t-title { font-weight: 600; font-size: 14px; }
+  .timeline-item .t-desc { font-size: 12px; color: #666; }
+
+  .footer { position: absolute; bottom: 20px; left: 60px; right: 60px; display: flex; justify-content: space-between; font-size: 11px; color: #999; }
+
+  .flow-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+  .flow-box { background: #f0f0ff; border: 1px solid #d0d0f0; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 500; }
+  .flow-arrow { color: #667eea; font-size: 18px; font-weight: bold; }
+
+  .highlight-box { background: linear-gradient(135deg, #f0f0ff, #e8f0fe); border-radius: 12px; padding: 24px; margin: 16px 0; border-left: 4px solid #667eea; }
+  .highlight-box p { font-size: 15px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Cover -->
+<div class="slide slide-cover">
+  <h1>Агентская программа</h1>
+  <div class="subtitle">Платформа управления партнёрской сетью<br>для банкротства физических лиц</div>
+  <div class="meta">Март 2026 · v1.0 Beta</div>
+</div>
+
+<!-- SLIDE 2: Problem -->
+<div class="slide slide-content">
+  <h2>Проблема</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Для бизнеса</h3>
+      <ul class="dot">
+        <li>Агентская сеть растёт, но управление ведётся вручную</li>
+        <li>Нет единой системы учёта лидов и выплат</li>
+        <li>Споры «чей клиент» решаются в чатах</li>
+        <li>Нет контроля качества и обучения партнёров</li>
+        <li>Менеджер тратит 80% времени на рутину</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Для агентов</h3>
+      <ul class="dot">
+        <li>Непонятно, сколько заработал и за что</li>
+        <li>Нет инструментов для привлечения клиентов</li>
+        <li>Нет обучения и адаптации</li>
+        <li>Нет прозрачности выплат</li>
+        <li>Нет мотивации расти</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>2 / 16</span></div>
+</div>
+
+<!-- SLIDE 3: Solution -->
+<div class="slide slide-content">
+  <h2>Решение</h2>
+  <div class="highlight-box">
+    <p><strong>Агентская программа</strong> — веб-платформа, которая автоматизирует управление партнёрской сетью: от регистрации агента до выплаты комиссии. Вся цепочка — лиды, обучение, контроль качества, финансы, коммуникации — в одном месте.</p>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="value">3</div>
+      <div class="label">Роли: Агент, Менеджер, Админ</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">9</div>
+      <div class="label">Этапов разработки (T1–T9)</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">52</div>
+      <div class="label">Файлов в последнем коммите</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">12</div>
+      <div class="label">Подсистем платформы</div>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>3 / 16</span></div>
+</div>
+
+<!-- SLIDE 4: Section - Architecture -->
+<div class="slide slide-section">
+  <h2>Архитектура</h2>
+  <div class="section-sub">Технологический стек и структура</div>
+</div>
+
+<!-- SLIDE 5: Tech Stack -->
+<div class="slide slide-content">
+  <h2>Технологический стек</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Backend</h3>
+      <ul>
+        <li><strong>Next.js 16</strong> — API Routes + SSR</li>
+        <li><strong>PostgreSQL</strong> — основная БД</li>
+        <li><strong>JWT</strong> — httpOnly cookies, 7-дней TTL</li>
+        <li><strong>Telegram Bot API</strong> — webhook transport</li>
+        <li><strong>bcrypt</strong> — хеширование паролей</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Frontend</h3>
+      <ul>
+        <li><strong>React 19</strong> — клиентские компоненты</li>
+        <li><strong>Tailwind CSS</strong> — стилизация</li>
+        <li><strong>shadcn/ui</strong> — UI-компоненты</li>
+        <li><strong>Lucide</strong> — иконки</li>
+        <li><strong>TypeScript</strong> — strict mode</li>
+      </ul>
+      <h3>Инфраструктура</h3>
+      <ul>
+        <li><strong>pm2</strong> — процесс-менеджер</li>
+        <li><strong>nginx</strong> — reverse proxy</li>
+        <li><strong>VPS</strong> — 5.42.110.182</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>5 / 16</span></div>
+</div>
+
+<!-- SLIDE 6: Section - Features -->
+<div class="slide slide-section">
+  <h2>Возможности платформы</h2>
+  <div class="section-sub">12 подсистем, построенных за 9 этапов</div>
+</div>
+
+<!-- SLIDE 7: Core Features -->
+<div class="slide slide-content">
+  <h2>Ядро платформы</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Управление лидами</h3>
+      <ul class="check">
+        <li>Создание лидов агентом / менеджером</li>
+        <li>7-этапная воронка: new → won/lost</li>
+        <li>Автоматическое обнаружение дублей по телефону/email</li>
+        <li>Conflict resolution flow (4 варианта)</li>
+        <li>Ownership policy: первый создавший = владелец</li>
+        <li>Timeline событий по каждому лиду</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Финансы и выплаты</h3>
+      <ul class="check">
+        <li>Автоматическое создание payout при won</li>
+        <li>State machine: pending → processing → paid</li>
+        <li>3 уровня партнёров: Base (25%), Silver (30%), Gold (35%)</li>
+        <li>Snapshot расчёта: база, ставка, tier, бонус</li>
+        <li>Auto-upgrade Base → Silver при 5 won</li>
+        <li>Rejection с обязательной причиной</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>7 / 16</span></div>
+</div>
+
+<!-- SLIDE 8: Communication & Learning -->
+<div class="slide slide-content">
+  <h2>Коммуникации и обучение</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Telegram Transport</h3>
+      <ul class="check">
+        <li>Привязка аккаунта через deep-link + token</li>
+        <li>Двусторонний обмен сообщениями</li>
+        <li>4 типа уведомлений: статус лида, payout, сообщение</li>
+        <li>Auto-deactivation при блокировке бота</li>
+        <li>Webhook с дедупликацией</li>
+      </ul>
+      <h3>Диалоги</h3>
+      <ul class="check">
+        <li>Web-чат менеджер ↔ агент</li>
+        <li>Автопересылка в Telegram</li>
+        <li>Unread count, channel badges</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Learning Layer</h3>
+      <ul class="check">
+        <li>Контент в БД (модули + уроки)</li>
+        <li>Серверный progress tracking</li>
+        <li>Обязательные модули для активации</li>
+        <li>Auto-onboarding: pending → in_progress → completed</li>
+        <li>Контент для 3 ролей (15 модулей, 29 уроков)</li>
+      </ul>
+      <h3>Marketing Materials</h3>
+      <ul class="check">
+        <li>17 готовых материалов для БФЛ</li>
+        <li>Посты, сообщения, CTA, инструкции</li>
+        <li>Copy-paste с автоподстановкой реф-ссылки</li>
+        <li>Admin CRUD для управления контентом</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>8 / 16</span></div>
+</div>
+
+<!-- SLIDE 9: Partner Lifecycle -->
+<div class="slide slide-content">
+  <h2>Жизненный цикл партнёра</h2>
+  <div class="flow-row" style="justify-content: center; margin: 20px 0;">
+    <div class="flow-box">Регистрация</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Обучение</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Активация</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Первый лид</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="background: #e8fbe8; border-color: #22c55e;">Активный агент</div>
+  </div>
+  <div class="cols" style="margin-top: 20px;">
+    <div class="col">
+      <h3>Автоматические переходы</h3>
+      <ul>
+        <li>Первый урок → <span class="badge badge-blue">in_progress</span></li>
+        <li>Все обязательные модули → <span class="badge badge-green">completed</span></li>
+        <li>5 won-лидов → <span class="badge badge-yellow">Silver tier</span></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Ручные переходы</h3>
+      <ul>
+        <li>Manager: activate / deactivate</li>
+        <li>Manager: base → silver (upgrade)</li>
+        <li>Admin: любой tier, block, reject</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Сегменты (вычисляемые)</h3>
+  <div style="margin-top: 8px;">
+    <span class="badge badge-gray">Зарегистрирован</span>
+    <span class="badge badge-blue">Обучается</span>
+    <span class="badge badge-yellow">Активирован</span>
+    <span class="badge badge-green">Активен</span>
+    <span class="badge badge-gray">Спящий (30д)</span>
+    <span class="badge badge-gray">Неактивен</span>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>9 / 16</span></div>
+</div>
+
+<!-- SLIDE 10: Analytics -->
+<div class="slide slide-content">
+  <h2>Аналитика и операции</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Partner Analytics Lite</h3>
+      <ul class="check">
+        <li>Единый /api/analytics — 8 блоков данных</li>
+        <li>Воронка лидов с конверсией</li>
+        <li>Рейтинг агентов (won → revenue → leads)</li>
+        <li>Сегментация агентов по lifecycle</li>
+        <li>Реферальная аналитика (clicks → leads → won)</li>
+        <li>Распределение по tier + revenue per tier</li>
+        <li>Onboarding funnel + activation rate</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Operations Layer</h3>
+      <ul class="check">
+        <li>7 рабочих очередей для менеджера</li>
+        <li>Tracking last_activity_at (5 touch points)</li>
+        <li>Определение sleeping-агентов (30 дней)</li>
+        <li>Feedback-система от агентов</li>
+        <li>manager_contacted_at для отслеживания</li>
+        <li>Retention-reminders для агентов</li>
+      </ul>
+      <h3 style="margin-top: 16px;">Очереди менеджера</h3>
+      <div style="font-size: 13px; line-height: 1.8;">
+        <span class="badge badge-purple">Конфликты</span>
+        <span class="badge badge-yellow">Новички 3д+</span>
+        <span class="badge badge-blue">На обучении 7д+</span>
+        <span class="badge badge-yellow">Без лида 7д+</span>
+        <span class="badge badge-gray">Спящие 30д+</span>
+        <span class="badge badge-gray">Без TG</span>
+        <span class="badge badge-blue">Feedback</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>10 / 16</span></div>
+</div>
+
+<!-- SLIDE 11: Section - Roles -->
+<div class="slide slide-section">
+  <h2>Роли и доступы</h2>
+  <div class="section-sub">Три роли — чёткое разграничение</div>
+</div>
+
+<!-- SLIDE 12: Role Matrix -->
+<div class="slide slide-content">
+  <h2>Матрица ролей</h2>
+  <table>
+    <tr><th>Возможность</th><th>Агент</th><th>Менеджер</th><th>Админ</th></tr>
+    <tr><td>Создавать лиды</td><td>✓ свои</td><td>✓ любые</td><td>✓ любые</td></tr>
+    <tr><td>Видеть лиды</td><td>✓ свои</td><td>✓ все</td><td>✓ все</td></tr>
+    <tr><td>Менять статус лида → won/lost</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Решать конфликты ownership</td><td>—</td><td>✓ (3 варианта)</td><td>✓ (4 варианта + override)</td></tr>
+    <tr><td>Менять tier агента</td><td>—</td><td>base→silver</td><td>любой</td></tr>
+    <tr><td>Approve payout (→paid)</td><td>—</td><td>—</td><td>✓</td></tr>
+    <tr><td>Reject payout</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Управлять пользователями</td><td>—</td><td>active/inactive</td><td>+ blocked, rejected</td></tr>
+    <tr><td>Управлять контентом / материалами</td><td>—</td><td>—</td><td>✓ CRUD</td></tr>
+    <tr><td>Видеть аналитику</td><td>свой ранг</td><td>своих агентов</td><td>всю платформу</td></tr>
+    <tr><td>Операционные очереди</td><td>—</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Оставить feedback</td><td>✓</td><td>—</td><td>—</td></tr>
+  </table>
+  <div class="footer"><span>Агентская программа</span><span>12 / 16</span></div>
+</div>
+
+<!-- SLIDE 13: Section - Roadmap -->
+<div class="slide slide-section">
+  <h2>Дорожная карта</h2>
+  <div class="section-sub">Что сделано, что дальше</div>
+</div>
+
+<!-- SLIDE 14: Completed Phases -->
+<div class="slide slide-content">
+  <h2>Реализованные этапы</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="t-title">Phase A–C1 · Ядро</div>
+          <div class="t-desc">Auth, лиды, выплаты, документы, диалоги, state machine</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T1 · Telegram Transport</div>
+          <div class="t-desc">Linking, webhook, inbound/outbound, 4 уведомления</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T2 · Learning Layer</div>
+          <div class="t-desc">Контент в БД, progress tracking, 29 уроков</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T3 · Referral Layer</div>
+          <div class="t-desc">Ref-коды, click tracking, attribution, leaderboard</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T4 · Partner Control</div>
+          <div class="t-desc">Lifecycle, required learning, auto-activation, checklist</div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="t-title">T5 · Deal Ownership</div>
+          <div class="t-desc">Phone normalization, duplicate detection, conflict resolution</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T6 · Finance Upgrade</div>
+          <div class="t-desc">Payout snapshot, tiers (base/silver/gold), per-tier rates</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T7 · Analytics Lite</div>
+          <div class="t-desc">8-блочный analytics, funnels, ranking, dashboards</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T8 · Marketing</div>
+          <div class="t-desc">17 материалов для БФЛ, copy-paste + ref-link</div>
+        </div>
+        <div class="timeline-item">
+          <div class="t-title">T9 · Operations</div>
+          <div class="t-desc">7 очередей, activity tracking, feedback, reminders</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>14 / 16</span></div>
+</div>
+
+<!-- SLIDE 15: What's Next -->
+<div class="slide slide-content">
+  <h2>Что дальше</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Ближайшие приоритеты</h3>
+      <ul class="dot">
+        <li>Закрытая бета с 10–20 агентами</li>
+        <li>Сбор обратной связи и итерация</li>
+        <li>Password reset flow</li>
+        <li>Пагинация списков</li>
+        <li>Error boundaries + toast-система</li>
+        <li>Назначение агента на лид в UI</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Стратегические направления</h3>
+      <ul class="dot">
+        <li>AI Classify Layer (при росте нагрузки)</li>
+        <li>Мобильное приложение</li>
+        <li>Email-уведомления</li>
+        <li>Графики и визуальная аналитика</li>
+        <li>Интеграции: WhatsApp, CRM</li>
+        <li>Масштабирование на другие ниши</li>
+      </ul>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top: 30px;">
+    <p><strong>AI сознательно отложен.</strong> Текущий фокус — довести non-AI продукт до стабильной эксплуатации, собрать данные и внедрять AI когда появится реальная нагрузка на менеджеров.</p>
+  </div>
+  <div class="footer"><span>Агентская программа</span><span>15 / 16</span></div>
+</div>
+
+<!-- SLIDE 16: Final -->
+<div class="slide slide-cover">
+  <h1>Агентская программа</h1>
+  <div class="subtitle">Готов к закрытой бете</div>
+  <div style="margin-top: 40px; font-size: 16px; opacity: 0.7;">
+    Next.js 16 · PostgreSQL · Telegram Bot · 12 подсистем · 9 этапов
+  </div>
+  <div class="meta" style="margin-top: 30px;">Март 2026</div>
+</div>
+
+</body>
+</html>

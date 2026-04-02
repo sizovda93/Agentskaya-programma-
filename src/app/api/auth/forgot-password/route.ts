@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import pool from "@/lib/db";
 import { notifyAgent } from "@/lib/telegram";
 import { sendResetCode } from "@/lib/mailer";
+
+function generateTempPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +27,6 @@ export async function POST(req: Request) {
     );
 
     if (users.length === 0) {
-      // Don't reveal whether email exists
       return NextResponse.json({ sent: true, channel: "email" });
     }
 
@@ -26,20 +35,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Аккаунт заблокирован" }, { status: 403 });
     }
 
-    // Invalidate old tokens
-    await pool.query(
-      `UPDATE password_reset_tokens SET used = true WHERE profile_id = $1 AND used = false`,
-      [user.id]
-    );
+    // Generate temp password and set it
+    const tempPassword = generateTempPassword();
+    const hash = await bcrypt.hash(tempPassword, 10);
 
-    // Generate 6-digit code
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-
-    // Save token (15 min expiry)
     await pool.query(
-      `INSERT INTO password_reset_tokens (profile_id, code, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
-      [user.id, code]
+      `UPDATE profiles SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
+      [hash, user.id]
     );
 
     // Try Telegram first
@@ -54,21 +56,21 @@ export async function POST(req: Request) {
     if (tgRows.length > 0) {
       const tgSent = await notifyAgent(
         user.id,
-        `🔑 Код для сброса пароля: ${code}\n\nДействителен 15 минут.\nЕсли вы не запрашивали сброс — проигнорируйте это сообщение.`
+        `🔑 Ваш временный пароль: ${tempPassword}\n\nИспользуйте его для входа. После входа рекомендуем сменить пароль в профиле.\n\nЕсли вы не запрашивали сброс — срочно обратитесь к менеджеру.`
       );
       if (tgSent) channel = "telegram";
     }
 
     // If Telegram failed or not linked — send email
     if (!channel) {
-      const emailSent = await sendResetCode(user.email, code);
+      const emailSent = await sendResetCode(user.email, tempPassword);
       if (emailSent) {
         channel = "email";
       } else {
         return NextResponse.json({
           sent: false,
           channel: "none",
-          message: "Не удалось отправить код. Обратитесь к менеджеру."
+          message: "Не удалось отправить пароль. Обратитесь к менеджеру."
         });
       }
     }
@@ -76,8 +78,8 @@ export async function POST(req: Request) {
     // Audit log
     await pool.query(
       `INSERT INTO audit_logs (action, user_email, details, level)
-       VALUES ('auth.password_reset_requested', $1, $2, 'info')`,
-      [email, `Code sent via ${channel}`]
+       VALUES ('auth.password_reset', $1, $2, 'info')`,
+      [email, `Temp password sent via ${channel}`]
     );
 
     return NextResponse.json({ sent: true, channel });

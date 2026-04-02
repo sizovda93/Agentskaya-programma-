@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Агентум Про — Питч</title>
+<style>
+  @page { size: landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
+
+  .slide {
+    width: 100vw; height: 100vh;
+    padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide:last-child { page-break-after: auto; }
+
+  .bg-dark { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+  .bg-blue { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
+  .bg-purple { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); }
+  .bg-teal { background: linear-gradient(135deg, #0f3d3e 0%, #0f172a 100%); }
+  .bg-indigo { background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); }
+  .bg-green { background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); }
+  .bg-orange { background: linear-gradient(135deg, #78350f 0%, #1c1917 100%); }
+  .bg-hero { background: linear-gradient(135deg, #312e81 0%, #1e3a5f 50%, #0f172a 100%); }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.06);
+    top: -150px; right: -150px;
+  }
+  .slide::after {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.05);
+    bottom: -100px; left: -100px;
+  }
+
+  h1 { font-size: 56px; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 20px; }
+  h2 { font-size: 42px; font-weight: 700; color: #fff; margin-bottom: 28px; }
+  h3 { font-size: 24px; font-weight: 600; color: #a5b4fc; margin-bottom: 14px; }
+  p { font-size: 22px; line-height: 1.7; color: #cbd5e1; }
+  .subtitle { font-size: 28px; color: #94a3b8; margin-bottom: 40px; line-height: 1.5; }
+  .hero-subtitle { font-size: 24px; color: #c7d2fe; line-height: 1.6; max-width: 700px; }
+  .accent { color: #a5b4fc; }
+  .accent-green { color: #6ee7b7; }
+  .accent-orange { color: #fdba74; }
+
+  .badge {
+    display: inline-block;
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+  }
+  .badge-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  .badge-green {
+    background: rgba(34, 197, 94, 0.15);
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin-top: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 24px; margin-top: 20px; }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    z-index: 1;
+  }
+  .card-highlight {
+    background: rgba(99,102,241,0.1);
+    border-color: rgba(99,102,241,0.3);
+  }
+  .card .icon { font-size: 40px; margin-bottom: 14px; display: block; }
+  .card h3 { font-size: 22px; margin-bottom: 10px; }
+  .card p { font-size: 17px; line-height: 1.6; }
+
+  ul { list-style: none; padding: 0; }
+  ul li {
+    font-size: 20px;
+    padding: 10px 0;
+    padding-left: 30px;
+    position: relative;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+  ul li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 18px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #6366f1;
+  }
+  .check-list li::before {
+    content: '&#10003;';
+    background: none;
+    color: #6ee7b7;
+    font-size: 18px;
+    font-weight: 700;
+    top: 10px;
+    left: 2px;
+  }
+  .cross-list li::before {
+    content: '&#10007;';
+    background: none;
+    color: #f87171;
+    font-size: 18px;
+    font-weight: 700;
+    top: 10px;
+    left: 2px;
+  }
+
+  .flow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+  .flow-step {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 18px;
+    color: #e2e8f0;
+    text-align: center;
+  }
+  .flow-arrow { font-size: 26px; color: #6366f1; }
+
+  .stat-number { font-size: 52px; font-weight: 800; color: #6366f1; }
+  .stat-number.green { color: #6ee7b7; }
+  .stat-label { font-size: 17px; color: #94a3b8; margin-top: 6px; }
+
+  .big-quote {
+    font-size: 28px;
+    font-style: italic;
+    color: #c7d2fe;
+    border-left: 4px solid #6366f1;
+    padding-left: 24px;
+    max-width: 700px;
+    line-height: 1.6;
+  }
+
+  .vs-table { width: 100%; margin-top: 20px; }
+  .vs-table th {
+    padding: 12px 16px;
+    font-size: 17px;
+    color: #a5b4fc;
+    border-bottom: 2px solid rgba(99,102,241,0.3);
+    text-align: left;
+    font-weight: 600;
+  }
+  .vs-table td {
+    padding: 10px 16px;
+    font-size: 17px;
+    color: #cbd5e1;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .vs-table .old { color: #f87171; }
+  .vs-table .new { color: #6ee7b7; }
+
+  .slide-num {
+    position: absolute;
+    bottom: 30px;
+    left: 60px;
+    font-size: 14px;
+    color: #475569;
+    z-index: 2;
+  }
+  .slide-footer {
+    position: absolute;
+    bottom: 30px;
+    right: 60px;
+    font-size: 14px;
+    color: #475569;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Hero -->
+<div class="slide bg-hero">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Платформа для юридического бизнеса</div>
+    <h1>Агентум Про</h1>
+    <p class="hero-subtitle">
+      Цифровая платформа управления агентской сетью.<br>
+      Автоматизация привлечения клиентов, контроль сделок, прозрачные выплаты.
+    </p>
+    <div style="margin-top: 50px; display: flex; gap: 40px;">
+      <div>
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Прозрачность выплат</div>
+      </div>
+      <div>
+        <div class="stat-number green">&#8734;</div>
+        <div class="stat-label">Масштабируемость сети</div>
+      </div>
+      <div>
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Доступ и уведомления</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">Агентум Про &bull; 2026</div>
+</div>
+
+<!-- SLIDE 2: Problem -->
+<div class="slide bg-dark">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge badge-red">Проблема</div>
+    <h2>Как работает агентская сеть сегодня?</h2>
+    <div class="grid-2">
+      <div>
+        <div class="big-quote">
+          Агенты ведут клиентов в блокнотах и WhatsApp. Менеджеры теряют лиды в Excel.
+          Никто не знает, кому и сколько платить.
+        </div>
+      </div>
+      <div>
+        <ul class="cross-list">
+          <li>Лиды теряются между чатами и таблицами</li>
+          <li>Нет единой системы учёта клиентов</li>
+          <li>Агенты не знают статус своих сделок</li>
+          <li>Выплаты считаются вручную, с ошибками</li>
+          <li>Нет контроля — кто что сделал и когда</li>
+          <li>Обучение новых агентов — хаос</li>
+          <li>Невозможно масштабировать сеть</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">2</div>
+</div>
+
+<!-- SLIDE 3: Solution -->
+<div class="slide bg-blue">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge badge-green">Решение</div>
+    <h2>Агентум Про — всё в одном месте</h2>
+    <p style="max-width: 750px; margin-bottom: 30px;">
+      Единая веб-платформа, которая заменяет Excel, WhatsApp и блокноты.
+      Каждый участник видит только то, что ему нужно.
+    </p>
+    <div class="grid-3">
+      <div class="card card-highlight">
+        <div class="icon">&#128100;</div>
+        <h3>Агент</h3>
+        <p>Регистрируется, получает лиды, отслеживает статусы, получает выплаты, общается с менеджером прямо в Telegram.</p>
+      </div>
+      <div class="card card-highlight">
+        <div class="icon">&#128188;</div>
+        <h3>Менеджер</h3>
+        <p>Управляет агентами и лидами, назначает сделки, контролирует воронку, общается с агентами через веб и Telegram.</p>
+      </div>
+      <div class="card card-highlight">
+        <div class="icon">&#128737;</div>
+        <h3>Администратор</h3>
+        <p>Контролирует всю систему: пользователи, выплаты, настройки, аудит-логи, интеграции.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">3</div>
+</div>
+
+<!-- SLIDE 4: How it works -->
+<div class="slide bg-purple">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Как это работает</div>
+    <h2>Путь от клиента до выплаты</h2>
+    <div style="display: flex; justify-content: center; margin-top: 40px;">
+      <div class="flow" style="font-size: 18px;">
+        <div class="flow-step" style="padding: 18px 28px;">
+          &#128100; Агент<br>
+          <span style="font-size: 14px; color: #94a3b8;">находит клиента</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="padding: 18px 28px;">
+          &#128203; Лид<br>
+          <span style="font-size: 14px; color: #94a3b8;">создаётся в системе</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="padding: 18px 28px;">
+          &#128188; Менеджер<br>
+          <span style="font-size: 14px; color: #94a3b8;">ведёт сделку</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="padding: 18px 28px; background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3);">
+          &#9989; Сделка<br>
+          <span style="font-size: 14px; color: #94a3b8;">закрыта успешно</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="padding: 18px 28px; background: rgba(99,102,241,0.25); border-color: rgba(99,102,241,0.5);">
+          &#128176; Выплата<br>
+          <span style="font-size: 14px; color: #94a3b8;">комиссия агенту</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 50px; text-align: center;">
+      <p style="font-size: 20px;">7 статусов воронки: <span class="accent">новый</span> &rarr; контакт &rarr; квалификация &rarr; предложение &rarr; переговоры &rarr; <span class="accent-green">выигран</span> / <span style="color: #f87171;">проигран</span></p>
+    </div>
+  </div>
+  <div class="slide-num">4</div>
+</div>
+
+<!-- SLIDE 5: Agent features -->
+<div class="slide bg-teal">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Для агента</div>
+    <h2>Всё под рукой — даже в Telegram</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#128203;</div>
+        <h3>Мои лиды</h3>
+        <p>Вижу всех своих клиентов, статусы сделок, историю изменений. Всё в реальном времени.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128176;</div>
+        <h3>Мои финансы</h3>
+        <p>Прозрачные выплаты: сумма, статус, период. Уведомление в Telegram когда деньги зачислены.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128172;</div>
+        <h3>Чат с менеджером</h3>
+        <p>Общение прямо в платформе или через Telegram — без переключения между приложениями.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128279;</div>
+        <h3>Реферальная ссылка</h3>
+        <p>Уникальный код для привлечения клиентов. Статистика кликов и конверсии в реальном времени.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128218;</div>
+        <h3>Обучение</h3>
+        <p>Встроенные гайды: как начать, как работать с документами, финансами, коммуникациями.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128241;</div>
+        <h3>Telegram-уведомления</h3>
+        <p>Мгновенные оповещения: новый лид, смена статуса, выплата — всё приходит в Telegram.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">5</div>
+</div>
+
+<!-- SLIDE 6: Manager features -->
+<div class="slide bg-indigo">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Для менеджера</div>
+    <h2>Полный контроль над агентами и сделками</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#128101;</div>
+        <h3>Управление агентами</h3>
+        <p>Список агентов с показателями: город, активные лиды, выручка, рейтинг. Карточка каждого агента.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128200;</div>
+        <h3>Воронка лидов</h3>
+        <p>Все лиды в одном месте. Фильтры по статусу, назначение агентов, смена статусов в один клик.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128172;</div>
+        <h3>Коммуникация</h3>
+        <p>Чат с агентами через веб. Сообщения автоматически дублируются в Telegram агента.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128176;</div>
+        <h3>Финансы</h3>
+        <p>Просмотр и обработка выплат агентам. Контроль статусов: ожидание, обработка, оплата.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128196;</div>
+        <h3>Документы</h3>
+        <p>Все документы агентов: договоры, акты, счета. Загрузка и скачивание с контролем доступа.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#127942;</div>
+        <h3>Реферальный лидерборд</h3>
+        <p>Кто из агентов привлекает больше клиентов? Рейтинг по реферальным лидам и конверсии.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">6</div>
+</div>
+
+<!-- SLIDE 7: Admin / Business -->
+<div class="slide bg-green">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Для бизнеса</div>
+    <h2>Прозрачность, контроль, масштаб</h2>
+    <div class="grid-2">
+      <div>
+        <div class="card" style="margin-bottom: 20px;">
+          <h3>&#128737; Управление пользователями</h3>
+          <p>Создание, блокировка, смена ролей. Полный контроль кто и что может делать в системе.</p>
+        </div>
+        <div class="card" style="margin-bottom: 20px;">
+          <h3>&#128176; Финансовый контроль</h3>
+          <p>State machine выплат: ожидание &rarr; обработка &rarr; оплачено. Только админ подтверждает оплату. История и причины отклонения.</p>
+        </div>
+        <div class="card">
+          <h3>&#9881; Настройки платформы</h3>
+          <p>Ставка комиссии, контакты поддержки, название платформы — всё меняется без кода.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom: 20px;">
+          <h3>&#128269; Аудит-лог</h3>
+          <p>Каждое действие записывается: кто, что, когда. Полная прозрачность и возможность разбора инцидентов.</p>
+        </div>
+        <div class="card" style="margin-bottom: 20px;">
+          <h3>&#128225; Telegram-интеграция</h3>
+          <p>Настройка бота из панели админа. Мониторинг: сколько агентов подключено, статус webhook.</p>
+        </div>
+        <div class="card">
+          <h3>&#128200; Дашборд</h3>
+          <p>Все ключевые метрики на одном экране: лиды, агенты, выплаты, конверсия.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">7</div>
+</div>
+
+<!-- SLIDE 8: Telegram -->
+<div class="slide bg-dark">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Telegram</div>
+    <h2>Интеграция с Telegram</h2>
+    <p style="margin-bottom: 30px; max-width: 700px;">
+      Агенты работают там, где им удобно. Telegram — не замена платформы, а её расширение.
+    </p>
+    <div class="grid-2">
+      <div>
+        <h3>Привязка за 30 секунд</h3>
+        <div class="flow">
+          <div class="flow-step">Нажать &laquo;Привязать&raquo;</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Перейти в Telegram</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Готово!</div>
+        </div>
+        <h3 style="margin-top: 30px;">Что приходит в Telegram?</h3>
+        <ul class="check-list">
+          <li>Сообщения от менеджера</li>
+          <li>Смена статуса лида</li>
+          <li>Новая выплата назначена</li>
+          <li>Выплата одобрена / отклонена</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card card-highlight" style="text-align: center; padding: 40px;">
+          <div style="font-size: 80px; margin-bottom: 20px;">&#128172;</div>
+          <h3 style="color: #fff; font-size: 24px;">Двусторонняя связь</h3>
+          <p style="font-size: 19px; margin-top: 12px;">
+            Менеджер пишет в веб-чате &mdash; агент получает в Telegram.<br><br>
+            Агент отвечает в Telegram &mdash; менеджер видит в платформе.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">8</div>
+</div>
+
+<!-- SLIDE 9: Referral -->
+<div class="slide bg-orange">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Рост</div>
+    <h2>Реферальная программа</h2>
+    <p style="margin-bottom: 30px; max-width: 700px;">
+      Каждый агент — источник новых клиентов. Реферальная система мотивирует и отслеживает результаты.
+    </p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#128279;</div>
+        <h3>Уникальная ссылка</h3>
+        <p>Каждый агент получает персональную ссылку и 8-символьный код для распространения.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128200;</div>
+        <h3>Аналитика кликов</h3>
+        <p>Сколько кликов, сколько уникальных, какая конверсия. Дедупликация по IP-хешу.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#127942;</div>
+        <h3>Лидерборд</h3>
+        <p>Рейтинг агентов по привлечённым клиентам. Менеджер и админ видят кто лучший.</p>
+      </div>
+    </div>
+    <div style="margin-top: 30px;">
+      <h3>Готовые шаблоны для шеринга</h3>
+      <p>Агент получает готовые тексты для соцсетей и мессенджеров — просто скопировать и отправить.</p>
+    </div>
+  </div>
+  <div class="slide-num">9</div>
+</div>
+
+<!-- SLIDE 10: Learning -->
+<div class="slide bg-purple">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Обучение</div>
+    <h2>Встроенная система обучения</h2>
+    <p style="margin-bottom: 30px; max-width: 700px;">
+      Новый агент или менеджер? Не нужно искать инструкции — всё внутри платформы.
+    </p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#128100;</div>
+        <h3>Для агентов</h3>
+        <p>5 модулей: от регистрации до работы с документами и финансами. Пошаговые инструкции.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128188;</div>
+        <h3>Для менеджеров</h3>
+        <p>5 модулей: управление лидами, коммуникация, финансовые операции. Все нюансы работы.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128737;</div>
+        <h3>Для админов</h3>
+        <p>3 модуля: настройка платформы, интеграции, мониторинг. Техническое руководство.</p>
+      </div>
+    </div>
+    <div style="margin-top: 30px;">
+      <ul class="check-list">
+        <li>Контент хранится в базе данных — обновляется без перезапуска</li>
+        <li>Каждый урок адаптирован под конкретную роль</li>
+        <li>Навигация с CTA-кнопками: &laquo;Начать&raquo;, &laquo;Перейти к лидам&raquo; и т.д.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">10</div>
+</div>
+
+<!-- SLIDE 11: Why not Excel -->
+<div class="slide bg-dark">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Преимущества</div>
+    <h2>Почему не Excel + WhatsApp?</h2>
+    <table class="vs-table">
+      <tr>
+        <th style="width: 30%;">Задача</th>
+        <th style="width: 35%;">Было (Excel + WhatsApp)</th>
+        <th style="width: 35%;">Стало (Агентум Про)</th>
+      </tr>
+      <tr>
+        <td>Учёт клиентов</td>
+        <td class="old">Таблица на Google Диске, забывают обновлять</td>
+        <td class="new">Единая база, статусы обновляются в реальном времени</td>
+      </tr>
+      <tr>
+        <td>Коммуникация</td>
+        <td class="old">100 чатов в WhatsApp, теряются сообщения</td>
+        <td class="new">Структурированный чат + авто-Telegram</td>
+      </tr>
+      <tr>
+        <td>Выплаты</td>
+        <td class="old">Ручной подсчёт, споры, ошибки</td>
+        <td class="new">Автоматический учёт, прозрачный статус</td>
+      </tr>
+      <tr>
+        <td>Документы</td>
+        <td class="old">Пересылка файлов в чатах, теряются</td>
+        <td class="new">Централизованное хранилище с контролем доступа</td>
+      </tr>
+      <tr>
+        <td>Контроль</td>
+        <td class="old">Кто что сделал? Никто не знает</td>
+        <td class="new">Аудит-лог каждого действия</td>
+      </tr>
+      <tr>
+        <td>Онбординг</td>
+        <td class="old">Пересказ по телефону, PDF-инструкции</td>
+        <td class="new">Встроенные интерактивные гайды</td>
+      </tr>
+      <tr>
+        <td>Масштабирование</td>
+        <td class="old">10 агентов — уже хаос</td>
+        <td class="new">Без ограничений, роли и доступ</td>
+      </tr>
+    </table>
+  </div>
+  <div class="slide-num">11</div>
+</div>
+
+<!-- SLIDE 12: Security -->
+<div class="slide bg-teal">
+  <div style="position: relative; z-index: 1;">
+    <div class="badge">Безопасность</div>
+    <h2>Надёжность и защита данных</h2>
+    <div class="grid-4">
+      <div class="card" style="text-align: center;">
+        <div class="icon" style="text-align: center;">&#128274;</div>
+        <h3>Шифрование</h3>
+        <p>Пароли bcrypt, JWT-токены, httpOnly cookies</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="icon" style="text-align: center;">&#128737;</div>
+        <h3>Разграничение</h3>
+        <p>Каждая роль видит только свои данные. Middleware на каждом запросе.</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="icon" style="text-align: center;">&#128269;</div>
+        <h3>Аудит</h3>
+        <p>Полный лог действий: кто, что, когда. Разбор любых инцидентов.</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="icon" style="text-align: center;">&#128190;</div>
+        <h3>Свой сервер</h3>
+        <p>Данные на вашем сервере. Никаких облаков — полный контроль.</p>
+      </div>
+    </div>
+    <div style="margin-top: 40px;">
+      <ul class="check-list">
+        <li>Защита от SQL-инъекций — параметризованные запросы</li>
+        <li>Защита загрузки файлов — whitelist расширений, лимит 10 МБ</li>
+        <li>Защита скачивания — проверка владельца + path traversal protection</li>
+        <li>Данные хранятся на вашем собственном сервере в России</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">12</div>
+</div>
+
+<!-- SLIDE 13: Summary / CTA -->
+<div class="slide bg-hero">
+  <div style="position: relative; z-index: 1; text-align: center;">
+    <h1 style="font-size: 50px; margin-bottom: 30px;">Агентум Про</h1>
+    <p style="font-size: 26px; color: #c7d2fe; max-width: 700px; margin: 0 auto 50px;">
+      Единая платформа для управления агентской сетью.<br>
+      Больше контроля. Меньше хаоса. Прозрачные выплаты.
+    </p>
+    <div class="grid-4" style="max-width: 900px; margin: 0 auto;">
+      <div style="text-align: center;">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Роли</div>
+      </div>
+      <div style="text-align: center;">
+        <div class="stat-number green">30</div>
+        <div class="stat-label">API-эндпоинтов</div>
+      </div>
+      <div style="text-align: center;">
+        <div class="stat-number">&#128172;</div>
+        <div class="stat-label">Telegram</div>
+      </div>
+      <div style="text-align: center;">
+        <div class="stat-number green">&#128274;</div>
+        <div class="stat-label">Свой сервер</div>
+      </div>
+    </div>
+    <div style="margin-top: 60px;">
+      <p style="font-size: 20px; color: #64748b;">Веб-платформа &bull; Telegram-бот &bull; PostgreSQL &bull; Next.js</p>
+    </div>
+  </div>
+  <div class="slide-footer">Агентум Про &bull; 2026</div>
+</div>
+
+</body>
+</html>

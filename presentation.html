@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Агентум Про — Презентация проекта</title>
+<style>
+  @page { size: landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
+
+  .slide {
+    width: 100vw; height: 100vh;
+    padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide:last-child { page-break-after: auto; }
+
+  /* Backgrounds */
+  .bg-dark { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+  .bg-blue { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
+  .bg-purple { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); }
+  .bg-teal { background: linear-gradient(135deg, #0f3d3e 0%, #0f172a 100%); }
+  .bg-indigo { background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); }
+
+  /* Decorative circle */
+  .slide::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.08);
+    top: -100px; right: -100px;
+  }
+
+  h1 { font-size: 52px; font-weight: 800; margin-bottom: 20px; color: #fff; line-height: 1.2; }
+  h2 { font-size: 40px; font-weight: 700; margin-bottom: 30px; color: #fff; }
+  h3 { font-size: 26px; font-weight: 600; margin-bottom: 16px; color: #a5b4fc; }
+  p { font-size: 22px; line-height: 1.6; color: #cbd5e1; }
+  .subtitle { font-size: 26px; color: #94a3b8; margin-bottom: 40px; }
+  .small { font-size: 18px; color: #64748b; }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+  }
+
+  /* Grid layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin-top: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 24px; margin-top: 20px; }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .card h3 { font-size: 22px; margin-bottom: 12px; }
+  .card p { font-size: 17px; }
+  .card .icon { font-size: 36px; margin-bottom: 14px; }
+
+  /* Lists */
+  ul { list-style: none; padding: 0; }
+  ul li {
+    font-size: 20px;
+    padding: 8px 0;
+    padding-left: 28px;
+    position: relative;
+    color: #cbd5e1;
+  }
+  ul li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 16px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #6366f1;
+  }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 16px;
+    color: #a5b4fc;
+    border-bottom: 2px solid rgba(99,102,241,0.3);
+    font-weight: 600;
+  }
+  td {
+    padding: 9px 14px;
+    font-size: 16px;
+    color: #cbd5e1;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .flow-step {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    color: #e2e8f0;
+  }
+  .flow-arrow { font-size: 22px; color: #6366f1; }
+
+  /* Number stats */
+  .stat-number { font-size: 48px; font-weight: 800; color: #6366f1; }
+  .stat-label { font-size: 18px; color: #94a3b8; margin-top: 4px; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    background: rgba(99, 102, 241, 0.15);
+    color: #c7d2fe;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    margin: 3px 4px 3px 0;
+  }
+
+  /* Footer */
+  .slide-footer {
+    position: absolute;
+    bottom: 30px;
+    right: 60px;
+    font-size: 14px;
+    color: #475569;
+  }
+  .slide-num {
+    position: absolute;
+    bottom: 30px;
+    left: 60px;
+    font-size: 14px;
+    color: #475569;
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide bg-dark">
+  <div>
+    <div class="badge">Внутренняя документация</div>
+    <h1>Агентум Про</h1>
+    <p class="subtitle">Платформа управления агентской сетью для юридического бизнеса</p>
+    <div style="margin-top: 40px;">
+      <span class="tag">Next.js 16</span>
+      <span class="tag">React 19</span>
+      <span class="tag">PostgreSQL</span>
+      <span class="tag">Telegram Bot</span>
+      <span class="tag">TypeScript</span>
+      <span class="tag">Tailwind 4</span>
+    </div>
+  </div>
+  <div class="slide-footer">Март 2026</div>
+</div>
+
+<!-- SLIDE 2: What is it -->
+<div class="slide bg-blue">
+  <div>
+    <div class="badge">Обзор</div>
+    <h2>Что это за проект?</h2>
+    <p style="max-width: 800px; margin-bottom: 40px;">
+      Веб-платформа, в которой агенты находят клиентов (лидов), менеджеры ведут сделки,
+      а администратор контролирует систему и выплаты комиссий.
+    </p>
+    <div class="grid-4">
+      <div class="card" style="text-align:center;">
+        <div class="stat-number">39</div>
+        <div class="stat-label">Страниц</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="stat-number">30</div>
+        <div class="stat-label">API-эндпоинтов</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="stat-number">15</div>
+        <div class="stat-label">Таблиц БД</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="stat-number">118</div>
+        <div class="stat-label">Файлов TS/TSX</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">2</div>
+</div>
+
+<!-- SLIDE 3: Architecture -->
+<div class="slide bg-purple">
+  <div>
+    <div class="badge">Архитектура</div>
+    <h2>Стек технологий</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#9881;</div>
+        <h3>Frontend</h3>
+        <p>Next.js 16 (App Router)<br>React 19<br>Tailwind CSS 4<br>Radix UI + Lucide Icons</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128451;</div>
+        <h3>Backend</h3>
+        <p>Next.js API Routes<br>PostgreSQL 15+ (pg)<br>JWT + bcrypt<br>Middleware RBAC</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128640;</div>
+        <h3>Деплой</h3>
+        <p>PM2 + Nginx<br>Сервер 5.42.110.182<br>7 SQL-миграций<br>Git → GitHub</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">3</div>
+</div>
+
+<!-- SLIDE 4: Roles overview -->
+<div class="slide bg-teal">
+  <div>
+    <div class="badge">Роли</div>
+    <h2>Три роли в системе</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#128100;</div>
+        <h3>Агент</h3>
+        <p>Находит клиентов, передаёт лиды, получает комиссию. Привязывает Telegram, использует реферальные ссылки.</p>
+        <div style="margin-top: 14px;"><span class="tag">10 страниц</span></div>
+      </div>
+      <div class="card">
+        <div class="icon">&#128188;</div>
+        <h3>Менеджер</h3>
+        <p>Ведёт сделки, управляет агентами, меняет статусы лидов, общается через чат и Telegram.</p>
+        <div style="margin-top: 14px;"><span class="tag">12 страниц</span></div>
+      </div>
+      <div class="card">
+        <div class="icon">&#128737;</div>
+        <h3>Админ</h3>
+        <p>Полный контроль: пользователи, выплаты, настройки, интеграции, аудит-логи.</p>
+        <div style="margin-top: 14px;"><span class="tag">10 страниц</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">4</div>
+</div>
+
+<!-- SLIDE 5: Agent details -->
+<div class="slide bg-dark">
+  <div>
+    <div class="badge">Роль: Агент</div>
+    <h2>Возможности агента</h2>
+    <div class="grid-2">
+      <div>
+        <table>
+          <tr><th>Функция</th><th>Доступ</th></tr>
+          <tr><td>Лиды</td><td>Только свои, не может менять на won/lost</td></tr>
+          <tr><td>Финансы</td><td>Просмотр своих выплат (read-only)</td></tr>
+          <tr><td>Документы</td><td>Загрузка и просмотр своих файлов</td></tr>
+          <tr><td>Чат</td><td>Переписка с менеджером (Web + Telegram)</td></tr>
+          <tr><td>Telegram</td><td>Привязка аккаунта, уведомления</td></tr>
+          <tr><td>Реферал</td><td>Свой код, статистика, шаблоны</td></tr>
+          <tr><td>Обучение</td><td>5 модулей</td></tr>
+          <tr><td>Профиль</td><td>Редактирование данных</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Страницы</h3>
+        <ul>
+          <li>/agent/dashboard</li>
+          <li>/agent/leads + /leads/[id]</li>
+          <li>/agent/finance</li>
+          <li>/agent/documents</li>
+          <li>/agent/messages</li>
+          <li>/agent/profile</li>
+          <li>/agent/referral</li>
+          <li>/agent/learning + /learning/[slug]</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">5</div>
+</div>
+
+<!-- SLIDE 6: Manager details -->
+<div class="slide bg-blue">
+  <div>
+    <div class="badge">Роль: Менеджер</div>
+    <h2>Возможности менеджера</h2>
+    <div class="grid-2">
+      <div>
+        <table>
+          <tr><th>Функция</th><th>Доступ</th></tr>
+          <tr><td>Лиды</td><td>Все лиды, смена статусов, назначение агентов</td></tr>
+          <tr><td>Агенты</td><td>Список, статистика, карточки</td></tr>
+          <tr><td>Финансы</td><td>Просмотр (не может ставить &laquo;Оплачено&raquo;)</td></tr>
+          <tr><td>Чат</td><td>Переписка с агентами, авто-Telegram</td></tr>
+          <tr><td>Рассылки</td><td>Массовые сообщения (placeholder)</td></tr>
+          <tr><td>Документы</td><td>От привязанных агентов</td></tr>
+          <tr><td>Рефералы</td><td>Лидерборд</td></tr>
+          <tr><td>Обучение</td><td>5 модулей</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Страницы</h3>
+        <ul>
+          <li>/manager/dashboard</li>
+          <li>/manager/agents + /agents/[id]</li>
+          <li>/manager/leads + /leads/[id]</li>
+          <li>/manager/conversations + /[id]</li>
+          <li>/manager/finance</li>
+          <li>/manager/documents</li>
+          <li>/manager/broadcasts</li>
+          <li>/manager/referrals</li>
+          <li>/manager/learning + /learning/[slug]</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">6</div>
+</div>
+
+<!-- SLIDE 7: Admin details -->
+<div class="slide bg-purple">
+  <div>
+    <div class="badge">Роль: Админ</div>
+    <h2>Возможности администратора</h2>
+    <div class="grid-2">
+      <div>
+        <table>
+          <tr><th>Функция</th><th>Доступ</th></tr>
+          <tr><td>Пользователи</td><td>CRUD, смена роли, блокировка</td></tr>
+          <tr><td>Финансы</td><td>Полный state machine (pending &rarr; paid)</td></tr>
+          <tr><td>Настройки</td><td>commission_rate, support_email и др.</td></tr>
+          <tr><td>Интеграции</td><td>Telegram webhook, статус бота</td></tr>
+          <tr><td>Логи</td><td>Аудит всех действий</td></tr>
+          <tr><td>Рефералы</td><td>Лидерборд</td></tr>
+          <tr><td>Обучение</td><td>3 модуля</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Страницы</h3>
+        <ul>
+          <li>/admin/dashboard</li>
+          <li>/admin/users + /users/[id]</li>
+          <li>/admin/finance + /finance/[id]</li>
+          <li>/admin/settings</li>
+          <li>/admin/integrations</li>
+          <li>/admin/logs</li>
+          <li>/admin/roles</li>
+          <li>/admin/referrals</li>
+          <li>/admin/learning + /learning/[slug]</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">7</div>
+</div>
+
+<!-- SLIDE 8: Database -->
+<div class="slide bg-teal">
+  <div>
+    <div class="badge">База данных</div>
+    <h2>Схема БД — PostgreSQL</h2>
+    <div style="overflow: auto;">
+      <table>
+        <tr><th>Таблица</th><th>Назначение</th><th>Ключевые поля</th></tr>
+        <tr><td>profiles</td><td>Пользователи</td><td>role, email, password_hash, status</td></tr>
+        <tr><td>agents</td><td>Профиль агента</td><td>city, specialization, ref_code, counters</td></tr>
+        <tr><td>leads</td><td>Клиенты</td><td>status, source, agent_id, manager_id, ref_code</td></tr>
+        <tr><td>lead_events</td><td>Хронология лида</td><td>event_type, actor_email, details</td></tr>
+        <tr><td>conversations</td><td>Диалоги</td><td>agent_id, manager_id, channel, mode</td></tr>
+        <tr><td>messages</td><td>Сообщения</td><td>sender_type, channel, external_id</td></tr>
+        <tr><td>payouts</td><td>Выплаты</td><td>amount, status, rejection_reason</td></tr>
+        <tr><td>documents</td><td>Файлы</td><td>type, status, file_url, file_size</td></tr>
+        <tr><td>notifications</td><td>Уведомления</td><td>title, message, read, type</td></tr>
+        <tr><td>audit_logs</td><td>Аудит</td><td>action, user_email, level</td></tr>
+        <tr><td>settings</td><td>Настройки</td><td>key, value</td></tr>
+        <tr><td>telegram_bindings</td><td>Telegram</td><td>profile_id, chat_id, is_active</td></tr>
+        <tr><td>telegram_link_tokens</td><td>Токены привязки</td><td>token, expires_at, used</td></tr>
+        <tr><td>referral_clicks</td><td>Клики рефералов</td><td>ref_code, ip_hash, is_unique</td></tr>
+        <tr><td>learning_modules / lessons</td><td>Обучение</td><td>role, slug, sections (JSONB)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="slide-num">8</div>
+</div>
+
+<!-- SLIDE 9: API -->
+<div class="slide bg-dark">
+  <div>
+    <div class="badge">API</div>
+    <h2>30 эндпоинтов</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Аутентификация</h3>
+        <p>POST /api/auth/login<br>POST /api/auth/register<br>POST /api/auth/logout<br>GET /api/auth/session</p>
+      </div>
+      <div class="card">
+        <h3>Лиды</h3>
+        <p>GET/POST /api/leads<br>GET/PATCH /api/leads/[id]<br>GET /api/leads/[id]/events</p>
+      </div>
+      <div class="card">
+        <h3>Переписки</h3>
+        <p>GET /api/conversations<br>GET/POST /api/conversations/[id]</p>
+      </div>
+      <div class="card">
+        <h3>Финансы</h3>
+        <p>GET /api/payouts<br>PATCH /api/payouts/[id]</p>
+      </div>
+      <div class="card">
+        <h3>Документы</h3>
+        <p>GET/POST /api/documents<br>GET/PATCH /api/documents/[id]<br>GET /api/documents/[id]/download<br>POST /api/upload</p>
+      </div>
+      <div class="card">
+        <h3>Telegram</h3>
+        <p>POST/DELETE /api/telegram/link<br>GET /api/telegram/status<br>POST /api/telegram/webhook<br>GET/POST/DELETE /api/telegram/setup</p>
+      </div>
+      <div class="card">
+        <h3>Пользователи</h3>
+        <p>GET /api/users + /[id]<br>GET /api/agents + /[id]<br>GET /api/profile</p>
+      </div>
+      <div class="card">
+        <h3>Рефералы</h3>
+        <p>GET /api/referral<br>POST /api/referral (публичный)</p>
+      </div>
+      <div class="card">
+        <h3>Прочее</h3>
+        <p>GET /api/learning + /[slug]<br>GET/PATCH /api/settings<br>GET /api/stats<br>GET /api/logs<br>GET /api/notifications</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">9</div>
+</div>
+
+<!-- SLIDE 10: Telegram -->
+<div class="slide bg-indigo">
+  <div>
+    <div class="badge">Интеграция</div>
+    <h2>Telegram-бот: @Agent_BFL_bot</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Привязка аккаунта</h3>
+        <div class="flow">
+          <div class="flow-step">Агент нажимает &laquo;Привязать&raquo;</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Генерация токена (15 мин)</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Deep link в Telegram</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">/start {token}</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Привязка создана</div>
+        </div>
+        <h3 style="margin-top: 30px;">Исходящие сообщения</h3>
+        <div class="flow">
+          <div class="flow-step">Менеджер пишет в чате</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Сообщение сохраняется</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Авто-отправка в Telegram агента</div>
+        </div>
+      </div>
+      <div>
+        <h3>4 типа уведомлений</h3>
+        <ul>
+          <li>Смена статуса лида</li>
+          <li>Новая выплата (лид &rarr; won)</li>
+          <li>Смена статуса выплаты</li>
+          <li>Сообщение от менеджера</li>
+        </ul>
+        <h3 style="margin-top: 24px;">Обработка ошибок</h3>
+        <ul>
+          <li>Бот заблокирован (403) &rarr; привязка деактивируется</li>
+          <li>Ошибки Telegram не блокируют веб-ответ</li>
+          <li>Всё логируется в audit_logs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">10</div>
+</div>
+
+<!-- SLIDE 11: Referral -->
+<div class="slide bg-blue">
+  <div>
+    <div class="badge">Рефералы</div>
+    <h2>Реферальная система</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Как работает</h3>
+        <div class="flow">
+          <div class="flow-step">Агент получает 8-символьный код</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Делится ссылкой /?ref=CODE</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Клик отслеживается</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">Менеджер создаёт лид с ref_code</div>
+        </div>
+        <h3 style="margin-top: 30px;">Дедупликация</h3>
+        <ul>
+          <li>SHA256(IP + refCode) &rarr; ip_hash</li>
+          <li>Окно уникальности: 1 час</li>
+          <li>Конверсия = leads / unique clicks &times; 100%</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Представления</h3>
+        <div class="card" style="margin-bottom: 16px;">
+          <h3>Агент</h3>
+          <p>Свой код, ссылка, статистика (клики, уникальные, конверсия), шаблоны для мессенджеров и соцсетей</p>
+        </div>
+        <div class="card">
+          <h3>Менеджер / Админ</h3>
+          <p>Лидерборд: все агенты, отсортированные по количеству реферальных лидов и конверсии</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">11</div>
+</div>
+
+<!-- SLIDE 12: Security -->
+<div class="slide bg-purple">
+  <div>
+    <div class="badge">Безопасность</div>
+    <h2>Защита данных</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="icon">&#128274;</div>
+        <h3>Аутентификация</h3>
+        <p>JWT в httpOnly cookie (7 дней TTL). Пароли: bcrypt, 12 раундов. Middleware проверяет каждый запрос.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128737;</div>
+        <h3>Авторизация</h3>
+        <p>Role-based access control (RBAC). Middleware + requireRole() на каждом API. Каждая роль видит только своё.</p>
+      </div>
+      <div class="card">
+        <div class="icon">&#128218;</div>
+        <h3>Данные</h3>
+        <p>Параметризованные SQL-запросы. Whitelist расширений при загрузке (макс 10 МБ). Path traversal protection.</p>
+      </div>
+    </div>
+    <div style="margin-top: 30px;">
+      <h3>Аудит-лог</h3>
+      <p>Все действия записываются: login, register, lead.created, lead.updated, payout.status_changed, telegram.linked, settings.updated и другие.</p>
+    </div>
+  </div>
+  <div class="slide-num">12</div>
+</div>
+
+<!-- SLIDE 13: Payout state machine -->
+<div class="slide bg-teal">
+  <div>
+    <div class="badge">Финансы</div>
+    <h2>State Machine выплат</h2>
+    <div style="display: flex; justify-content: center; margin-top: 40px;">
+      <div class="flow" style="font-size: 20px;">
+        <div class="flow-step" style="padding: 16px 30px; font-size: 20px;">pending<br><span style="font-size:14px; color:#94a3b8;">Ожидает</span></div>
+        <div class="flow-arrow" style="font-size: 30px;">&rarr;</div>
+        <div class="flow-step" style="padding: 16px 30px; font-size: 20px;">processing<br><span style="font-size:14px; color:#94a3b8;">В обработке</span></div>
+        <div class="flow-arrow" style="font-size: 30px;">&rarr;</div>
+        <div class="flow-step" style="padding: 16px 30px; font-size: 20px; background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3);">paid<br><span style="font-size:14px; color:#94a3b8;">Оплачено (Admin)</span></div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: center; margin-top: 20px;">
+      <div class="flow">
+        <div class="flow-step" style="padding: 16px 30px; font-size: 20px;">pending / processing</div>
+        <div class="flow-arrow" style="font-size: 30px;">&rarr;</div>
+        <div class="flow-step" style="padding: 16px 30px; font-size: 20px; background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3);">rejected<br><span style="font-size:14px; color:#94a3b8;">+ причина</span></div>
+      </div>
+    </div>
+    <div style="margin-top: 40px;">
+      <h3>Правила</h3>
+      <ul>
+        <li>Только Admin может поставить статус &laquo;Оплачено&raquo;</li>
+        <li>При отклонении обязательно указывается причина (rejection_reason)</li>
+        <li>paid и rejected &mdash; финальные статусы, переход из них невозможен</li>
+        <li>Все смены статуса логируются + Telegram-уведомление агенту</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">13</div>
+</div>
+
+<!-- SLIDE 14: Learning -->
+<div class="slide bg-dark">
+  <div>
+    <div class="badge">Обучение</div>
+    <h2>Система обучения</h2>
+    <p style="margin-bottom: 30px;">Контент хранится в БД (learning_modules + learning_lessons). Каждый урок содержит секции с заголовком и текстом (JSONB).</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Агент &mdash; 5 модулей</h3>
+        <ul>
+          <li>Начало работы</li>
+          <li>Финансы и выплаты</li>
+          <li>Документы</li>
+          <li>Коммуникации</li>
+          <li>FAQ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Менеджер &mdash; 5 модулей</h3>
+        <ul>
+          <li>Начало работы</li>
+          <li>Управление лидами</li>
+          <li>Коммуникации</li>
+          <li>Финансы и документы</li>
+          <li>FAQ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Админ &mdash; 3 модуля</h3>
+        <ul>
+          <li>Управление платформой</li>
+          <li>Интеграции</li>
+          <li>FAQ</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">14</div>
+</div>
+
+<!-- SLIDE 15: Setup -->
+<div class="slide bg-indigo">
+  <div>
+    <div class="badge">Деплой</div>
+    <h2>Запуск и настройка</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Переменные окружения (.env)</h3>
+        <div class="card" style="font-family: monospace; font-size: 16px; line-height: 2;">
+          DATABASE_URL=postgresql://...<br>
+          JWT_SECRET=&lt;256-bit-hex&gt;<br>
+          NEXT_PUBLIC_APP_URL=http://...<br>
+          TELEGRAM_BOT_TOKEN=&lt;optional&gt;
+        </div>
+        <h3 style="margin-top: 24px;">Продакшен</h3>
+        <div class="card" style="font-family: monospace; font-size: 16px; line-height: 2;">
+          npm run build<br>
+          pm2 start npm --name pravotech -- start<br>
+          pm2 save
+        </div>
+      </div>
+      <div>
+        <h3>Быстрый старт</h3>
+        <ul>
+          <li>git clone &lt;repo&gt;</li>
+          <li>npm install</li>
+          <li>Создать .env</li>
+          <li>Применить миграции (7 файлов)</li>
+          <li>npm run dev</li>
+        </ul>
+        <h3 style="margin-top: 24px;">Миграции</h3>
+        <ul>
+          <li>init_schema (базовые таблицы)</li>
+          <li>lead_events</li>
+          <li>payout_rejection + settings</li>
+          <li>telegram_support</li>
+          <li>referral_layer</li>
+          <li>data_fix_seed_consistency</li>
+          <li>learning_content</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">15</div>
+</div>
+
+</body>
+</html>
