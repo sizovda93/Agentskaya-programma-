@@ -40,7 +40,10 @@ export default function ForgotPasswordPage() {
       }
 
       if (data.sent) {
-        setInfo("Код отправлен в Telegram. Проверьте бота.");
+        const msg = data.channel === "telegram"
+          ? "Код отправлен в Telegram. Проверьте бота."
+          : "Код отправлен на вашу почту. Проверьте входящие.";
+        setInfo(msg);
         setStep("code");
       } else {
         setError(data.message || "Не удалось отправить код");
@@ -120,7 +123,7 @@ export default function ForgotPasswordPage() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Код для сброса пароля будет отправлен в привязанный Telegram
+              Код будет отправлен в Telegram или на почту
             </p>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Отправка..." : "Отправить код"}
@@ -134,7 +137,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">
-                Код из Telegram
+                Код подтверждения
               </label>
               <Input
                 type="text"
