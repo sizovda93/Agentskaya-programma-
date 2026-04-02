@@ -105,7 +105,12 @@ export default function LoginPage() {
         </form>
 
         {/* Links */}
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-4 text-center">
+          <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            Забыли пароль?
+          </Link>
+        </div>
+        <div className="mt-3 text-center text-sm text-muted-foreground">
           Нет аккаунта?{" "}
           <Link href="/register" className="text-primary hover:underline">
             Регистрация
