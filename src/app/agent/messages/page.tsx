@@ -6,24 +6,34 @@ import { ConversationList } from "@/components/chat/conversation-list";
 import { ChatWindow } from "@/components/chat/chat-window";
 import { Conversation, Message } from "@/types";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
+import { Button } from "@/components/ui/button";
+import { MessageSquarePlus } from "lucide-react";
 
 export default function AgentMessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConv, setActiveConv] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/conversations")
+  const loadConversations = useCallback(() => {
+    return fetch("/api/conversations")
       .then((r) => r.json())
       .then((data) => {
         const convs = Array.isArray(data) ? data : [];
         setConversations(convs);
+        return convs;
+      })
+      .catch(() => []);
+  }, []);
+
+  useEffect(() => {
+    loadConversations()
+      .then((convs) => {
         if (convs.length > 0) setActiveConv(convs[0]);
       })
-      .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [loadConversations]);
 
   const loadMessages = useCallback((convId: string) => {
     fetch(`/api/conversations/${convId}`)
@@ -46,15 +56,10 @@ export default function AgentMessagesPage() {
   // Auto-refresh conversation list every 15 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      fetch("/api/conversations")
-        .then((r) => r.json())
-        .then((data) => {
-          if (Array.isArray(data)) setConversations(data);
-        })
-        .catch(() => {});
+      loadConversations();
     }, 15000);
     return () => clearInterval(timer);
-  }, []);
+  }, [loadConversations]);
 
   const handleSend = async (text: string) => {
     if (!activeConv) return;
@@ -65,6 +70,31 @@ export default function AgentMessagesPage() {
     });
     if (res.ok) {
       loadMessages(activeConv.id);
+      loadConversations();
+    }
+  };
+
+  const handleStartChat = async () => {
+    setCreating(true);
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Не удалось создать диалог");
+        return;
+      }
+
+      const convs = await loadConversations();
+      const created = convs.find((c: Conversation) => c.id === data.id) || data;
+      setActiveConv(created);
+    } catch {
+      alert("Ошибка соединения");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -74,17 +104,20 @@ export default function AgentMessagesPage() {
     <div>
       <PageHeader
         title="Сообщения"
-        description="Диалоги с клиентами"
+        description="Диалог с менеджером"
         breadcrumbs={[
-          { title: "Дашборд", href: "/agent/dashboard" },
+          { title: "О платформе", href: "/agent/dashboard" },
           { title: "Сообщения" },
         ]}
       />
 
       {conversations.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-sm text-muted-foreground">Нет активных диалогов</p>
-          <p className="text-xs text-muted-foreground mt-1">Диалог с менеджером создаётся автоматически при закреплении</p>
+          <p className="text-sm text-muted-foreground mb-4">Нет активных диалогов</p>
+          <Button onClick={handleStartChat} disabled={creating}>
+            {creating ? "Создание..." : "Написать менеджеру"}
+            {!creating && <MessageSquarePlus className="h-4 w-4" />}
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-xl border border-border overflow-hidden" style={{ height: "calc(100vh - 200px)" }}>
