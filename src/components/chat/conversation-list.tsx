@@ -24,7 +24,7 @@ export function ConversationList({ conversations, activeId, onSelect, currentUse
             key={conv.id}
             onClick={() => onSelect(conv)}
             className={cn(
-              "flex flex-col gap-1.5 p-4 text-left border-b border-border transition-colors hover:bg-muted/50 cursor-pointer",
+              "flex flex-col gap-1 p-3 text-left border-b border-border transition-colors hover:bg-muted/50 cursor-pointer",
               activeId === conv.id && "bg-muted/70 border-l-2 border-l-primary"
             )}
           >
