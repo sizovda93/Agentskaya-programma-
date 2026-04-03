@@ -24,26 +24,16 @@ export function ConversationList({ conversations, activeId, onSelect, currentUse
             key={conv.id}
             onClick={() => onSelect(conv)}
             className={cn(
-              "flex flex-col gap-1 p-3 text-left border-b border-border transition-colors hover:bg-muted/50 cursor-pointer",
+              "flex items-center gap-2 p-3 text-left border-b border-border transition-colors hover:bg-muted/50 cursor-pointer",
               activeId === conv.id && "bg-muted/70 border-l-2 border-l-primary"
             )}
           >
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-sm">{displayName}</span>
-              {conv.unreadCount > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1.5">
-                  {conv.unreadCount}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground line-clamp-1">{conv.lastMessage}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <ModeBadge mode={conv.mode} />
-              <ConversationStatusBadge status={conv.status} />
-              {conv.channel && conv.channel !== "web" && (
-                <ChannelBadge channel={conv.channel} />
-              )}
-            </div>
+            <span className="font-medium text-sm truncate">{displayName}</span>
+            {conv.unreadCount > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1.5 shrink-0">
+                {conv.unreadCount}
+              </span>
+            )}
           </button>
         );
       })}
