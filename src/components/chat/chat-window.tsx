@@ -34,13 +34,7 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent", 
             ? (conversation.managerName || "Менеджер")
             : (conversation.agentName || conversation.clientName || "Партнёр")}
         </h3>
-        <div className="flex items-center gap-2">
-          <ModeBadge mode={conversation.mode} />
-          <ConversationStatusBadge status={conversation.status} />
-          {conversation.channel && conversation.channel !== "web" && (
-            <ChannelBadge channel={conversation.channel} />
-          )}
-        </div>
+        <ConversationStatusBadge status={conversation.status} />
       </div>
 
       {/* Messages — scrollable */}
