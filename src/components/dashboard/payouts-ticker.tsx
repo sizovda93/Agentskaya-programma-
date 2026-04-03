@@ -44,7 +44,7 @@ function MarqueeBar({
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--background)] to-transparent z-10 pointer-events-none" />
         <div className="marquee-track flex whitespace-nowrap" style={{ animationDuration: `${duration}s` }}>
           {doubled.map((t, i) => (
-            <span key={i} className="text-sm mx-8">{t}</span>
+            <span key={i} className="text-xs sm:text-sm mx-4 sm:mx-8">{t}</span>
           ))}
         </div>
       </div>

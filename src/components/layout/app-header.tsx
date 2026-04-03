@@ -73,7 +73,7 @@ export function AppHeader({ user, onMenuToggle }: AppHeaderProps) {
 
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
-      <div className="flex items-center justify-between h-full px-6">
+      <div className="flex items-center justify-between h-full px-4 sm:px-6">
         {/* Left */}
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuToggle}>
@@ -107,7 +107,7 @@ export function AppHeader({ user, onMenuToggle }: AppHeaderProps) {
             {showNotifs && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)} />
-                <div className="absolute right-0 top-full mt-1 w-80 max-h-[420px] rounded-lg border border-border bg-card shadow-xl z-50 flex flex-col">
+                <div className="absolute right-0 top-full mt-1 w-80 max-w-[90vw] max-h-[420px] rounded-lg border border-border bg-card shadow-xl z-50 flex flex-col">
                   <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
                     <span className="text-sm font-semibold">Уведомления</span>
                     {unreadCount > 0 && (

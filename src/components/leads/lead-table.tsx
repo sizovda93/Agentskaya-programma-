@@ -31,6 +31,7 @@ export function LeadTable({ leads, onRowClick }: LeadTableProps) {
       key: "city",
       title: "Город",
       render: (lead: Lead) => <span className="text-muted-foreground">{lead.city}</span>,
+      hideOnMobile: true,
     },
     {
       key: "source",
@@ -38,6 +39,7 @@ export function LeadTable({ leads, onRowClick }: LeadTableProps) {
       render: (lead: Lead) => (
         <Badge variant="outline">{sourceLabels[lead.source] ?? lead.source}</Badge>
       ),
+      hideOnMobile: true,
     },
     {
       key: "status",
@@ -53,6 +55,7 @@ export function LeadTable({ leads, onRowClick }: LeadTableProps) {
         </span>
       ),
       className: "text-right",
+      hideOnMobile: true,
     },
     {
       key: "date",
@@ -60,6 +63,7 @@ export function LeadTable({ leads, onRowClick }: LeadTableProps) {
       render: (lead: Lead) => (
         <span className="text-muted-foreground">{formatDate(lead.createdAt)}</span>
       ),
+      hideOnMobile: true,
     },
   ];
 

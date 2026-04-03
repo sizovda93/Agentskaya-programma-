@@ -5,6 +5,7 @@ interface Column<T> {
   title: string;
   render: (item: T) => React.ReactNode;
   className?: string;
+  hideOnMobile?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -35,8 +36,9 @@ export function DataTable<T extends { id: string }>({
               <th
                 key={col.key}
                 className={cn(
-                  "px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground",
-                  col.className
+                  "px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                  col.className,
+                  col.hideOnMobile && "hidden sm:table-cell"
                 )}
               >
                 {col.title}
@@ -55,7 +57,7 @@ export function DataTable<T extends { id: string }>({
               onClick={() => onRowClick?.(item)}
             >
               {columns.map((col) => (
-                <td key={col.key} className={cn("px-4 py-3 text-sm", col.className)}>
+                <td key={col.key} className={cn("px-3 sm:px-4 py-2.5 sm:py-3 text-sm", col.className, col.hideOnMobile && "hidden sm:table-cell")}>
                   {col.render(item)}
                 </td>
               ))}

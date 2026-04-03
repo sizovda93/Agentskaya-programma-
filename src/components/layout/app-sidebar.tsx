@@ -54,13 +54,18 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 interface AppSidebarProps {
   items: NavItem[];
   role: UserRole;
+  mobile?: boolean;
+  onClose?: () => void;
 }
 
-export function AppSidebar({ items, role }: AppSidebarProps) {
+export function AppSidebar({ items, role, mobile, onClose }: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card h-screen sticky top-0">
+    <aside className={cn(
+      "flex flex-col w-64 border-r border-border bg-card h-screen",
+      mobile ? "w-full" : "hidden lg:flex sticky top-0"
+    )}>
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border">
         <Link href={`/${role}/dashboard`} className="flex items-center gap-3">
@@ -85,6 +90,7 @@ export function AppSidebar({ items, role }: AppSidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={mobile ? onClose : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm uppercase tracking-wider transition-colors",
                   isActive

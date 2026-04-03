@@ -120,17 +120,35 @@ export default function AgentMessagesPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-0 rounded-xl border border-border overflow-hidden" style={{ height: "calc(100vh - 200px)" }}>
-          <div className="border-r border-border overflow-y-auto">
-            <ConversationList
-              conversations={conversations}
-              activeId={activeConv?.id}
-              onSelect={setActiveConv}
-              currentUserType="agent"
-            />
+        <div className="rounded-xl border border-border overflow-hidden" style={{ height: "calc(100dvh - 200px)" }}>
+          {/* Desktop: list + chat side by side */}
+          <div className="hidden lg:grid lg:grid-cols-[240px_1fr] h-full">
+            <div className="border-r border-border overflow-y-auto">
+              <ConversationList
+                conversations={conversations}
+                activeId={activeConv?.id}
+                onSelect={setActiveConv}
+                currentUserType="agent"
+              />
+            </div>
+            <div>
+              {activeConv ? (
+                <ChatWindow
+                  conversation={activeConv}
+                  messages={messages}
+                  currentUserType="agent"
+                  onSend={handleSend}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                  Выберите диалог
+                </div>
+              )}
+            </div>
           </div>
 
-          <div>
+          {/* Mobile: full-screen chat (skip list since agent usually has 1 conversation) */}
+          <div className="lg:hidden h-full">
             {activeConv ? (
               <ChatWindow
                 conversation={activeConv}
@@ -140,7 +158,7 @@ export default function AgentMessagesPage() {
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                Выберите диалог
+                Нет диалогов
               </div>
             )}
           </div>
