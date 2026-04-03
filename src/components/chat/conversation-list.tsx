@@ -8,38 +8,45 @@ interface ConversationListProps {
   conversations: Conversation[];
   activeId?: string;
   onSelect: (conversation: Conversation) => void;
+  currentUserType?: string;
 }
 
-export function ConversationList({ conversations, activeId, onSelect }: ConversationListProps) {
+export function ConversationList({ conversations, activeId, onSelect, currentUserType = "manager" }: ConversationListProps) {
   return (
     <div className="flex flex-col">
-      {conversations.map((conv) => (
-        <button
-          key={conv.id}
-          onClick={() => onSelect(conv)}
-          className={cn(
-            "flex flex-col gap-1.5 p-4 text-left border-b border-border transition-colors hover:bg-muted/50 cursor-pointer",
-            activeId === conv.id && "bg-muted/70 border-l-2 border-l-primary"
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-sm">{conv.clientName}</span>
-            {conv.unreadCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1.5">
-                {conv.unreadCount}
-              </span>
+      {conversations.map((conv) => {
+        const displayName = currentUserType === "agent"
+          ? (conv.managerName || "Менеджер")
+          : (conv.agentName || conv.clientName || "Партнёр");
+
+        return (
+          <button
+            key={conv.id}
+            onClick={() => onSelect(conv)}
+            className={cn(
+              "flex flex-col gap-1.5 p-4 text-left border-b border-border transition-colors hover:bg-muted/50 cursor-pointer",
+              activeId === conv.id && "bg-muted/70 border-l-2 border-l-primary"
             )}
-          </div>
-          <p className="text-xs text-muted-foreground line-clamp-1">{conv.lastMessage}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <ModeBadge mode={conv.mode} />
-            <ConversationStatusBadge status={conv.status} />
-            {conv.channel && conv.channel !== "web" && (
-              <ChannelBadge channel={conv.channel} />
-            )}
-          </div>
-        </button>
-      ))}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-sm">{displayName}</span>
+              {conv.unreadCount > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1.5">
+                  {conv.unreadCount}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground line-clamp-1">{conv.lastMessage}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <ModeBadge mode={conv.mode} />
+              <ConversationStatusBadge status={conv.status} />
+              {conv.channel && conv.channel !== "web" && (
+                <ChannelBadge channel={conv.channel} />
+              )}
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

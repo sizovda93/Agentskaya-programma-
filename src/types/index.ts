@@ -89,6 +89,8 @@ export interface Conversation {
   agentId: string;
   managerId?: string;
   clientName: string;
+  agentName?: string;
+  managerName?: string;
   mode: ConversationMode;
   unreadCount: number;
   lastMessage?: string;

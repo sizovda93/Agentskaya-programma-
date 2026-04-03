@@ -30,7 +30,11 @@ export function ChatWindow({ conversation, messages, currentUserType = "agent", 
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
-          <h3 className="font-medium">{conversation.clientName}</h3>
+          <h3 className="font-medium">
+            {currentUserType === "agent"
+              ? (conversation.managerName || "Менеджер")
+              : (conversation.agentName || conversation.clientName || "Партнёр")}
+          </h3>
           <div className="flex items-center gap-2 mt-1">
             <ModeBadge mode={conversation.mode} />
             <ConversationStatusBadge status={conversation.status} />
