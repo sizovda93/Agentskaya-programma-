@@ -3,14 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Scale, ArrowRight } from "lucide-react";
+import { Scale, ArrowRight, Eye, EyeOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [consents, setConsents] = useState({ offer: false, personal_data: false });
+  const [modalContent, setModalContent] = useState<"offer" | "pd" | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -99,14 +101,24 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="text-sm text-muted-foreground mb-1.5 block">Пароль</label>
-            <Input
-              type="password"
-              placeholder="Минимум 8 символов"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-              minLength={8}
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Минимум 8 символов"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+                minLength={8}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Consent checkboxes */}
@@ -120,7 +132,7 @@ export default function RegisterPage() {
               />
               <span className="text-xs text-muted-foreground">
                 Принимаю{" "}
-                <Link href="/offer" className="text-primary hover:underline" target="_blank">условия оферты</Link>
+                <button type="button" onClick={() => setModalContent("offer")} className="text-primary hover:underline">условия оферты</button>
               </span>
             </label>
             <label className="flex items-start gap-2 cursor-pointer">
@@ -132,7 +144,7 @@ export default function RegisterPage() {
               />
               <span className="text-xs text-muted-foreground">
                 Даю{" "}
-                <Link href="/consent" className="text-primary hover:underline" target="_blank">согласие на обработку ПД</Link>
+                <button type="button" onClick={() => setModalContent("pd")} className="text-primary hover:underline">согласие на обработку ПД</button>
               </span>
             </label>
           </div>
@@ -143,11 +155,51 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-4 text-center">
+          <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            Забыли пароль?
+          </Link>
+        </div>
+        <div className="mt-3 text-center text-sm text-muted-foreground">
           Уже есть аккаунт?{" "}
           <Link href="/login" className="text-primary hover:underline">Войти</Link>
         </div>
       </div>
+
+      {/* Modal */}
+      {modalContent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setModalContent(null)}>
+          <div className="bg-card border border-border rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto mx-4 p-6 relative" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setModalContent(null)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+              <X className="h-5 w-5" />
+            </button>
+            {modalContent === "offer" ? (
+              <>
+                <h2 className="text-lg font-semibold mb-4">Публичная оферта</h2>
+                <div className="text-sm text-muted-foreground space-y-3">
+                  <p>Настоящая публичная оферта определяет условия использования платформы Агентум Про.</p>
+                  <p><strong className="text-foreground">1. Общие положения.</strong> Платформа предоставляет сервис для координации работы юридических партнёров, управления лидами и автоматизации коммуникаций. Регистрируясь, Пользователь принимает условия в полном объёме.</p>
+                  <p><strong className="text-foreground">2. Предмет оферты.</strong> Компания предоставляет Пользователю доступ к функциональности Платформы в соответствии с выбранным тарифным планом. Перечень доступных функций определяется ролью Пользователя в системе.</p>
+                  <p><strong className="text-foreground">3. Условия использования.</strong> Пользователь обязуется использовать Платформу исключительно в законных целях. Пользователь несёт ответственность за сохранность своих учётных данных.</p>
+                  <p><strong className="text-foreground">4. Ответственность.</strong> Администрация не несёт ответственности за действия третьих лиц, технические сбои провайдеров, содержание сообщений Пользователей.</p>
+                  <p className="text-xs mt-4">Дата публикации: 1 января 2026 г.</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold mb-4">Согласие на обработку персональных данных</h2>
+                <div className="text-sm text-muted-foreground space-y-3">
+                  <p>Регистрируясь на Платформе, Пользователь даёт своё согласие на обработку персональных данных в соответствии с ФЗ-152 «О персональных данных».</p>
+                  <p><strong className="text-foreground">Перечень данных:</strong> ФИО, адрес электронной почты, номер телефона, город проживания, сведения о профессиональной деятельности.</p>
+                  <p><strong className="text-foreground">Цели обработки:</strong> предоставление доступа к функциям Платформы, связь с пользователем по вопросам предоставления услуг, статистический анализ использования Платформы.</p>
+                  <p><strong className="text-foreground">Срок действия.</strong> Согласие действует с момента его предоставления и до момента отзыва путём направления письменного уведомления.</p>
+                  <p className="text-xs mt-4">Дата публикации: 1 января 2026 г.</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
