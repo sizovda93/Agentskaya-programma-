@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import { getInitials } from "@/lib/utils";
-import { Send, Unlink, MessageCircle, Check } from "lucide-react";
+import { Send, Unlink, MessageCircle, Check, Eye, EyeOff, KeyRound } from "lucide-react";
 
 interface ProfileData {
   id: string;
@@ -366,6 +366,9 @@ export default function AgentProfilePage() {
         </div>
       </div>
 
+      {/* Change password */}
+      <ChangePasswordCard />
+
       {/* Feedback — full width */}
       <Card className="mt-6">
         <CardHeader>
@@ -425,5 +428,103 @@ export default function AgentProfilePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function ChangePasswordCard() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const handleChange = async () => {
+    setMessage("");
+    setError("");
+    setSaving(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Ошибка");
+      } else {
+        setMessage("Пароль успешно изменён");
+        setCurrentPassword("");
+        setNewPassword("");
+      }
+    } catch {
+      setError("Ошибка соединения");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <KeyRound className="h-4 w-4" /> Смена пароля
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm text-muted-foreground mb-1.5 block">Текущий пароль</label>
+            <div className="relative">
+              <Input
+                type={showCurrent ? "text" : "password"}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Введите текущий пароль"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1.5 block">Новый пароль</label>
+            <div className="relative">
+              <Input
+                type={showNew ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Минимум 6 символов"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+        </div>
+        {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+        {message && <p className="text-sm text-green-600 mt-2">{message}</p>}
+        <div className="flex justify-end mt-4">
+          <Button
+            size="sm"
+            onClick={handleChange}
+            disabled={saving || !currentPassword || !newPassword}
+          >
+            {saving ? "Сохранение..." : "Изменить пароль"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
