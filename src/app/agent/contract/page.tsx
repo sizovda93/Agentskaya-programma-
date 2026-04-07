@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, Eye, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 interface Contract {
@@ -18,6 +18,7 @@ interface Contract {
 export default function AgentContractPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewUrl, setViewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/contracts")
@@ -31,11 +32,11 @@ export default function AgentContractPage() {
   return (
     <div>
       <PageHeader
-        title="Агентский договор"
+        title="Партнёрское соглашение"
         description="Договор о сотрудничестве с платформой"
         breadcrumbs={[
           { title: "О платформе", href: "/agent/dashboard" },
-          { title: "Агентский договор" },
+          { title: "Партнёрское соглашение" },
         ]}
       />
 
@@ -59,14 +60,42 @@ export default function AgentContractPage() {
                     <p className="text-xs text-muted-foreground">Загружен {formatDate(c.createdAt)}</p>
                   </div>
                 </div>
-                <a href={c.fileUrl} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline">
-                    <Download className="h-4 w-4 mr-1" /> Скачать
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setViewUrl(c.fileUrl)}>
+                    <Eye className="h-4 w-4 mr-1" /> Читать
                   </Button>
-                </a>
+                  <a href={c.fileUrl} download>
+                    <Button size="sm" variant="outline">
+                      <Download className="h-4 w-4 mr-1" /> Скачать
+                    </Button>
+                  </a>
+                </div>
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* PDF viewer modal */}
+      {viewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setViewUrl(null)}>
+          <div
+            className="bg-card border border-border rounded-xl w-full max-w-4xl mx-4 overflow-hidden relative"
+            style={{ height: "90vh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-semibold">Партнёрское соглашение</span>
+              <button onClick={() => setViewUrl(null)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <iframe
+              src={viewUrl}
+              className="w-full"
+              style={{ height: "calc(90vh - 49px)" }}
+            />
+          </div>
         </div>
       )}
     </div>
