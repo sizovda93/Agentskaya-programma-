@@ -81,6 +81,26 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       aIdx++;
     }
 
+    if (body.birthDay !== undefined) {
+      const day = body.birthDay === null ? null : Number(body.birthDay);
+      if (day !== null && (isNaN(day) || day < 1 || day > 31)) {
+        return Response.json({ error: 'День рождения от 1 до 31' }, { status: 400 });
+      }
+      agentUpdates.push(`birth_day = $${aIdx}`);
+      agentValues.push(day);
+      aIdx++;
+    }
+
+    if (body.birthMonth !== undefined) {
+      const month = body.birthMonth === null ? null : Number(body.birthMonth);
+      if (month !== null && (isNaN(month) || month < 1 || month > 12)) {
+        return Response.json({ error: 'Месяц от 1 до 12' }, { status: 400 });
+      }
+      agentUpdates.push(`birth_month = $${aIdx}`);
+      agentValues.push(month);
+      aIdx++;
+    }
+
     if (body.profession !== undefined) {
       const prof = body.profession ? String(body.profession).trim() : null;
       if (prof && prof.length > 255) {
@@ -153,7 +173,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     // If only agent fields changed, return fresh profile data
     const { rows: fresh } = await pool.query(
       `SELECT p.id, p.role, p.full_name, p.email, p.phone, p.avatar_url, p.status, p.created_at,
-              a.city, a.specialization, a.gender, a.birth_year, a.profession, a.preferred_messenger
+              a.city, a.specialization, a.gender, a.birth_year, a.birth_day, a.birth_month, a.profession, a.preferred_messenger
        FROM profiles p
        LEFT JOIN agents a ON a.user_id = p.id
        WHERE p.id = $1`,
