@@ -289,6 +289,8 @@ export default function AgentProfilePage() {
               )}
             </CardContent>
           </Card>
+
+          <MaxCard />
         </div>
 
         <div className="lg:col-span-2 space-y-6">
@@ -551,6 +553,97 @@ function ChangePasswordCard() {
             {saving ? "Сохранение..." : "Изменить пароль"}
           </Button>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MaxCard() {
+  const [status, setStatus] = useState<{ connected: boolean; maxUsername?: string; maxFirstName?: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [deepLink, setDeepLink] = useState<string | null>(null);
+
+  const loadStatus = useCallback(() => {
+    fetch("/api/max/status")
+      .then((r) => r.json())
+      .then(setStatus)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  const handleConnect = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/max/link", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) setDeepLink(data.deepLink);
+    } finally { setLoading(false); }
+  };
+
+  const handleDisconnect = async () => {
+    setLoading(true);
+    try {
+      await fetch("/api/max/link", { method: "DELETE" });
+      setStatus({ connected: false });
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <MessageCircle className="h-4 w-4" /> MAX
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {status?.connected ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge variant="success">Подключён</Badge>
+              {(status.maxUsername || status.maxFirstName) && (
+                <span className="text-sm text-muted-foreground">
+                  {status.maxUsername ? `@${status.maxUsername}` : status.maxFirstName}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Вы получаете уведомления в MAX.
+            </p>
+            <Button variant="outline" size="sm" onClick={handleDisconnect} disabled={loading}>
+              <Unlink className="h-3.5 w-3.5 mr-1" />
+              {loading ? "Отключение..." : "Отключить"}
+            </Button>
+          </div>
+        ) : deepLink ? (
+          <div className="space-y-3">
+            <p className="text-sm">Откройте ссылку и нажмите Start в боте:</p>
+            <a
+              href={deepLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5B6AED] text-white text-sm font-medium hover:bg-[#4A59DC] transition-colors"
+            >
+              <MessageCircle className="h-4 w-4" /> Открыть MAX
+            </a>
+            <p className="text-xs text-muted-foreground">
+              Ссылка действительна 15 минут. После привязки обновите страницу.
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => { setDeepLink(null); loadStatus(); }}>
+              Я уже привязал — обновить статус
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Подключите MAX для уведомлений.
+            </p>
+            <Button onClick={handleConnect} disabled={loading}>
+              <MessageCircle className="h-4 w-4 mr-1" />
+              {loading ? "Генерация ссылки..." : "Подключить MAX"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

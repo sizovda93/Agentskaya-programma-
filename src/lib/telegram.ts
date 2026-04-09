@@ -86,7 +86,15 @@ export async function notifyAgent(profileId: string, text: string): Promise<bool
        WHERE profile_id = $1 AND is_active = true LIMIT 1`,
       [profileId]
     );
-    if (rows.length === 0) return false;
+    if (rows.length === 0) {
+      // Fallback: try MAX messenger
+      try {
+        const { notifyAgentViaMax } = await import('./max-messenger');
+        return await notifyAgentViaMax(profileId, text);
+      } catch {
+        return false;
+      }
+    }
 
     const result = await sendMessage(rows[0].telegram_chat_id, text);
 
