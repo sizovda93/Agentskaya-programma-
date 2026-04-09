@@ -366,10 +366,8 @@ export default function AgentProfilePage() {
         </div>
       </div>
 
-      {/* Change password + Feedback — side by side */}
+      {/* Feedback + Change password — side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <ChangePasswordCard />
-
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -427,6 +425,8 @@ export default function AgentProfilePage() {
             )}
           </CardContent>
         </Card>
+
+        <ChangePasswordCard />
       </div>
     </div>
   );
