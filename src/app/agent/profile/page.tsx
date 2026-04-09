@@ -171,8 +171,8 @@ export default function AgentProfilePage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        <div className="space-y-6 flex flex-col">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="space-y-6">
         <Card>
           <CardContent className="p-6 flex flex-col items-center text-center">
             <Avatar className="h-20 w-20 mb-4">
@@ -228,7 +228,7 @@ export default function AgentProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="flex-1">
+        <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Send className="h-4 w-4" /> Telegram
@@ -389,11 +389,8 @@ export default function AgentProfilePage() {
             </CardContent>
           </Card>
 
-        </div>
-      </div>
-
-      {/* Feedback + Change password — side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Feedback + Change password — side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -453,6 +450,9 @@ export default function AgentProfilePage() {
         </Card>
 
         <ChangePasswordCard />
+          </div>
+
+        </div>
       </div>
     </div>
   );
