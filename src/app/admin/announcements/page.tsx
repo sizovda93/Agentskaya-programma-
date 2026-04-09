@@ -30,6 +30,8 @@ export default function AdminAnnouncementsPage() {
   const [aTitle, setATitle] = useState("");
   const [aType, setAType] = useState("news");
   const [aContent, setAContent] = useState("");
+  const [aImageUrl, setAImageUrl] = useState("");
+  const [aUploading, setAUploading] = useState(false);
   const [aSaving, setASaving] = useState(false);
 
   // Ticker form
@@ -50,9 +52,9 @@ export default function AdminAnnouncementsPage() {
     setASaving(true);
     await fetch("/api/announcements", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: aTitle, type: aType, content: aContent }),
+      body: JSON.stringify({ title: aTitle, type: aType, content: aContent, imageUrl: aImageUrl || undefined }),
     });
-    setATitle(""); setAContent(""); setAType("news");
+    setATitle(""); setAContent(""); setAType("news"); setAImageUrl("");
     await load(); setASaving(false);
   };
 
@@ -118,6 +120,31 @@ export default function AdminAnnouncementsPage() {
               <option value="update">Обновление</option>
             </select>
             <textarea value={aContent} onChange={(e) => setAContent(e.target.value)} placeholder="Текст объявления..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Изображение (необязательно)</label>
+              <input
+                type="file"
+                accept="image/*"
+                disabled={aUploading}
+                className="text-xs"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setAUploading(true);
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  try {
+                    const res = await fetch("/api/upload", { method: "POST", body: fd });
+                    if (res.ok) {
+                      const data = await res.json();
+                      setAImageUrl(data.fileUrl);
+                    }
+                  } finally { setAUploading(false); }
+                }}
+              />
+              {aUploading && <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>}
+              {aImageUrl && <img src={aImageUrl} alt="" className="mt-2 rounded-lg max-h-32 object-cover" />}
+            </div>
             <Button size="sm" onClick={createAnnouncement} disabled={aSaving || !aTitle.trim() || !aContent.trim()}>
               <Plus className="h-4 w-4 mr-1" /> {aSaving ? "..." : "Создать"}
             </Button>

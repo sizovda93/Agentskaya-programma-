@@ -8,7 +8,7 @@ import { LeadStatusBadge } from "@/components/dashboard/status-badges";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble, Newspaper, Bell } from "lucide-react";
 import { Lead, Conversation, AgentTier } from "@/types";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
@@ -31,6 +31,7 @@ export default function AgentDashboard() {
   const [agentRank, setAgentRank] = useState<{ rank: number | null; totalAgents: number } | null>(null);
   const [agentTier, setAgentTier] = useState<AgentTier>("base");
   const [activeTab, setActiveTab] = useState<"main" | "history" | "partner">("main");
+  const [announcements, setAnnouncements] = useState<{id: string; title: string; type: string; createdAt: string; commentCount?: number}[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -41,12 +42,14 @@ export default function AgentDashboard() {
       fetch("/api/learning/progress").then((r) => r.json()).catch(() => null),
       fetch("/api/telegram/status").then((r) => r.json()).catch(() => ({ connected: false })),
       fetch("/api/analytics").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch("/api/announcements").then((r) => r.ok ? r.json() : []).catch(() => []),
     ])
-      .then(([ld, cv, st, profile, progress, tgStatus, analyticsData]) => {
+      .then(([ld, cv, st, profile, progress, tgStatus, analyticsData, ann]) => {
         const leadsArr = Array.isArray(ld) ? ld : [];
         setLeads(leadsArr);
         setConversations(Array.isArray(cv) ? cv : []);
         setStats(st || {});
+        setAnnouncements(Array.isArray(ann) ? ann.slice(0, 3) : []);
 
         const cl: ChecklistState = {
           profileFilled: !!(profile?.city && profile?.phone),
@@ -336,6 +339,38 @@ export default function AgentDashboard() {
       </Card>
 
       </>)}
+
+      {/* ====== 6.5 LATEST ANNOUNCEMENTS ====== */}
+      {announcements.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Newspaper className="h-4 w-4" /> Последние объявления
+            </CardTitle>
+            <Link href="/agent/announcements" className="text-sm text-primary hover:underline flex items-center gap-1">
+              Все <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {announcements.map((a) => (
+                <Link key={a.id} href="/agent/announcements" className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Bell className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{a.title}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(a.createdAt)}</p>
+                    </div>
+                  </div>
+                  {(a.commentCount ?? 0) > 0 && (
+                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{a.commentCount} комм.</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ====== 7. RECENT ACTIVITY ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
