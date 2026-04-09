@@ -234,7 +234,8 @@ export default function AgentProfilePage() {
                 <Send className="h-4 w-4" /> Мессенджеры
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
               {/* Telegram */}
               <div className="rounded-lg border border-border p-3 space-y-2">
                 <p className="text-sm font-medium flex items-center gap-2">
@@ -273,6 +274,7 @@ export default function AgentProfilePage() {
 
               {/* MAX */}
               <MaxSection />
+              </div>
             </CardContent>
           </Card>
         </div>
