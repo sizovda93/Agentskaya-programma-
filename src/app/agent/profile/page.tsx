@@ -209,7 +209,7 @@ export default function AgentProfilePage() {
               {profile.birthYear && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Возраст</span>
-                  <span>{new Date().getFullYear() - profile.birthYear} лет</span>
+                  <span>{new Date().getFullYear() - profile.birthYear}</span>
                 </div>
               )}
               {profile.rating !== undefined && (
