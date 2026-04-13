@@ -40,6 +40,36 @@ export function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+export function timeAgo(date: string | Date): string {
+  const now = Date.now();
+  const then = new Date(date).getTime();
+  const diff = Math.floor((now - then) / 1000);
+
+  if (diff < 60) return "только что";
+  if (diff < 3600) {
+    const m = Math.floor(diff / 60);
+    return `${m} мин назад`;
+  }
+  if (diff < 86400) {
+    const h = Math.floor(diff / 3600);
+    return `${h}ч назад`;
+  }
+  if (diff < 172800) return "вчера";
+  if (diff < 604800) {
+    const d = Math.floor(diff / 86400);
+    return `${d}д назад`;
+  }
+  return formatDate(date);
+}
+
+export function maskName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0];
+  // "Иванов Алексей Сергеевич" → "Алексей И."
+  return parts[1] + " " + parts[0][0] + ".";
+}
+
 export function plural(count: number, one: string, few: string, many: string): string {
   const mod10 = count % 10;
   const mod100 = count % 100;

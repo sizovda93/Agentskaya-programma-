@@ -10,7 +10,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble, Newspaper, Bell } from "lucide-react";
 import { Lead, Conversation } from "@/types";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
-import { PayoutsTicker } from "@/components/dashboard/payouts-ticker";
+import { SocialProofFeed } from "@/components/dashboard/social-proof-feed";
 
 interface ChecklistState {
   profileFilled: boolean;
@@ -86,8 +86,8 @@ export default function AgentDashboard() {
         description="Партнёрская программа по банкротству физических лиц"
       />
 
-      {/* ====== 1. SOCIAL PROOF — Бегущие строки ====== */}
-      <PayoutsTicker />
+      {/* ====== 1. SOCIAL PROOF — Карточки партнёров ====== */}
+      <SocialProofFeed />
 
       {/* ====== TABS ====== */}
       <div className="flex gap-2 mb-6 flex-wrap">
