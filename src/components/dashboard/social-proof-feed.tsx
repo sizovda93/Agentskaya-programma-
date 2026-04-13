@@ -24,9 +24,9 @@ interface SocialProofData {
 }
 
 const TIER_STYLE: Record<string, { ring: string; label: string; color: string }> = {
-  base: { ring: "ring-zinc-400/30", label: "Base", color: "text-zinc-500" },
-  silver: { ring: "ring-blue-400/40", label: "Silver", color: "text-blue-500" },
-  gold: { ring: "ring-amber-400/50", label: "Gold", color: "text-amber-500" },
+  base: { ring: "ring-zinc-400/30", label: "Базовый", color: "text-zinc-500" },
+  silver: { ring: "ring-blue-400/40", label: "Серебро", color: "text-blue-500" },
+  gold: { ring: "ring-amber-400/50", label: "Золото", color: "text-amber-500" },
 };
 
 const FALLBACK_ENTRIES: PartnerEntry[] = [
