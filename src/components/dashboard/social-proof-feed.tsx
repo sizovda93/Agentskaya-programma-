@@ -2,146 +2,153 @@
 
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials, formatCurrency, timeAgo, maskName } from "@/lib/utils";
-import { Scale, RussianRuble, Trophy } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { getInitials, formatCurrency, timeAgo, maskName, cn } from "@/lib/utils";
+import { RussianRuble, Users, TrendingUp, Briefcase } from "lucide-react";
 
-interface PayoutEntry {
+interface PartnerEntry {
   id: string;
-  type: "payout";
   fullName: string;
-  amount: number;
+  lastPayout: number;
+  totalEarned: number;
+  dealCount: number;
   tier: "base" | "silver" | "gold";
   partnerNumber: number;
   createdAt: string;
 }
 
-interface CourtEntry {
-  id: string;
-  type: "court";
-  text: string;
-  createdAt: string;
+interface SocialProofData {
+  totalPaid: number;
+  totalDeals: number;
+  totalPartners: number;
+  entries: PartnerEntry[];
 }
 
-type SocialEntry = PayoutEntry | CourtEntry;
-
-const TIER_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  base: { bg: "bg-zinc-500/10", text: "text-zinc-500", label: "Base" },
-  silver: { bg: "bg-blue-500/10", text: "text-blue-500", label: "Silver" },
-  gold: { bg: "bg-amber-500/10", text: "text-amber-500", label: "Gold" },
+const TIER_STYLE: Record<string, { ring: string; label: string; color: string }> = {
+  base: { ring: "ring-zinc-400/30", label: "Base", color: "text-zinc-500" },
+  silver: { ring: "ring-blue-400/40", label: "Silver", color: "text-blue-500" },
+  gold: { ring: "ring-amber-400/50", label: "Gold", color: "text-amber-500" },
 };
 
-const FALLBACK: SocialEntry[] = [
-  { id: "f1", type: "payout", fullName: "Иванов Алексей Сергеевич", amount: 20000, tier: "silver", partnerNumber: 892, createdAt: new Date(Date.now() - 3600000).toISOString() },
-  { id: "f2", type: "court", text: "Списано 1 500 000 ₽ долгов — Петров П.П. полностью освобождён от обязательств", createdAt: new Date(Date.now() - 7200000).toISOString() },
-  { id: "f3", type: "payout", fullName: "Петрова Мария Владимировна", amount: 35000, tier: "gold", partnerNumber: 901, createdAt: new Date(Date.now() - 10800000).toISOString() },
-  { id: "f4", type: "payout", fullName: "Козлов Дмитрий Игоревич", amount: 15000, tier: "base", partnerNumber: 915, createdAt: new Date(Date.now() - 18000000).toISOString() },
-  { id: "f5", type: "court", text: "Рябинская Юлия Александровна (А53-40604/2024) — полностью освобождена от долгов", createdAt: new Date(Date.now() - 21600000).toISOString() },
+const FALLBACK_ENTRIES: PartnerEntry[] = [
+  { id: "f1", fullName: "Иванов Алексей Сергеевич", lastPayout: 20000, totalEarned: 85000, dealCount: 5, tier: "silver", partnerNumber: 892, createdAt: new Date(Date.now() - 3600000).toISOString() },
+  { id: "f2", fullName: "Петрова Мария Владимировна", lastPayout: 35000, totalEarned: 210000, dealCount: 12, tier: "gold", partnerNumber: 901, createdAt: new Date(Date.now() - 7200000).toISOString() },
+  { id: "f3", fullName: "Козлов Дмитрий Игоревич", lastPayout: 15000, totalEarned: 30000, dealCount: 2, tier: "base", partnerNumber: 915, createdAt: new Date(Date.now() - 14400000).toISOString() },
+  { id: "f4", fullName: "Сидорова Елена Петровна", lastPayout: 25000, totalEarned: 120000, dealCount: 7, tier: "silver", partnerNumber: 923, createdAt: new Date(Date.now() - 21600000).toISOString() },
+  { id: "f5", fullName: "Николаев Андрей Васильевич", lastPayout: 40000, totalEarned: 340000, dealCount: 18, tier: "gold", partnerNumber: 888, createdAt: new Date(Date.now() - 28800000).toISOString() },
 ];
 
-function PayoutCard({ entry }: { entry: PayoutEntry }) {
-  const tier = TIER_COLORS[entry.tier] || TIER_COLORS.base;
+function PartnerCard({ entry }: { entry: PartnerEntry }) {
+  const tier = TIER_STYLE[entry.tier] || TIER_STYLE.base;
   const name = maskName(entry.fullName);
 
   return (
-    <div className="shrink-0 flex items-center gap-3 rounded-xl border border-success/20 bg-success/5 px-4 py-3 w-[280px]">
-      <Avatar className="h-9 w-9 shrink-0">
-        <AvatarFallback className="text-xs bg-success/10 text-success">
-          {getInitials(entry.fullName)}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium truncate">{name}</span>
-          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", tier.bg, tier.text)}>
-            {tier.label}
-          </span>
+    <div className="shrink-0 w-[260px] rounded-xl border border-border bg-card p-4 space-y-3">
+      {/* Top: avatar + name + tier */}
+      <div className="flex items-center gap-3">
+        <Avatar className={cn("h-10 w-10 ring-2", tier.ring)}>
+          <AvatarFallback className="text-xs bg-primary/10 text-primary">{getInitials(entry.fullName)}</AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold truncate">{name}</p>
+          <div className="flex items-center gap-1.5">
+            <span className={cn("text-[10px] font-medium", tier.color)}>{tier.label}</span>
+            <span className="text-[10px] text-muted-foreground">· №{entry.partnerNumber}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between mt-0.5">
-          <span className="text-sm font-bold text-success">{formatCurrency(entry.amount)}</span>
-          <span className="text-[10px] text-muted-foreground">{timeAgo(entry.createdAt)}</span>
+      </div>
+
+      {/* Stats: last payout + total */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg bg-success/5 border border-success/10 px-2.5 py-2 text-center">
+          <p className="text-[10px] text-muted-foreground mb-0.5">Получил сейчас</p>
+          <p className="text-sm font-bold text-success">{formatCurrency(entry.lastPayout)}</p>
         </div>
+        <div className="rounded-lg bg-muted/50 border border-border px-2.5 py-2 text-center">
+          <p className="text-[10px] text-muted-foreground mb-0.5">Всего заработал</p>
+          <p className="text-sm font-bold">{formatCurrency(entry.totalEarned)}</p>
+        </div>
+      </div>
+
+      {/* Bottom: deals + time */}
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+        <span>{entry.dealCount} {entry.dealCount === 1 ? "сделка" : entry.dealCount < 5 ? "сделки" : "сделок"}</span>
+        <span>{timeAgo(entry.createdAt)}</span>
       </div>
     </div>
   );
 }
 
-function CourtCard({ entry }: { entry: CourtEntry }) {
+function TotalBanner({ totalPaid, totalDeals, totalPartners }: { totalPaid: number; totalDeals: number; totalPartners: number }) {
+  if (totalPaid <= 0) return null;
+
   return (
-    <div className="shrink-0 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 w-[320px]">
-      <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-        <Scale className="h-4 w-4 text-primary" />
+    <div className="flex items-center gap-6 mb-3 flex-wrap">
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
+          <RussianRuble className="h-4 w-4 text-success" />
+        </div>
+        <div>
+          <p className="text-lg font-bold text-success leading-tight">{formatCurrency(totalPaid)}</p>
+          <p className="text-[10px] text-muted-foreground">выплачено партнёрам</p>
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs text-foreground leading-snug line-clamp-2">{entry.text}</p>
-        <p className="text-[10px] text-muted-foreground mt-0.5">{timeAgo(entry.createdAt)}</p>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5">
+          <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">{totalDeals}</span> сделок</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">{totalPartners}</span> партнёров</span>
+        </div>
       </div>
     </div>
   );
 }
 
 export function SocialProofFeed() {
-  const [entries, setEntries] = useState<SocialEntry[]>(FALLBACK);
+  const [entries, setEntries] = useState<PartnerEntry[]>(FALLBACK_ENTRIES);
   const [totalPaid, setTotalPaid] = useState(0);
   const [totalDeals, setTotalDeals] = useState(0);
+  const [totalPartners, setTotalPartners] = useState(0);
 
   useEffect(() => {
     fetch("/api/social-proof")
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.entries?.length > 0) setEntries(data.entries);
+      .then((data: SocialProofData | null) => {
+        if (data?.entries?.length) setEntries(data.entries);
         if (data?.totalPaid) setTotalPaid(data.totalPaid);
         if (data?.totalDeals) setTotalDeals(data.totalDeals);
+        if (data?.totalPartners) setTotalPartners(data.totalPartners);
       })
       .catch(() => {});
   }, []);
 
   if (entries.length === 0) return null;
 
-  // Double for infinite scroll
   const doubled = [...entries, ...entries];
-  const duration = Math.max(entries.length * 6, 30);
+  const duration = Math.max(entries.length * 8, 40);
 
   return (
-    <div className="mb-6 relative">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 rounded-full bg-success/10 flex items-center justify-center">
-            <Trophy className="h-3 w-3 text-success" />
-          </div>
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Достижения партнёров</span>
-        </div>
-        {totalPaid > 0 && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <RussianRuble className="h-3.5 w-3.5 text-success" />
-              <span className="text-sm font-bold text-success">{formatCurrency(totalPaid)}</span>
-              <span className="text-[10px] text-muted-foreground">выплачено</span>
-            </div>
-            {totalDeals > 0 && (
-              <span className="text-[10px] text-muted-foreground">{totalDeals} сделок</span>
-            )}
-          </div>
-        )}</div>
+    <div className="mb-6">
+      {/* Total banner */}
+      <TotalBanner totalPaid={totalPaid} totalDeals={totalDeals} totalPartners={totalPartners} />
+
+      {/* Section label */}
+      <div className="flex items-center gap-2 mb-2">
+        <TrendingUp className="h-3.5 w-3.5 text-success" />
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Последние выплаты партнёрам</span>
+      </div>
 
       {/* Scrolling feed */}
-      <div className="overflow-hidden rounded-xl relative">
-        {/* Gradient fades */}
-        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+      <div className="overflow-hidden relative rounded-xl">
+        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-        <div
-          className="marquee-track flex gap-3 whitespace-nowrap"
-          style={{ animationDuration: `${duration}s` }}
-        >
-          {doubled.map((entry, i) =>
-            entry.type === "payout" ? (
-              <PayoutCard key={`${entry.id}-${i}`} entry={entry as PayoutEntry} />
-            ) : (
-              <CourtCard key={`${entry.id}-${i}`} entry={entry as CourtEntry} />
-            )
-          )}
+        <div className="marquee-track flex gap-4" style={{ animationDuration: `${duration}s` }}>
+          {doubled.map((entry, i) => (
+            <PartnerCard key={`${entry.id}-${i}`} entry={entry} />
+          ))}
         </div>
       </div>
     </div>

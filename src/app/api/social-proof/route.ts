@@ -6,10 +6,12 @@ export async function GET() {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
 
-    // Real payouts (paid, last 90 days)
+    // Recent payouts with per-partner total earnings
     const { rows: payouts } = await pool.query(
       `SELECT p.id, p.amount, p.created_at,
-              pr.full_name, a.tier, a.partner_number
+              pr.full_name, a.tier, a.partner_number,
+              a.total_revenue as partner_total_earned,
+              (SELECT COUNT(*)::int FROM payouts p2 WHERE p2.agent_id = p.agent_id AND p2.status = 'paid') as partner_deal_count
        FROM payouts p
        JOIN agents a ON a.id = p.agent_id
        JOIN profiles pr ON pr.id = a.user_id
@@ -21,38 +23,26 @@ export async function GET() {
     // Total paid out to all partners
     const { rows: totalRows } = await pool.query(
       `SELECT COALESCE(SUM(amount), 0)::numeric as total_paid,
-              COUNT(*)::int as total_deals
+              COUNT(*)::int as total_deals,
+              COUNT(DISTINCT agent_id)::int as total_partners
        FROM payouts WHERE status = 'paid'`
     );
 
-    // Court entries from ticker_entries
-    const { rows: courtEntries } = await pool.query(
-      `SELECT id, text, created_at FROM ticker_entries
-       WHERE type = 'court' AND is_active = true
-       ORDER BY created_at DESC LIMIT 10`
-    );
-
-    const entries = [
-      ...payouts.map((p) => ({
-        id: p.id,
-        type: 'payout' as const,
-        fullName: p.full_name,
-        amount: Number(p.amount),
-        tier: p.tier,
-        partnerNumber: p.partner_number,
-        createdAt: p.created_at,
-      })),
-      ...courtEntries.map((c) => ({
-        id: c.id,
-        type: 'court' as const,
-        text: c.text,
-        createdAt: c.created_at,
-      })),
-    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const entries = payouts.map((p) => ({
+      id: p.id,
+      fullName: p.full_name,
+      lastPayout: Number(p.amount),
+      totalEarned: Number(p.partner_total_earned || 0),
+      dealCount: p.partner_deal_count || 0,
+      tier: p.tier,
+      partnerNumber: p.partner_number,
+      createdAt: p.created_at,
+    }));
 
     return Response.json({
       totalPaid: Number(totalRows[0].total_paid),
       totalDeals: totalRows[0].total_deals,
+      totalPartners: totalRows[0].total_partners,
       entries,
     });
   } catch (err) {
