@@ -112,7 +112,7 @@ export default function AgentDashboard() {
 
       {activeTab === "main" && (<>
       {/* ====== 2. AVATAR + HOW TO EARN ====== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
         <Card className="border-green-500/20 bg-green-500/5">
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-4">
