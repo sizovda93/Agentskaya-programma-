@@ -64,19 +64,32 @@ function formatDescription(eventType: string, details?: string): string | undefi
 
 interface RawEvent {
   id: string;
+  type?: string;
   eventType?: string;
   event_type?: string;
+  description?: string;
   details?: string;
   createdAt?: string;
   created_at?: string;
 }
 
 export function mapLeadEvent(e: RawEvent): TimelineEvent {
-  const eventType = e.eventType || e.event_type || "";
+  const eventType = e.type || e.eventType || e.event_type || "";
+  const prebuilt = (e.description || "").trim();
+  const mapped = EVENT_TITLES[eventType];
+
+  // Prefer the dictionary title when we have one; use the API's prebuilt
+  // description as sub-text. Fall back to prebuilt for unknown types.
+  const title = mapped || prebuilt || eventType.replace(/_/g, " ") || "Событие";
+  const description =
+    mapped && prebuilt && prebuilt !== mapped
+      ? prebuilt
+      : formatDescription(eventType, e.details);
+
   return {
     id: e.id,
-    title: EVENT_TITLES[eventType] || eventType.replace(/_/g, " ") || "Событие",
-    description: formatDescription(eventType, e.details),
+    title,
+    description,
     date: (e.createdAt || e.created_at) as string,
     type: EVENT_TYPE[eventType] || "note",
   };
