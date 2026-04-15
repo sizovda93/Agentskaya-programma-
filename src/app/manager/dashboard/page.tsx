@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TierBadge } from "@/components/dashboard/status-badges";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 import { FunnelBar } from "@/components/analytics/funnel-bar";
-import { PayoutsTicker } from "@/components/dashboard/payouts-ticker";
+import { SocialProofFeed } from "@/components/dashboard/social-proof-feed";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -53,8 +53,8 @@ export default function ManagerDashboard() {
         description="Обзор партнёрской сети и показателей"
       />
 
-      {/* Social proof tickers */}
-      <PayoutsTicker />
+      {/* Social proof feed — same as on partner dashboard */}
+      <SocialProofFeed />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
