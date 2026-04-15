@@ -5,10 +5,67 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { LeadDetailsPanel } from "@/components/leads/lead-details-panel";
 import { LeadTimeline } from "@/components/leads/lead-timeline";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
 import { TimelineEvent, Lead } from "@/types";
-import { MessageSquare, Phone } from "lucide-react";
+
+const EVENT_TITLES: Record<string, string> = {
+  created: "Лид создан",
+  status_changed: "Смена статуса",
+  agent_assigned: "Назначен партнёр",
+  agent_reassigned: "Переназначен партнёр",
+  ownership_assigned: "Вы закреплены за лидом",
+  ownership_confirmed: "Закрепление подтверждено",
+  ownership_overridden: "Лид переназначен другому партнёру",
+  duplicate_detected: "Обнаружен возможный дубль",
+  conflict_resolved: "Конфликт решён",
+  payout_created: "Создана выплата",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  new: "Новый",
+  contacted: "Контакт",
+  qualified: "Квалифицирован",
+  proposal: "Предложение",
+  negotiation: "Переговоры",
+  won: "Договор заключён",
+  lost: "Потерян",
+};
+
+const EVENT_TYPE: Record<string, TimelineEvent["type"]> = {
+  status_changed: "status_change",
+  agent_assigned: "assignment",
+  agent_reassigned: "assignment",
+  ownership_assigned: "assignment",
+  ownership_confirmed: "assignment",
+  ownership_overridden: "assignment",
+  payout_created: "payment",
+  duplicate_detected: "note",
+  conflict_resolved: "note",
+  created: "note",
+};
+
+const UUID_RE = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+
+function formatDescription(eventType: string, details?: string): string | undefined {
+  if (!details) return undefined;
+  if (eventType === "ownership_assigned" || eventType === "agent_assigned" || eventType === "agent_reassigned") {
+    return undefined;
+  }
+  if (eventType === "status_changed") {
+    const m = details.match(/^(\w+)\s*→\s*(\w+)$/);
+    if (m) return `${STATUS_LABELS[m[1]] || m[1]} → ${STATUS_LABELS[m[2]] || m[2]}`;
+    return details;
+  }
+  if (eventType === "duplicate_detected") {
+    if (details.includes("email")) return "Совпадение с другим лидом по e-mail";
+    if (details.includes("phone")) return "Совпадение с другим лидом по телефону";
+    return "Совпадение с другим лидом в системе";
+  }
+  if (eventType === "conflict_resolved" || eventType === "ownership_confirmed" || eventType === "ownership_overridden") {
+    return details.replace(UUID_RE, "").replace(/\s+/g, " ").trim() || undefined;
+  }
+  return details;
+}
 
 export default function AgentLeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -35,18 +92,10 @@ export default function AgentLeadDetailPage({ params }: { params: Promise<{ id: 
           const eventsData = await eventsRes.json();
           setEvents(eventsData.map((e: { id: string; eventType: string; details?: string; createdAt: string }) => ({
             id: e.id,
-            title: e.eventType === 'status_changed' ? 'Смена статуса'
-              : e.eventType === 'created' ? 'Лид создан'
-              : e.eventType === 'agent_assigned' ? 'Назначен партнёр'
-              : e.eventType === 'agent_reassigned' ? 'Переназначен партнёр'
-              : e.eventType === 'payout_created' ? 'Создана выплата'
-              : e.eventType,
-            description: e.details || undefined,
+            title: EVENT_TITLES[e.eventType] || e.eventType.replace(/_/g, " "),
+            description: formatDescription(e.eventType, e.details),
             date: e.createdAt,
-            type: e.eventType === 'status_changed' ? 'status_change' as const
-              : e.eventType === 'agent_assigned' || e.eventType === 'agent_reassigned' ? 'assignment' as const
-              : e.eventType === 'payout_created' ? 'payment' as const
-              : 'note' as const,
+            type: EVENT_TYPE[e.eventType] || "note",
           })));
         }
       } catch {
@@ -78,16 +127,6 @@ export default function AgentLeadDetailPage({ params }: { params: Promise<{ id: 
           { title: "Лиды", href: "/agent/leads" },
           { title: lead.fullName },
         ]}
-        actions={
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Phone className="h-4 w-4 mr-1" /> Позвонить
-            </Button>
-            <Button size="sm">
-              <MessageSquare className="h-4 w-4 mr-1" /> Написать
-            </Button>
-          </div>
-        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
