@@ -30,8 +30,8 @@ export function ConversationList({ conversations, activeId, onSelect, currentUse
           >
             <span className="font-medium text-sm truncate">{displayName}</span>
             {conv.unreadCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1.5 shrink-0">
-                {conv.unreadCount}
+              <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground px-1 shrink-0">
+                {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
               </span>
             )}
           </button>

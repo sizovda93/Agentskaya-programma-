@@ -36,6 +36,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       [id]
     );
 
+    // Reset unread_count when manager/admin opens the conversation (counter tracks unread-for-staff)
+    if (user.role === 'manager' || user.role === 'admin') {
+      pool.query(
+        `UPDATE conversations SET unread_count = 0 WHERE id = $1 AND unread_count > 0`,
+        [id]
+      ).catch(() => {});
+    }
+
     const result = { ...conversation.rows[0], messages: messages.rows };
     return Response.json(toCamelCase(result));
   } catch (err) {

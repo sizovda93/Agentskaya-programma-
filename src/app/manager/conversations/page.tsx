@@ -70,8 +70,8 @@ export default function ManagerConversationsPage() {
       title: "Непрочитано",
       render: (c: any) =>
         c.unreadCount > 0 ? (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1.5">
-            {c.unreadCount}
+          <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground px-1">
+            {c.unreadCount > 99 ? "99+" : c.unreadCount}
           </span>
         ) : (
           <span className="text-muted-foreground">—</span>
