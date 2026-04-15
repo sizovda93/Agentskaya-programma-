@@ -65,6 +65,13 @@ const questions: AvatarQuestion[] = [
     answerText:
       "Выплата начисляется после того, как клиент заключает договор и вносит первый платёж. Обычно это происходит в течение одной-двух недель после передачи контакта. Все начисления вы видите в разделе Финансы в личном кабинете.",
   },
+  {
+    id: "q8",
+    label: "Сколько длится процедура?",
+    video: "/avatar/answer-q2.mp4",
+    answerText:
+      "Процедура банкротства обычно занимает от шести до двенадцати месяцев. Всё зависит от сложности дела, количества кредиторов и региона. В среднем — восемь месяцев. При этом вы получаете вознаграждение сразу после того, как клиент заключил договор, а не в конце процедуры.",
+  },
 ];
 
 type AvatarState = "idle" | "loading" | "answering";
@@ -176,7 +183,7 @@ export function AvatarHelper() {
     <Card className="overflow-hidden h-full">
       <CardContent className="p-0 flex h-full">
         {/* Video — left, fills full height */}
-        <div className="relative shrink-0 w-[260px] flex flex-col">
+        <div className="relative shrink-0 w-[320px] flex flex-col">
           <div
             className="relative overflow-hidden flex-1"
             style={{ backgroundColor: state === "answering" ? "#000" : "#45704C", minHeight: 320 }}

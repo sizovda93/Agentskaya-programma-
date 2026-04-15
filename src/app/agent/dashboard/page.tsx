@@ -7,10 +7,18 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble, Newspaper, Bell } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble, Newspaper, Bell, FileText, Download, Eye, X } from "lucide-react";
 import { Lead, Conversation } from "@/types";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
 import { SocialProofFeed } from "@/components/dashboard/social-proof-feed";
+import { Button } from "@/components/ui/button";
+
+interface Contract {
+  id: string;
+  title: string;
+  fileUrl: string;
+  createdAt: string;
+}
 
 interface ChecklistState {
   profileFilled: boolean;
@@ -25,8 +33,10 @@ export default function AgentDashboard() {
   const [stats, setStats] = useState<{ totalRevenue?: number }>({});
   const [loading, setLoading] = useState(true);
   const [checklist, setChecklist] = useState<ChecklistState | null>(null);
-  const [activeTab, setActiveTab] = useState<"main" | "history" | "partner">("main");
+  const [activeTab, setActiveTab] = useState<"main" | "history" | "partner" | "contract">("main");
   const [announcements, setAnnouncements] = useState<{id: string; title: string; type: string; content: string; authorName: string | null; imageUrl: string | null; createdAt: string; commentCount?: number}[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [viewUrl, setViewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -37,13 +47,15 @@ export default function AgentDashboard() {
       fetch("/api/learning/progress").then((r) => r.json()).catch(() => null),
       fetch("/api/telegram/status").then((r) => r.json()).catch(() => ({ connected: false })),
       fetch("/api/announcements").then((r) => r.ok ? r.json() : []).catch(() => []),
+      fetch("/api/contracts").then((r) => r.ok ? r.json() : []).catch(() => []),
     ])
-      .then(([ld, cv, st, profile, progress, tgStatus, ann]) => {
+      .then(([ld, cv, st, profile, progress, tgStatus, ann, cnt]) => {
         const leadsArr = Array.isArray(ld) ? ld : [];
         setLeads(leadsArr);
         setConversations(Array.isArray(cv) ? cv : []);
         setStats(st || {});
         setAnnouncements(Array.isArray(ann) ? ann : []);
+        setContracts(Array.isArray(cnt) ? cnt : []);
 
         setChecklist({
           profileFilled: !!(profile?.city && profile?.phone),
@@ -95,6 +107,7 @@ export default function AgentDashboard() {
           { key: "main" as const, label: "О платформе" },
           { key: "history" as const, label: "История компании" },
           { key: "partner" as const, label: "Стать партнёром" },
+          { key: "contract" as const, label: "Партнёрское соглашение" },
         ]).map((t) => (
           <button
             key={t.key}
@@ -341,6 +354,72 @@ export default function AgentDashboard() {
           </div>
         </CardContent>
       </Card>
+      </>)}
+
+      {activeTab === "contract" && (<>
+      <Card className="mb-8 overflow-hidden">
+        <div className="bg-primary/5 border-b border-primary/10 p-5">
+          <h2 className="text-lg font-semibold">Партнёрское соглашение</h2>
+          <p className="text-sm text-muted-foreground mt-1">Договор о сотрудничестве с платформой</p>
+        </div>
+        <CardContent className="p-5">
+          {contracts.length === 0 ? (
+            <div className="py-6 text-center">
+              <FileText className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Договор пока не загружен</p>
+              <p className="text-xs text-muted-foreground mt-1">Обратитесь к менеджеру для получения договора</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {contracts.map((c) => (
+                <div key={c.id} className="flex items-center justify-between rounded-xl border border-border p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{c.title}</p>
+                      <p className="text-xs text-muted-foreground">Загружен {formatDate(c.createdAt)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setViewUrl(c.fileUrl)}>
+                      <Eye className="h-4 w-4 mr-1" /> Читать
+                    </Button>
+                    <a href={c.fileUrl} download>
+                      <Button size="sm" variant="outline">
+                        <Download className="h-4 w-4 mr-1" /> Скачать
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {viewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setViewUrl(null)}>
+          <div
+            className="bg-card border border-border rounded-xl w-full max-w-4xl mx-4 overflow-hidden relative"
+            style={{ height: "90vh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-semibold">Партнёрское соглашение</span>
+              <button onClick={() => setViewUrl(null)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <iframe
+              src={viewUrl}
+              className="w-full"
+              style={{ height: "calc(90vh - 49px)" }}
+            />
+          </div>
+        </div>
+      )}
       </>)}
     </div>
   );
