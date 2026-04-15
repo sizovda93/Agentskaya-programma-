@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConflictBadge } from "@/components/dashboard/status-badges";
 import { Lead, LeadStatus, TimelineEvent } from "@/types";
-import { UserPlus, MessageSquare, AlertTriangle, Shield, ArrowRightLeft, SplitSquareHorizontal } from "lucide-react";
+import { AlertTriangle, Shield, ArrowRightLeft, SplitSquareHorizontal } from "lucide-react";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import { formatDate } from "@/lib/utils";
 import { mapLeadEvent } from "@/lib/lead-events";
@@ -148,12 +148,6 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
         actions={
           <div className="flex gap-2">
             <ConflictBadge status={lead.conflictStatus} resolution={lead.conflictResolution} />
-            <Button variant="outline" size="sm">
-              <UserPlus className="h-4 w-4 mr-1" /> Назначить партнёра
-            </Button>
-            <Button size="sm">
-              <MessageSquare className="h-4 w-4 mr-1" /> Открыть диалог
-            </Button>
           </div>
         }
       />
