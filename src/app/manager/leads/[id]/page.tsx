@@ -11,6 +11,7 @@ import { Lead, LeadStatus, TimelineEvent } from "@/types";
 import { UserPlus, MessageSquare, AlertTriangle, Shield, ArrowRightLeft, SplitSquareHorizontal } from "lucide-react";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import { formatDate } from "@/lib/utils";
+import { mapLeadEvent } from "@/lib/lead-events";
 
 const statusOptions: { value: LeadStatus; label: string }[] = [
   { value: "new", label: "Новый" },
@@ -62,15 +63,7 @@ export default function ManagerLeadDetailPage({ params }: { params: Promise<{ id
     fetch(`/api/leads/${id}/events`)
       .then((r) => (r.ok ? r.json() : []))
       .then((data: any[]) => {
-        setEvents(
-          data.map((e) => ({
-            id: e.id,
-            title: e.eventType?.replace(/_/g, " ") || e.event_type?.replace(/_/g, " ") || "",
-            description: e.details,
-            date: e.createdAt || e.created_at,
-            type: "status_change" as const,
-          }))
-        );
+        setEvents(data.map(mapLeadEvent));
       });
 
   useEffect(() => {
