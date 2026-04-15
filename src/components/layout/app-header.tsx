@@ -18,6 +18,7 @@ interface Notification {
   read: boolean;
   createdAt: string;
   source: string;
+  link?: string | null;
 }
 
 const typeIcons: Record<string, typeof Info> = {
@@ -64,6 +65,24 @@ export function AppHeader({ user, onMenuToggle }: AppHeaderProps) {
       body: JSON.stringify({ id: "all" }),
     });
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const handleNotifClick = (n: Notification) => {
+    if (!n.read) {
+      fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: n.id, source: n.source }),
+      }).catch(() => {});
+      setNotifications((prev) =>
+        prev.map((x) => (x.id === n.id && x.source === n.source ? { ...x, read: true } : x))
+      );
+    }
+    if (n.link) {
+      const target = n.link.startsWith("/") ? `/${user.role}${n.link}` : n.link;
+      router.push(target);
+    }
+    setShowNotifs(false);
   };
 
   const handleLogout = async () => {
@@ -129,13 +148,8 @@ export function AppHeader({ user, onMenuToggle }: AppHeaderProps) {
                             className={`flex gap-3 px-3 py-2.5 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors ${
                               !n.read ? "bg-primary/5" : ""
                             }`}
-                            onClick={() => {
-                              if (n.source === "announcement") {
-                                router.push("/agent/announcements");
-                                setShowNotifs(false);
-                              }
-                            }}
-                            style={{ cursor: n.source === "announcement" ? "pointer" : "default" }}
+                            onClick={() => handleNotifClick(n)}
+                            style={{ cursor: n.link ? "pointer" : "default" }}
                           >
                             <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
                               <Icon className="h-3.5 w-3.5 text-muted-foreground" />

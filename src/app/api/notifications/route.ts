@@ -11,26 +11,30 @@ export async function GET() {
 
     // Personal notifications
     const { rows: personal } = await pool.query(
-      `SELECT id, title, message, type, read, created_at, 'notification' as source
+      `SELECT id, title, message, type, read, created_at, link, 'notification' as source
        FROM notifications WHERE user_id = $1
        ORDER BY created_at DESC LIMIT 20`,
       [user.id]
     );
 
-    // Announcements (news/giveaways) — unread if created after user's last read
+    // Announcements — read state comes from announcement_reads
     const { rows: announcements } = await pool.query(
-      `SELECT id, title, content as message, type, created_at, 'announcement' as source
-       FROM announcements
-       WHERE is_active = true
-       ORDER BY created_at DESC LIMIT 10`
+      `SELECT a.id, a.title, a.content as message, a.type, a.created_at,
+              'announcement' as source,
+              (ar.user_id IS NOT NULL) as read
+       FROM announcements a
+       LEFT JOIN announcement_reads ar
+         ON ar.announcement_id = a.id AND ar.user_id = $1
+       WHERE a.is_active = true
+       ORDER BY a.created_at DESC LIMIT 10`,
+      [user.id]
     );
 
-    // Merge and sort
     const all = [
       ...personal.map((r: Record<string, unknown>) => toCamelCase(r)),
       ...announcements.map((r: Record<string, unknown>) => ({
         ...(toCamelCase(r) as Record<string, unknown>),
-        read: false,
+        link: '/announcements',
       })),
     ] as Record<string, unknown>[];
 
@@ -51,12 +55,25 @@ export async function PATCH(request: NextRequest) {
     if (auth.error) return auth.error;
     const { user } = auth;
 
-    const { id } = await request.json();
+    const { id, source } = await request.json();
 
     if (id === 'all') {
       await pool.query(
         `UPDATE notifications SET read = true WHERE user_id = $1 AND read = false`,
         [user.id]
+      );
+      await pool.query(
+        `INSERT INTO announcement_reads (user_id, announcement_id)
+         SELECT $1, a.id FROM announcements a WHERE a.is_active = true
+         ON CONFLICT (user_id, announcement_id) DO NOTHING`,
+        [user.id]
+      );
+    } else if (id && source === 'announcement') {
+      await pool.query(
+        `INSERT INTO announcement_reads (user_id, announcement_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, announcement_id) DO NOTHING`,
+        [user.id, id]
       );
     } else if (id) {
       await pool.query(

@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
 
       // In-app notification
       pool.query(
-        `INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, 'info')`,
-        [effectiveManagerId, 'Новый лид', notifText]
+        `INSERT INTO notifications (user_id, title, message, type, link) VALUES ($1, $2, $3, 'info', $4)`,
+        [effectiveManagerId, 'Новый лид', notifText, `/leads/${newLead.id}`]
       ).catch(() => {});
 
       // Telegram notification to manager
