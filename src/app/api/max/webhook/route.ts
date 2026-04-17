@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { sendMaxMessage, validateMaxWebhookSecret } from '@/lib/max-messenger';
+import { classifyMessage } from '@/lib/ai/classify-message';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -200,14 +201,20 @@ async function handleInboundMessage(chatId: number, maxUserId: number, text: str
   }
 
   // Insert message
-  await pool.query(
+  const { rows: msgRows } = await pool.query(
     `INSERT INTO messages (conversation_id, sender_type, sender_name, text, channel, external_id, status)
-     VALUES ($1, 'agent', $2, $3, 'web', $4, 'delivered')`,
+     VALUES ($1, 'agent', $2, $3, 'max', $4, 'delivered')
+     RETURNING id`,
     [conversationId, binding.full_name, text, `max_${messageId}`]
   );
 
+  // AI classify + auto-reply (fire-and-forget, same as Telegram)
+  if (msgRows[0]?.id && binding.agent_id) {
+    classifyMessage(msgRows[0].id, text, conversationId, 'max', binding.agent_id).catch(() => {});
+  }
+
   await pool.query(
-    `UPDATE conversations SET last_message = $1, last_message_at = NOW(), unread_count = unread_count + 1
+    `UPDATE conversations SET last_message = $1, last_message_at = NOW(), unread_count = unread_count + 1, channel = 'max'
      WHERE id = $2`,
     [text.substring(0, 255), conversationId]
   );

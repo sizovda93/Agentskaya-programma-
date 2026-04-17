@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { requireAuth } from '@/lib/auth-server';
 import { toCamelCase } from '@/lib/api-utils';
 import { sendMessage as sendTgMessage, getProfileIdByAgentId } from '@/lib/telegram';
+import { sendMaxMessage } from '@/lib/max-messenger';
 import { touchAgentActivityByProfile } from '@/lib/activity';
 import { classifyMessage } from '@/lib/ai/classify-message';
 
@@ -136,6 +137,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       } catch (tgErr) {
         // Don't block web response on Telegram errors
         console.error('Telegram outbound error:', tgErr);
+      }
+
+      // T2: Outbound to MAX — fallback if agent has no Telegram but has MAX
+      try {
+        const profileIdMax = await getProfileIdByAgentId(conv.agent_id);
+        if (profileIdMax) {
+          // Only send via MAX if NOT already sent via Telegram
+          const { rows: tgBind } = await pool.query(
+            `SELECT id FROM telegram_bindings WHERE profile_id = $1 AND is_active = true LIMIT 1`,
+            [profileIdMax]
+          );
+          if (tgBind.length === 0) {
+            const { rows: maxBind } = await pool.query(
+              `SELECT max_chat_id FROM max_bindings WHERE profile_id = $1 AND is_active = true LIMIT 1`,
+              [profileIdMax]
+            );
+            if (maxBind.length > 0) {
+              await sendMaxMessage(maxBind[0].max_chat_id, text.trim());
+              await pool.query(
+                `UPDATE max_bindings SET last_conversation_id = $1 WHERE profile_id = $2 AND is_active = true`,
+                [id, profileIdMax]
+              );
+            }
+          }
+        }
+      } catch (maxErr) {
+        console.error('MAX outbound error:', maxErr);
       }
     }
 
