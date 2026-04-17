@@ -6,7 +6,7 @@ import { setAuthCookie } from "@/lib/auth-server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, phone, password, consents } = body;
+    const { fullName, email, phone, password, consents, managerCode } = body;
 
     // Валидация
     if (!fullName || !email || !password) {
@@ -64,11 +64,31 @@ export async function POST(request: NextRequest) {
     );
     const profile = profileResult.rows[0];
 
-    // Создаём запись агента
-    await pool.query(
-      `INSERT INTO agents (user_id) VALUES ($1)`,
-      [profile.id]
+    // Resolve manager by code (if provided)
+    let managerId: string | null = null;
+    if (managerCode) {
+      const { rows: mgrRows } = await pool.query(
+        `SELECT id FROM profiles WHERE manager_number = $1 AND role = 'manager' AND status = 'active'`,
+        [Number(managerCode)]
+      );
+      if (mgrRows.length > 0) managerId = mgrRows[0].id;
+    }
+
+    // Создаём запись агента (with optional manager binding)
+    const { rows: agentRows } = await pool.query(
+      `INSERT INTO agents (user_id, manager_id) VALUES ($1, $2) RETURNING id`,
+      [profile.id, managerId]
     );
+
+    // Auto-create conversation between agent and manager
+    if (managerId && agentRows[0]?.id) {
+      pool.query(
+        `INSERT INTO conversations (agent_id, manager_id, status, channel)
+         VALUES ($1, $2, 'active', 'web')
+         ON CONFLICT DO NOTHING`,
+        [agentRows[0].id, managerId]
+      ).catch(() => {});
+    }
 
     // Записываем consents
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";

@@ -15,7 +15,7 @@ interface ProfileData {
   id: string; role: string; fullName: string; email: string; phone: string | null;
   avatarUrl: string | null; status: string; city?: string; specialization?: string;
   gender?: string; birthYear?: number | null; birthDay?: number | null; birthMonth?: number | null;
-  profession?: string | null; preferredMessenger?: string;
+  profession?: string | null; preferredMessenger?: string; managerNumber?: number | null;
 }
 
 interface TelegramStatus {
@@ -123,6 +123,11 @@ export default function ManagerProfilePage() {
               </Avatar>
               <h2 className="text-lg font-semibold">{profile.fullName}</h2>
               <p className="text-sm text-muted-foreground mt-0.5">{profile.email}</p>
+              {profile.managerNumber && (
+                <p className="text-xs text-primary font-mono mt-1.5 bg-primary/10 px-2.5 py-0.5 rounded-full">
+                  Менеджер №{profile.managerNumber}
+                </p>
+              )}
               <div className="flex items-center gap-2 mt-3">
                 <Badge variant="info">Менеджер</Badge>
                 <Badge variant="success">{profile.status === "active" ? "Активен" : profile.status}</Badge>

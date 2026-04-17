@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", managerCode: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [consents, setConsents] = useState({ offer: false, personal_data: false });
   const [modalContent, setModalContent] = useState<"offer" | "pd" | null>(null);
@@ -98,6 +98,17 @@ export default function RegisterPage() {
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
             />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1.5 block">Код менеджера <span className="text-[10px]">(если есть)</span></label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="Например: 100"
+              value={form.managerCode}
+              onChange={(e) => setForm({ ...form, managerCode: e.target.value.replace(/\D/g, "") })}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Если менеджер дал вам свой номер — введите его, чтобы автоматически закрепиться</p>
           </div>
           <div>
             <label className="text-sm text-muted-foreground mb-1.5 block">Пароль</label>

@@ -9,7 +9,7 @@ export async function GET() {
     const { user } = auth;
 
     const { rows } = await pool.query(
-      `SELECT p.id, p.role, p.full_name, p.email, p.phone, p.avatar_url, p.status, p.created_at,
+      `SELECT p.id, p.role, p.full_name, p.email, p.phone, p.avatar_url, p.status, p.created_at, p.manager_number,
               a.id as agent_id, a.city, a.specialization, a.active_leads, a.total_leads,
               a.total_revenue, a.onboarding_status, a.rating, a.tier, a.manager_id,
               a.partner_number, a.gender, a.birth_year, a.birth_day, a.birth_month, a.profession, a.preferred_messenger,
