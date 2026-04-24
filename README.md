@@ -64,10 +64,6 @@ SMTP_PASS=<password>
 ANTHROPIC_API_KEY=<voidai.app key>
 OPENAI_BASE_URL=https://aspbllm.online/v1
 OPENAI_API_KEY=<key>
-
-# ElevenLabs TTS for Котофей avatar (optional)
-ELEVENLABS_API_KEY=<sk_...>
-ELEVENLABS_VOICE_ID=yl2ZDV1MzN4HbQJbMihG
 ```
 
 ### Миграции БД
@@ -127,7 +123,7 @@ pm2 restart pravotech
 - Webhook-секреты (`TELEGRAM_WEBHOOK_SECRET`, `MAX_WEBHOOK_SECRET`) обязательны в production — без них webhook-эндпоинты возвращают 403.
 - Пароли хэшируются через `bcryptjs` (12 rounds).
 - Авторизационные фильтры разделяют данные между менеджерами (каждый видит только своих партнёров, лидов, диалоги).
-- Секретные ключи (ElevenLabs, Anthropic) хранятся только на сервере.
+- Секретные ключи (Anthropic) хранятся только на сервере.
 
 ## Лицензия
 

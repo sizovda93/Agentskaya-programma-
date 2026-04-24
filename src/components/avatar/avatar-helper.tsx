@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX, Loader2 } from "lucide-react";
 
 interface AvatarQuestion {
   id: string;
@@ -13,6 +12,7 @@ interface AvatarQuestion {
 }
 
 const IDLE_VIDEO = "/avatar/idle.mp4";
+const ANSWER_DURATION_MS = 7000;
 
 const questions: AvatarQuestion[] = [
   {
@@ -20,14 +20,14 @@ const questions: AvatarQuestion[] = [
     label: "Что это за платформа?",
     video: "/avatar/answer-q1.mp4",
     answerText:
-      "Это партнёрская платформа, где вы можете передавать клиентов, следить за их статусами и зарабатывать через партнёрскую программу",
+      "Это партнёрская платформа, где вы можете передавать клиентов, следить за их статусами и зарабатывать через партнёрскую программу.",
   },
   {
     id: "q2",
     label: "Как здесь зарабатывать?",
     video: "/avatar/answer-q2.mp4",
     answerText:
-      "Вы передаёте клиентов в платформу, команда берёт их в работу, а вы получаете вознаграждение по результату",
+      "Вы передаёте клиентов в платформу, команда берёт их в работу, а вы получаете вознаграждение по результату.",
   },
   {
     id: "q3",
@@ -73,98 +73,41 @@ const questions: AvatarQuestion[] = [
   },
 ];
 
-type AvatarState = "idle" | "loading" | "answering";
-
-async function fetchTTS(text: string): Promise<Blob | null> {
-  try {
-    const res = await fetch("/api/avatar/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    if (!res.ok) return null;
-    return res.blob();
-  } catch {
-    return null;
-  }
-}
-
 export function AvatarHelper() {
-  const [state, setState] = useState<AvatarState>("idle");
-  const [muted, setMuted] = useState(false);
   const [activeQuestion, setActiveQuestion] = useState<AvatarQuestion | null>(null);
-
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const switchToIdle = useCallback(() => {
-    setState("idle");
     setActiveQuestion(null);
-
     if (videoRef.current) {
       videoRef.current.src = IDLE_VIDEO;
       videoRef.current.loop = true;
       videoRef.current.play().catch(() => {});
     }
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    if (audioUrlRef.current) {
-      URL.revokeObjectURL(audioUrlRef.current);
-      audioUrlRef.current = null;
-    }
   }, []);
 
   const handleQuestion = useCallback(
-    async (q: AvatarQuestion) => {
-      if (state === "loading" || state === "answering") return;
-
-      setState("loading");
-      setActiveQuestion(q);
-
-      // Fetch TTS first, THEN start video + audio together
-      try {
-        const audioBlob = await fetchTTS(q.answerText);
-
-        if (videoRef.current) {
-          videoRef.current.loop = true;
-          videoRef.current.src = q.video;
-          videoRef.current.play().catch(() => {});
-        }
-
-        if (!audioBlob || audioBlob.size === 0) {
-          setState("answering");
-          setTimeout(switchToIdle, 5000);
-          return;
-        }
-
-        const url = URL.createObjectURL(audioBlob);
-        audioUrlRef.current = url;
-        const audio = new Audio(url);
-        audio.muted = muted;
-        audioRef.current = audio;
-
-        setState("answering");
-        await audio.play();
-
-        audio.addEventListener("ended", switchToIdle, { once: true });
-      } catch (err) {
-        console.error("TTS error:", err);
-        switchToIdle();
+    (q: AvatarQuestion) => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
+      setActiveQuestion(q);
+      if (videoRef.current) {
+        videoRef.current.loop = true;
+        videoRef.current.src = q.video;
+        videoRef.current.play().catch(() => {});
+      }
+      timerRef.current = setTimeout(switchToIdle, ANSWER_DURATION_MS);
     },
-    [state, muted, switchToIdle]
+    [switchToIdle]
   );
 
-  const toggleMute = useCallback(() => {
-    setMuted((prev) => {
-      const next = !prev;
-      if (audioRef.current) audioRef.current.muted = next;
-      return next;
-    });
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   return (
@@ -174,7 +117,7 @@ export function AvatarHelper() {
         <div className="relative shrink-0 w-[320px] flex flex-col">
           <div
             className="relative overflow-hidden flex-1"
-            style={{ backgroundColor: state === "answering" ? "#000" : "#45704C", minHeight: 320 }}
+            style={{ backgroundColor: activeQuestion ? "#000" : "#45704C", minHeight: 320 }}
           >
             <video
               ref={videoRef}
@@ -186,24 +129,20 @@ export function AvatarHelper() {
               className="absolute inset-0 w-full h-full object-cover"
             />
 
-            <button
-              onClick={toggleMute}
-              className="absolute top-3 right-3 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
-            >
-              {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-            </button>
-
-            {state === "loading" && (
-              <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
-                <Loader2 className="h-6 w-6 text-white animate-spin" />
+            {/* Answer caption overlaid at bottom when active */}
+            {activeQuestion && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 via-black/60 to-transparent px-3 pt-6 pb-3">
+                <p className="text-[11px] leading-snug text-white">{activeQuestion.answerText}</p>
               </div>
             )}
 
-            {/* Name label overlaid at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2.5">
-              <p className="text-sm font-semibold text-white">Котофей Петрович</p>
-              <p className="text-[11px] text-white/80 leading-snug">Ваш помощник на платформе</p>
-            </div>
+            {/* Name label overlaid at bottom when idle */}
+            {!activeQuestion && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2.5">
+                <p className="text-sm font-semibold text-white">Котофей Петрович</p>
+                <p className="text-[11px] text-white/80 leading-snug">Ваш помощник на платформе</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -217,7 +156,6 @@ export function AvatarHelper() {
                 size="sm"
                 variant="outline"
                 onClick={() => handleQuestion(q)}
-                disabled={state === "loading"}
                 className={`text-xs h-8 px-3 justify-start ${
                   activeQuestion?.id === q.id
                     ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
