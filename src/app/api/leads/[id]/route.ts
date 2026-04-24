@@ -28,8 +28,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     );
     if (rows.length === 0) return Response.json({ error: 'Не найдено' }, { status: 404 });
 
-    // Агент видит только свои лиды
+    // Agent/manager see only their own leads
     if (user.role === 'agent' && rows[0].assigned_agent_id !== user.agentId) {
+      return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+    }
+    if (user.role === 'manager' && rows[0].assigned_manager_id !== user.id) {
       return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
     }
 
@@ -55,9 +58,15 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
     const lead = existing.rows[0];
 
-    // Агент может менять только свои лиды, и только статус
+    // Agent may only edit own leads (status + comment only, enforced below)
     if (user.role === 'agent') {
       if (lead.assigned_agent_id !== user.agentId) {
+        return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+      }
+    }
+    // Manager may only edit leads assigned to them
+    if (user.role === 'manager') {
+      if (lead.assigned_manager_id !== user.id) {
         return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
       }
     }

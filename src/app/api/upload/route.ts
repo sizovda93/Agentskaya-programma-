@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     await writeFile(path.join(UPLOAD_DIR, safeName), buffer);
 
     return Response.json({
-      fileUrl: `/uploads/${safeName}`,
+      fileUrl: `/api/files/${safeName}`,
       fileName: file.name,
       fileSize: file.size,
     }, { status: 201 });

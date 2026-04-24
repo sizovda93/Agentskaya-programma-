@@ -32,6 +32,7 @@ export default function ManagerLearningPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration from localStorage
     setProgress(getProgress());
     Promise.all([fetchModules(ROLE), fetchAllLessons(ROLE)]).then(([m, l]) => {
       setModules(m);

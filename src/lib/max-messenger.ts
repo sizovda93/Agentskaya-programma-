@@ -59,7 +59,11 @@ export async function deleteMaxWebhook(): Promise<MaxResponse> {
 
 export function validateMaxWebhookSecret(headerValue: string | null): boolean {
   const secret = process.env.MAX_WEBHOOK_SECRET || '';
-  if (!secret) return true;
+  if (!secret) {
+    // Fail-closed in production: reject if secret is not configured
+    if (process.env.NODE_ENV === 'production') return false;
+    return true; // dev convenience only
+  }
   return headerValue === secret;
 }
 

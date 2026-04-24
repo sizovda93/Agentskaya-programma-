@@ -22,6 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
     const initial = saved || "dark";
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration from localStorage, no-SSR external store
     setTheme(initial);
     document.documentElement.className = initial;
   }, []);

@@ -73,7 +73,11 @@ export async function getMe(): Promise<TgResponse> {
 
 export function validateWebhookSecret(headerValue: string | null): boolean {
   const secret = getWebhookSecret();
-  if (!secret) return true; // if not configured, skip validation
+  if (!secret) {
+    // Fail-closed in production: reject if secret is not configured
+    if (process.env.NODE_ENV === 'production') return false;
+    return true; // dev convenience only
+  }
   return headerValue === secret;
 }
 

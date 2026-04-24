@@ -24,6 +24,9 @@ export async function GET() {
     if (user.role === 'agent' && user.agentId) {
       query += ` WHERE l.assigned_agent_id = $1`;
       params.push(user.agentId);
+    } else if (user.role === 'manager') {
+      query += ` WHERE l.assigned_manager_id = $1`;
+      params.push(user.id);
     }
 
     query += ` ORDER BY l.created_at DESC`;

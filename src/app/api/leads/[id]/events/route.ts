@@ -51,18 +51,41 @@ function formatDescription(eventType: string, rawDetails: string, leadName: stri
   }
 }
 
+interface LeadEventRow {
+  id: string;
+  lead_id: string;
+  event_type: string;
+  details: string | null;
+  actor_email: string | null;
+  created_at: Date;
+}
+
 export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
+    const { user } = auth;
 
     const { id } = await params;
 
     const { rows: leadRows } = await pool.query(
-      `SELECT full_name FROM leads WHERE id = $1`,
+      `SELECT full_name, assigned_agent_id, assigned_manager_id FROM leads WHERE id = $1`,
       [id]
     );
-    const leadName = leadRows[0]?.full_name || '';
+    if (leadRows.length === 0) {
+      return Response.json({ error: 'Не найдено' }, { status: 404 });
+    }
+    const lead = leadRows[0];
+
+    // Ownership check — admin sees all, agent/manager only their own
+    if (user.role === 'agent' && lead.assigned_agent_id !== user.agentId) {
+      return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+    }
+    if (user.role === 'manager' && lead.assigned_manager_id !== user.id) {
+      return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+    }
+
+    const leadName = lead.full_name || '';
 
     const { rows } = await pool.query(
       `SELECT id, lead_id, event_type, details, actor_email, created_at
@@ -70,11 +93,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       [id]
     );
 
-    const formatted = rows.map((r: any) => ({
+    const formatted = (rows as LeadEventRow[]).map((r) => ({
       id: r.id,
       lead_id: r.lead_id,
       type: r.event_type,
-      description: formatDescription(r.event_type, r.details, leadName),
+      description: formatDescription(r.event_type, r.details || '', leadName),
       actor_email: r.actor_email,
       created_at: r.created_at,
     }));

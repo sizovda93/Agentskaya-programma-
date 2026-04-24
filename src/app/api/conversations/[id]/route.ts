@@ -27,8 +27,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     );
     if (conversation.rows.length === 0) return Response.json({ error: 'Не найдено' }, { status: 404 });
 
-    // Агент видит только свои диалоги
+    // Agent/manager see only their own conversations
     if (user.role === 'agent' && conversation.rows[0].agent_id !== user.agentId) {
+      return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+    }
+    if (user.role === 'manager' && conversation.rows[0].manager_id !== user.id) {
       return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
     }
 
@@ -68,6 +71,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const conv = convResult.rows[0];
 
     if (user.role === 'agent' && conv.agent_id !== user.agentId) {
+      return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
+    }
+    if (user.role === 'manager' && conv.manager_id !== user.id) {
       return Response.json({ error: 'Доступ запрещён' }, { status: 403 });
     }
 

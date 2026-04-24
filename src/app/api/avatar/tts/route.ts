@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth-server';
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'txnCCHHGKmYIwrn7HfHQ';
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'yl2ZDV1MzN4HbQJbMihG';
 
 export async function POST(request: NextRequest) {
   try {

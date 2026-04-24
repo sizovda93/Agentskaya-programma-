@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { fetchLesson, fetchAllLessons, LearningModule, LearningLesson, ProgressMap } from "@/lib/learning-content";
+import { sanitizeLearningHtml } from "@/lib/sanitize";
 import { CheckCircle2, ChevronLeft, ChevronRight, Clock, ExternalLink, List, Loader2 } from "lucide-react";
 
 const ROLE = "agent";
@@ -48,13 +49,13 @@ function renderBody(text: string) {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/`(.+?)`/g, '<code class="text-xs bg-muted px-1.5 py-0.5 rounded">$1</code>');
     if (line.trim().startsWith("•")) {
-      return <li key={i} className="ml-4 list-disc" dangerouslySetInnerHTML={{ __html: formatted.replace("•", "").trim() }} />;
+      return <li key={i} className="ml-4 list-disc" dangerouslySetInnerHTML={{ __html: sanitizeLearningHtml(formatted.replace("•", "").trim()) }} />;
     }
     const numMatch = line.trim().match(/^(\d+)\.\s/);
     if (numMatch) {
-      return <li key={i} className="ml-4 list-decimal" dangerouslySetInnerHTML={{ __html: formatted.replace(/^\d+\.\s/, "").trim() }} />;
+      return <li key={i} className="ml-4 list-decimal" dangerouslySetInnerHTML={{ __html: sanitizeLearningHtml(formatted.replace(/^\d+\.\s/, "").trim()) }} />;
     }
-    return <p key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
+    return <p key={i} dangerouslySetInnerHTML={{ __html: sanitizeLearningHtml(formatted) }} />;
   });
 }
 
@@ -68,6 +69,7 @@ export default function AgentLessonPage({ params }: { params: Promise<{ slug: st
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration from localStorage
     setRead(isRead(slug));
     Promise.all([fetchLesson(ROLE, slug), fetchAllLessons(ROLE)]).then(([result, all]) => {
       if (result) {
