@@ -16,20 +16,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { email, password } = body;
+    const { email: rawEmail, password } = body;
 
-    if (!email || !password) {
+    if (!rawEmail || !password) {
       return Response.json(
         { error: "Введите email и пароль" },
         { status: 400 }
       );
     }
 
+    const email = String(rawEmail).trim().toLowerCase();
+
     const { rows } = await pool.query(
       `SELECT p.id, p.password_hash, p.role, p.full_name, p.email, p.phone,
               p.avatar_url, p.status
        FROM profiles p
-       WHERE p.email = $1`,
+       WHERE LOWER(p.email) = $1`,
       [email]
     );
 

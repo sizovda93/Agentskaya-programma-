@@ -6,15 +6,17 @@ import { setAuthCookie } from "@/lib/auth-server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, phone, password, consents, managerCode } = body;
+    const { fullName, email: rawEmail, phone, password, consents, managerCode } = body;
 
     // Валидация
-    if (!fullName || !email || !password) {
+    if (!fullName || !rawEmail || !password) {
       return Response.json(
         { error: "Заполните все обязательные поля" },
         { status: 400 }
       );
     }
+
+    const email = String(rawEmail).trim().toLowerCase();
 
     if (password.length < 8) {
       return Response.json(
