@@ -351,6 +351,69 @@ export default function AgentDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ====== COMMISSION INFO ====== */}
+      <Card className="mb-8 overflow-hidden">
+        <div className="bg-success/5 border-b border-success/10 p-5">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <RussianRuble className="h-5 w-5 text-success" /> Партнёрское вознаграждение
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">За что и как мы платим комиссию</p>
+        </div>
+        <CardContent className="p-5">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+            Мы платим партнёрам комиссию за клиентов, которые заключили договор на сопровождение
+            процедуры банкротства. Размер вознаграждения зависит от стоимости договора и сложности дела.
+          </p>
+
+          {/* Tariff cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+            {[
+              { contract: "100 000 – 120 000 ₽", commission: "20 000 ₽", level: "Базовый" },
+              { contract: "150 000 – 180 000 ₽", commission: "30 000 – 40 000 ₽", level: "Средний" },
+              { contract: "500 000 – 600 000 ₽", commission: "до 150 000 ₽", level: "Максимум" },
+            ].map((tier) => (
+              <div key={tier.level} className="rounded-xl border border-success/20 bg-success/5 p-4 text-center">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">{tier.level}</p>
+                <p className="text-[11px] text-muted-foreground mb-0.5">Стоимость договора</p>
+                <p className="text-sm font-semibold mb-3">{tier.contract}</p>
+                <div className="border-t border-success/20 pt-3">
+                  <p className="text-[11px] text-muted-foreground mb-0.5">Ваша комиссия</p>
+                  <p className="text-lg font-bold text-success">{tier.commission}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Factors */}
+          <div className="rounded-xl border border-border p-4 mb-4">
+            <h3 className="text-sm font-semibold mb-3">Что влияет на размер комиссии</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {[
+                "Сумма долгов клиента",
+                "Количество кредиторов",
+                "Наличие налоговой задолженности",
+                "Кредиторы — физические лица",
+                "Наличие имущества, в том числе неликвидного",
+                "Возможные риски процедуры",
+              ].map((factor, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                  <span className="text-xs text-muted-foreground leading-relaxed">{factor}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
+            <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Перед началом работы мы анализируем ситуацию клиента и заранее согласовываем
+              с вами размер вознаграждения. Никаких сюрпризов — всё прозрачно.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
       </>)}
 
       {activeTab === "contract" && (<>
