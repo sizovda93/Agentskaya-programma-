@@ -6,18 +6,23 @@ export async function GET() {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
 
-    // Recent payouts with per-partner total earnings
+    // One card per partner — show each partner's most recent payout
+    // (DISTINCT ON ensures uniqueness, then re-order by recency for the feed)
     const { rows: payouts } = await pool.query(
-      `SELECT p.id, p.amount, p.created_at,
-              pr.full_name, a.tier, a.partner_number,
-              a.total_revenue as partner_total_earned,
-              (SELECT COUNT(*)::int FROM payouts p2 WHERE p2.agent_id = p.agent_id AND p2.status = 'paid') as partner_deal_count
-       FROM payouts p
-       JOIN agents a ON a.id = p.agent_id
-       JOIN profiles pr ON pr.id = a.user_id
-       WHERE p.status = 'paid' AND p.created_at > NOW() - INTERVAL '90 days'
-       ORDER BY p.created_at DESC
-       LIMIT 20`
+      `WITH latest AS (
+         SELECT DISTINCT ON (p.agent_id)
+           p.id, p.amount, p.created_at, p.agent_id,
+           pr.full_name, a.tier, a.partner_number,
+           a.total_revenue as partner_total_earned,
+           (SELECT COUNT(*)::int FROM payouts p2
+              WHERE p2.agent_id = p.agent_id AND p2.status = 'paid') as partner_deal_count
+         FROM payouts p
+         JOIN agents a ON a.id = p.agent_id
+         JOIN profiles pr ON pr.id = a.user_id
+         WHERE p.status = 'paid' AND p.created_at > NOW() - INTERVAL '90 days'
+         ORDER BY p.agent_id, p.created_at DESC
+       )
+       SELECT * FROM latest ORDER BY created_at DESC LIMIT 20`
     );
 
     // Total paid out to all partners

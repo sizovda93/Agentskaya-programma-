@@ -116,7 +116,14 @@ export function SocialProofFeed() {
     fetch("/api/social-proof")
       .then((r) => (r.ok ? r.json() : null))
       .then((data: SocialProofData | null) => {
-        if (data?.entries?.length) setEntries(data.entries);
+        if (data?.entries?.length) {
+          // Pad with unique fallback partners if real data is thin —
+          // keeps the marquee diverse on a young platform
+          const realIds = new Set(data.entries.map((e) => e.fullName));
+          const padding = FALLBACK_ENTRIES.filter((f) => !realIds.has(f.fullName));
+          const merged = [...data.entries, ...padding].slice(0, 8);
+          setEntries(merged);
+        }
         if (data?.totalPaid) setTotalPaid(data.totalPaid);
         if (data?.totalDeals) setTotalDeals(data.totalDeals);
         if (data?.totalPartners) setTotalPartners(data.totalPartners);
