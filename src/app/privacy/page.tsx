@@ -59,8 +59,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <span className="font-medium text-foreground">Email для запросов по персональным данным:</span>{" "}
-                <a href="mailto:privacy@agentum.club" className="text-primary hover:underline">
-                  privacy@agentum.club
+                <a href="mailto:sizovda93@gmail.com" className="text-primary hover:underline">
+                  sizovda93@gmail.com
                 </a>
               </li>
               <li>
@@ -284,11 +284,11 @@ export default function PrivacyPage() {
               <li>получить копию хранящихся у нас о вас данных;</li>
               <li>
                 исправить неточные или неполные данные (через раздел «Профиль» в приложении или письмом
-                на privacy@agentum.club);
+                на sizovda93@gmail.com);
               </li>
               <li>
                 удалить свою учётную запись и связанные с ней персональные данные (запрос на
-                privacy@agentum.club);
+                sizovda93@gmail.com);
               </li>
               <li>отозвать согласие на обработку данных в любой момент;</li>
               <li>ограничить обработку данных;</li>
@@ -312,7 +312,7 @@ export default function PrivacyPage() {
             <p className="mt-3">
               Несмотря на все меры, ни один способ передачи и хранения данных в интернете не
               гарантирует 100% защиты. Если вы заметили признаки компрометации вашей учётной записи,
-              незамедлительно сообщите на privacy@agentum.club.
+              незамедлительно сообщите на sizovda93@gmail.com.
             </p>
           </section>
 
@@ -372,8 +372,8 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 space-y-1 mt-3">
               <li>
                 <span className="font-medium text-foreground">Email:</span>{" "}
-                <a href="mailto:privacy@agentum.club" className="text-primary hover:underline">
-                  privacy@agentum.club
+                <a href="mailto:sizovda93@gmail.com" className="text-primary hover:underline">
+                  sizovda93@gmail.com
                 </a>
               </li>
               <li>
