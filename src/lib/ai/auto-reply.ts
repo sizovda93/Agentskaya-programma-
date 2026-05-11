@@ -16,7 +16,6 @@ const BLOCKED_CLASSIFICATIONS = ["escalation", "objection"];
 
 const NAV_RESPONSES: Record<string, string> = {
   nav_telegram: `Подключить Telegram можно в разделе «Профиль».\nПерейдите: ${APP_URL}/agent/profile\nНажмите «Подключить Telegram» и следуйте инструкции.`,
-  nav_referral: `Ваша реферальная ссылка находится в разделе «Рефералы».\nПерейдите: ${APP_URL}/agent/referral\nТам же можно скопировать ссылку и посмотреть статистику.`,
   nav_materials: `Готовые тексты и инструкции для привлечения клиентов — в разделе «Материалы».\nПерейдите: ${APP_URL}/agent/marketing`,
   nav_documents: `Загрузить документы можно в разделе «Документы».\nПерейдите: ${APP_URL}/agent/documents\nПоддерживаемые форматы: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (до 10 МБ).`,
   nav_finance: `Ваш баланс и историю выплат можно посмотреть в разделе «Финансы».\nПерейдите: ${APP_URL}/agent/finance`,
@@ -28,7 +27,6 @@ const NAV_RESPONSES: Record<string, string> = {
 
 const TOPIC_KEYWORDS: [string[], string][] = [
   [["подключ", "телеграм", "telegram", "тг "], "nav_telegram"],
-  [["реферал", "ссылк", "партнёрск", "пригласи"], "nav_referral"],
   [["материал", "текст", "пост", "шаблон", "контент"], "nav_materials"],
   [["документ", "загруз", "файл", "скан"], "nav_documents"],
   [["выплат", "баланс", "финанс", "деньг", "зарплат"], "nav_finance"],

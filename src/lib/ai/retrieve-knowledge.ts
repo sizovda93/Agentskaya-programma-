@@ -31,7 +31,6 @@ const KEYWORD_TO_MODULES: [string, string[]][] = [
   ["баланс",    ["agent-finance"]],
   ["деньг",     ["agent-finance"]],
   ["зарабо",    ["agent-finance"]],
-  ["реферал",   ["agent-comms"]],
   ["ссылк",     ["agent-comms"]],
   ["материал",  ["agent-comms"]],
   ["телеграм",  ["agent-comms"]],
@@ -52,10 +51,10 @@ const KEYWORD_TO_MODULES: [string, string[]][] = [
 const FINANCE_KEYWORDS = ["выплат", "комисси", "процент", "ставк", "tier", "уровень", "баланс", "зарабо"];
 
 /**
- * Keywords that signal referral/marketing relevance.
+ * Keywords that signal marketing relevance.
  * When matched, a marketing asset snippet is added.
  */
-const MARKETING_KEYWORDS = ["реферал", "ссылк", "материал", "разместить", "привлеч", "пост", "cta"];
+const MARKETING_KEYWORDS = ["ссылк", "материал", "разместить", "привлеч", "пост", "cta"];
 
 export interface KnowledgeResult {
   snippets: string[];

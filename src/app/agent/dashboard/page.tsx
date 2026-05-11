@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, Share2, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble, Newspaper, Bell, FileText, Download, Eye, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Rocket, Lightbulb, UserPlus, BookOpen, GraduationCap, MessageSquare as MessageSquareIcon, RussianRuble, Newspaper, FileText, Download, Eye, X } from "lucide-react";
 import { Lead, Conversation } from "@/types";
 import { AvatarHelper } from "@/components/avatar/avatar-helper";
 import { SocialProofFeed } from "@/components/dashboard/social-proof-feed";
@@ -161,9 +161,6 @@ export default function AgentDashboard() {
               </Link>
               <Link href="/agent/marketing" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
                 <BookOpen className="h-3.5 w-3.5" /> Материалы
-              </Link>
-              <Link href="/agent/referral" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
-                <Share2 className="h-3.5 w-3.5" /> Реферальная ссылка
               </Link>
               <Link href="/agent/learning" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition-colors">
                 <GraduationCap className="h-3.5 w-3.5" /> Обучение

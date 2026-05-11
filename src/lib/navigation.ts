@@ -5,7 +5,6 @@ export const agentNav: NavItem[] = [
   { title: "Лиды", href: "/agent/leads", icon: "Users" },
   { title: "Финансы", href: "/agent/finance", icon: "RussianRuble" },
   { title: "Сообщения", href: "/agent/messages", icon: "MessageSquare" },
-  { title: "Рефералы", href: "/agent/referral", icon: "Share2" },
   { title: "Материалы", href: "/agent/marketing", icon: "Megaphone" },
   { title: "Обучение", href: "/agent/learning", icon: "GraduationCap" },
   { title: "Вакансии", href: "/agent/vacancies", icon: "Briefcase" },
