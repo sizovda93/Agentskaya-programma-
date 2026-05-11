@@ -1,22 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Scale, ArrowRight, Eye, EyeOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", managerCode: "" });
+  const searchParams = useSearchParams();
+  const initialManagerCode = (searchParams.get("manager") || "").replace(/\D/g, "");
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", managerCode: initialManagerCode });
+  const [managerLocked] = useState(Boolean(initialManagerCode));
+
+  useEffect(() => {
+    if (initialManagerCode) {
+      setForm((f) => ({ ...f, managerCode: initialManagerCode }));
+    }
+  }, [initialManagerCode]);
   const [showPassword, setShowPassword] = useState(false);
   const [consents, setConsents] = useState({ offer: false, personal_data: false });
   const [modalContent, setModalContent] = useState<"offer" | "pd" | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -100,15 +109,23 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-1.5 block">Код менеджера <span className="text-[10px]">(если есть)</span></label>
+            <label className="text-sm text-muted-foreground mb-1.5 block">
+              Код менеджера {!managerLocked && <span className="text-[10px]">(если есть)</span>}
+            </label>
             <Input
               type="text"
               inputMode="numeric"
               placeholder="Например: 100"
               value={form.managerCode}
               onChange={(e) => setForm({ ...form, managerCode: e.target.value.replace(/\D/g, "") })}
+              disabled={managerLocked}
+              className={managerLocked ? "bg-muted/50" : ""}
             />
-            <p className="text-[10px] text-muted-foreground mt-1">Если менеджер дал вам свой номер — введите его, чтобы автоматически закрепиться</p>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {managerLocked
+                ? `Вы переходите по ссылке менеджера №${form.managerCode} — будете закреплены автоматически`
+                : "Если менеджер дал вам свой номер — введите его, чтобы автоматически закрепиться"}
+            </p>
           </div>
           <div>
             <label className="text-sm text-muted-foreground mb-1.5 block">Пароль</label>
@@ -212,5 +229,13 @@ export default function RegisterPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background">Загрузка…</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

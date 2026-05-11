@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CardSkeleton } from "@/components/dashboard/loading-skeleton";
 import { getInitials } from "@/lib/utils";
-import { Send, Unlink, MessageCircle, Check, Eye, EyeOff, Shield, MapPin, Users, HeadphonesIcon } from "lucide-react";
+import { Send, Unlink, MessageCircle, Check, Eye, EyeOff, Shield, MapPin, Users, HeadphonesIcon, Link2, Copy } from "lucide-react";
 
 interface ProfileData {
   id: string; role: string; fullName: string; email: string; phone: string | null;
@@ -143,6 +143,9 @@ export default function ManagerProfilePage() {
               ))}
             </div>
           </Card>
+
+          {/* Recruiting link card */}
+          {profile.managerNumber && <RecruitLinkCard managerNumber={profile.managerNumber} />}
 
           {/* Connections card */}
           <Card>
@@ -446,5 +449,47 @@ function MaxRow() {
         </Button>
       )}
     </div>
+  );
+}
+
+// ==================== Recruit link card ====================
+function RecruitLinkCard({ managerNumber }: { managerNumber: number }) {
+  const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+
+  const link = origin ? `${origin}/register?manager=${managerNumber}` : `/register?manager=${managerNumber}`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+          <Link2 className="h-4 w-4" /> Ссылка для партнёров
+        </h3>
+        <p className="text-[11px] text-muted-foreground mb-3">
+          Отправьте эту ссылку — партнёр зарегистрируется и автоматически будет закреплён за вами.
+        </p>
+        <div className="flex items-center gap-2">
+          <Input value={link} readOnly className="h-9 text-xs font-mono bg-muted/40 truncate" />
+          <Button size="sm" variant="outline" className="shrink-0 h-9" onClick={handleCopy} disabled={!origin}>
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+        {copied && <p className="text-[11px] text-green-600 mt-2">Скопировано</p>}
+      </CardContent>
+    </Card>
   );
 }
