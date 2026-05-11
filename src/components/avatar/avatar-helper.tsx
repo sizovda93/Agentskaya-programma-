@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface AvatarQuestion {
   id: string;
@@ -73,40 +74,160 @@ const questions: AvatarQuestion[] = [
   },
 ];
 
+function pickRussianVoice(): SpeechSynthesisVoice | null {
+  if (typeof window === "undefined" || !window.speechSynthesis) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return null;
+  // Prefer female Russian voices for "Котофей" if available
+  const ru = voices.filter((v) => v.lang?.toLowerCase().startsWith("ru"));
+  return ru.find((v) => /milena|alyona|katya|elena|female|женск/i.test(v.name)) || ru[0] || null;
+}
+
+async function fetchTtsBlob(text: string): Promise<Blob | null> {
+  try {
+    const res = await fetch("/api/avatar/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) return null;
+    return res.blob();
+  } catch {
+    return null;
+  }
+}
+
+function speakWithBrowserTts(text: string, onEnd: () => void) {
+  if (typeof window === "undefined" || !window.speechSynthesis) {
+    onEnd();
+    return null;
+  }
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "ru-RU";
+  utter.rate = 1.0;
+  utter.pitch = 1.0;
+  const voice = pickRussianVoice();
+  if (voice) utter.voice = voice;
+  utter.onend = onEnd;
+  window.speechSynthesis.speak(utter);
+  return utter;
+}
+
 export function AvatarHelper() {
   const [activeQuestion, setActiveQuestion] = useState<AvatarQuestion | null>(null);
+  const [muted, setMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+
+  // Load voices async (Chrome populates them on demand)
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const load = () => window.speechSynthesis.getVoices();
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    utteranceRef.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+  }, []);
 
   const switchToIdle = useCallback(() => {
     setActiveQuestion(null);
+    stopSpeaking();
     if (videoRef.current) {
       videoRef.current.src = IDLE_VIDEO;
       videoRef.current.loop = true;
       videoRef.current.play().catch(() => {});
     }
-  }, []);
+  }, [stopSpeaking]);
 
   const handleQuestion = useCallback(
-    (q: AvatarQuestion) => {
+    async (q: AvatarQuestion) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+      stopSpeaking();
       setActiveQuestion(q);
       if (videoRef.current) {
         videoRef.current.loop = true;
         videoRef.current.src = q.video;
         videoRef.current.play().catch(() => {});
       }
+
+      // Safety fallback if TTS is disabled or fails — return to idle after fixed duration
       timerRef.current = setTimeout(switchToIdle, ANSWER_DURATION_MS);
+
+      if (muted) return;
+
+      // 1) Try ElevenLabs via server endpoint — high-quality natural voice
+      const blob = await fetchTtsBlob(q.answerText);
+      if (blob && blob.size > 0) {
+        const url = URL.createObjectURL(blob);
+        audioUrlRef.current = url;
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.addEventListener(
+          "ended",
+          () => {
+            if (audioRef.current === audio) switchToIdle();
+          },
+          { once: true }
+        );
+        try {
+          await audio.play();
+          // ElevenLabs is playing — cancel the safety timer (we'll exit on 'ended')
+          if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+          }
+          return;
+        } catch {
+          // Audio autoplay blocked or playback error — fall through to browser TTS
+        }
+      }
+
+      // 2) Fallback to browser SpeechSynthesis
+      const utter = speakWithBrowserTts(q.answerText, () => {
+        if (utteranceRef.current === utter) switchToIdle();
+      });
+      utteranceRef.current = utter;
     },
-    [switchToIdle]
+    [muted, stopSpeaking, switchToIdle]
   );
+
+  const toggleMute = useCallback(() => {
+    setMuted((prev) => {
+      const next = !prev;
+      if (next) stopSpeaking();
+      return next;
+    });
+  }, [stopSpeaking]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, []);
 
@@ -128,6 +249,14 @@ export function AvatarHelper() {
               playsInline
               className="absolute inset-0 w-full h-full object-cover"
             />
+
+            <button
+              onClick={toggleMute}
+              title={muted ? "Включить звук" : "Выключить звук"}
+              className="absolute top-3 right-3 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+            >
+              {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            </button>
 
             {/* Answer caption overlaid at bottom when active */}
             {activeQuestion && (
