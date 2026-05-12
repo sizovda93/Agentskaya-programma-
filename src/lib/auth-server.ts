@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import jwt from "jsonwebtoken";
 import pool from "./db";
 import { UserRole } from "@/types";
@@ -26,7 +26,7 @@ export function signToken(userId: string, role: UserRole): string {
   });
 }
 
-export async function setAuthCookie(userId: string, role: UserRole) {
+export async function setAuthCookie(userId: string, role: UserRole): Promise<string> {
   const token = signToken(userId, role);
   (await cookies()).set(TOKEN_NAME, token, {
     httpOnly: true,
@@ -35,6 +35,7 @@ export async function setAuthCookie(userId: string, role: UserRole) {
     path: "/",
     maxAge: TOKEN_MAX_AGE,
   });
+  return token;
 }
 
 export async function clearAuthCookie() {
@@ -51,7 +52,12 @@ export async function clearAuthCookie() {
 
 export async function getSession(): Promise<SessionUser | null> {
   try {
-    const token = (await cookies()).get(TOKEN_NAME)?.value;
+    const cookieToken = (await cookies()).get(TOKEN_NAME)?.value;
+    const authHeader = (await headers()).get("authorization");
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : null;
+    const token = cookieToken || bearerToken;
     if (!token) return null;
 
     const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: string };

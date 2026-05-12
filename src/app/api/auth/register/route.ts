@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
       [email, `Роль: agent, ФИО: ${fullName}`]
     );
 
-    // JWT cookie
-    await setAuthCookie(profile.id, "agent");
+    // JWT cookie + token in body for mobile clients
+    const token = await setAuthCookie(profile.id, "agent");
 
     return Response.json({
       user: {
@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
         phone: profile.phone,
         status: profile.status,
       },
+      token,
     });
   } catch (err) {
     console.error("Register error:", err);
