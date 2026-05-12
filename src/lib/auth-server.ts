@@ -52,12 +52,12 @@ export async function clearAuthCookie() {
 
 export async function getSession(): Promise<SessionUser | null> {
   try {
-    const cookieToken = (await cookies()).get(TOKEN_NAME)?.value;
     const authHeader = (await headers()).get("authorization");
     const bearerToken = authHeader?.startsWith("Bearer ")
       ? authHeader.slice(7).trim()
       : null;
-    const token = cookieToken || bearerToken;
+    const cookieToken = (await cookies()).get(TOKEN_NAME)?.value;
+    const token = bearerToken || cookieToken;
     if (!token) return null;
 
     const payload = jwt.verify(token, JWT_SECRET) as { sub: string; role: string };

@@ -35,14 +35,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // API-роуты (кроме /api/auth) — проверяем токен из cookie ИЛИ Authorization: Bearer
+  // API-роуты (кроме /api/auth) — проверяем токен из Authorization: Bearer ИЛИ cookie
+  // Bearer приоритетнее: если клиент явно прислал заголовок, используем именно его.
   if (pathname.startsWith("/api")) {
-    const cookieToken = request.cookies.get("token")?.value;
     const authHeader = request.headers.get("authorization");
     const bearerToken = authHeader?.startsWith("Bearer ")
       ? authHeader.slice(7).trim()
       : undefined;
-    const token = cookieToken || bearerToken;
+    const cookieToken = request.cookies.get("token")?.value;
+    const token = bearerToken || cookieToken;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
